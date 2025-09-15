@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.3.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.2.0...v1.3.0)
+
+### 🚀 Enhancements
+
+- Update package json ([d6db6da](https://github.com/PKief/git-cli-utils/commit/d6db6da))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.2.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.1.0...v1.2.0)
