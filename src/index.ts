@@ -33,16 +33,21 @@ program
     const { exec } = await import('child_process');
     const { promisify } = await import('util');
     const execAsync = promisify(exec);
-    
+
     try {
-      const { stdout } = await execAsync('git config --global --get-regexp alias');
+      const { stdout } = await execAsync(
+        'git config --global --get-regexp alias'
+      );
       if (stdout.trim()) {
         console.log('📋 Current git aliases:\n');
-        stdout.trim().split('\n').forEach(line => {
-          const [alias, command] = line.split(' ');
-          const aliasName = alias.replace('alias.', '');
-          console.log(`  git ${aliasName} → ${command}`);
-        });
+        stdout
+          .trim()
+          .split('\n')
+          .forEach((line) => {
+            const [alias, command] = line.split(' ');
+            const aliasName = alias.replace('alias.', '');
+            console.log(`  git ${aliasName} → ${command}`);
+          });
       } else {
         console.log('📋 No git aliases found.');
         console.log('💡 Run "git-utils init" to create some!');

@@ -14,21 +14,28 @@ export const searchCommits = async () => {
 
     const selectedCommit = await interactiveList<GitCommit>(
       commits,
-      (commit: GitCommit) => `${commit.date} ${commit.hash} - ${commit.subject}`,
-      (commit: GitCommit) => `${commit.hash} - ${commit.subject}`  // Match the format in display text
+      (commit: GitCommit) =>
+        `${commit.date} ${commit.hash} - ${commit.subject}`,
+      (commit: GitCommit) => `${commit.hash} - ${commit.subject}` // Match the format in display text
     );
 
     if (selectedCommit) {
       console.log(`\nSelected commit: ${selectedCommit.hash}`);
       console.log(`Subject: ${selectedCommit.subject}`);
-      
+
       try {
         await GitOperations.copyToClipboard(selectedCommit.hash);
-        console.log(`${ANSI.GREEN}Commit SHA copied to clipboard!${ANSI.RESET}`);
+        console.log(
+          `${ANSI.GREEN}Commit SHA copied to clipboard!${ANSI.RESET}`
+        );
         process.exit(0);
       } catch (error) {
-        console.error(`${ANSI.RED}Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}${ANSI.RESET}`);
-        console.log(`${ANSI.YELLOW}Commit SHA: ${selectedCommit.hash}${ANSI.RESET}`);
+        console.error(
+          `${ANSI.RED}Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}${ANSI.RESET}`
+        );
+        console.log(
+          `${ANSI.YELLOW}Commit SHA: ${selectedCommit.hash}${ANSI.RESET}`
+        );
         process.exit(1);
       }
     } else {
@@ -36,7 +43,9 @@ export const searchCommits = async () => {
       process.exit(0);
     }
   } catch (error) {
-    console.error(`${ANSI.RED}Error fetching commits: ${error instanceof Error ? error.message : String(error)}${ANSI.RESET}`);
+    console.error(
+      `${ANSI.RED}Error fetching commits: ${error instanceof Error ? error.message : String(error)}${ANSI.RESET}`
+    );
     process.exit(1);
   }
 };

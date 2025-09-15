@@ -1,21 +1,9 @@
-src/git-cli-utilities/.npmignore
+# Ignore everything
+*
+*/**
 
-node_modules
-dist
-build
-*.log
-*.ts
-*.js.map
-*.d.ts
-*.tsbuildinfo
-coverage
-.vscode
-.idea
-*.iml
-.DS_Store
-npm-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
-examples
-bin
+# Whitelist what you need
+!lib/*
+!bin/*
+!LICENSE.md
+!logo.png

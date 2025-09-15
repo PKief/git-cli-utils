@@ -13,7 +13,7 @@ export const getGitCommits = (): Promise<GitCommit[]> => {
       'log',
       '--all',
       '--date=short',
-      '--pretty=format:%h|%cd|%D|%s'
+      '--pretty=format:%h|%cd|%D|%s',
     ]);
 
     const commits: GitCommit[] = [];
@@ -51,27 +51,39 @@ export const getGitCommits = (): Promise<GitCommit[]> => {
   });
 };
 
-export const filterCommits = (commits: GitCommit[], searchTerm: string): GitCommit[] => {
+export const filterCommits = (
+  commits: GitCommit[],
+  searchTerm: string
+): GitCommit[] => {
   if (!searchTerm) return commits;
 
   const normalizedSearchTerm = searchTerm.toLowerCase();
 
   return commits.filter((c) => {
-    const searchableText = `${c.hash} ${c.date} ${c.branch} ${c.subject}`.toLowerCase();
+    const searchableText =
+      `${c.hash} ${c.date} ${c.branch} ${c.subject}`.toLowerCase();
 
     if (searchableText.includes(normalizedSearchTerm)) {
       return true;
     }
 
     const textNoSeparators = searchableText.replace(/[-_\/\.\s]/g, '');
-    const searchTermNoSeparators = normalizedSearchTerm.replace(/[-_\/\.\s]/g, '');
+    const searchTermNoSeparators = normalizedSearchTerm.replace(
+      /[-_\/\.\s]/g,
+      ''
+    );
 
     if (textNoSeparators.includes(searchTermNoSeparators)) {
       return true;
     }
 
     let searchIndex = 0;
-    for (let i = 0; i < textNoSeparators.length && searchIndex < searchTermNoSeparators.length; i++) {
+    for (
+      let i = 0;
+      i < textNoSeparators.length &&
+      searchIndex < searchTermNoSeparators.length;
+      i++
+    ) {
       if (textNoSeparators[i] === searchTermNoSeparators[searchIndex]) {
         searchIndex++;
       }

@@ -19,7 +19,7 @@ class CITestSuite {
 
   async runCITests(): Promise<void> {
     console.log('🤖 Running CI-friendly test suite\n');
-    
+
     let totalTests = 0;
     let passedTests = 0;
     let failedTests = 0;
@@ -27,12 +27,19 @@ class CITestSuite {
     // Non-interactive CLI Tests
     console.log('📋 Basic CLI Tests (Non-interactive)');
     console.log('─'.repeat(50));
-    
+
     const basicTests = [
       { name: 'Help Command', test: () => this.tester.testHelp() },
       { name: 'Version Command', test: () => this.tester.testVersion() },
-      { name: 'Invalid Command', test: () => this.tester.runCommand('invalid-command', [], ['Unknown command']) },
-      { name: 'List Aliases', test: () => this.tester.runCommand('list-aliases', [], ['git aliases']) }
+      {
+        name: 'Invalid Command',
+        test: () =>
+          this.tester.runCommand('invalid-command', [], ['Unknown command']),
+      },
+      {
+        name: 'List Aliases',
+        test: () => this.tester.runCommand('list-aliases', [], ['git aliases']),
+      },
     ];
 
     for (const { name, test } of basicTests) {
@@ -55,10 +62,16 @@ class CITestSuite {
     // Git Integration Tests (non-interactive)
     console.log('\n🔗 Git Integration Tests');
     console.log('─'.repeat(50));
-    
+
     const gitTestMethods = [
-      { name: 'Alias Creation', method: () => this.gitTests.testAliasCreation() },
-      { name: 'List Aliases with Real Data', method: () => this.gitTests.testListAliasesWithRealData() }
+      {
+        name: 'Alias Creation',
+        method: () => this.gitTests.testAliasCreation(),
+      },
+      {
+        name: 'List Aliases with Real Data',
+        method: () => this.gitTests.testListAliasesWithRealData(),
+      },
     ];
 
     for (const test of gitTestMethods) {
@@ -81,10 +94,16 @@ class CITestSuite {
     // Performance Tests (non-interactive)
     console.log('\n⚡ Performance Tests');
     console.log('─'.repeat(50));
-    
+
     const responseTests = [
-      { name: 'Help Response Time', method: () => this.perfTests.testHelpResponseTime() },
-      { name: 'Version Response Time', method: () => this.perfTests.testVersionResponseTime() }
+      {
+        name: 'Help Response Time',
+        method: () => this.perfTests.testHelpResponseTime(),
+      },
+      {
+        name: 'Version Response Time',
+        method: () => this.perfTests.testVersionResponseTime(),
+      },
     ];
 
     for (const test of responseTests) {
@@ -110,7 +129,9 @@ class CITestSuite {
     console.log(`Total Tests: ${totalTests}`);
     console.log(`✅ Passed: ${passedTests}`);
     console.log(`❌ Failed: ${failedTests}`);
-    console.log(`Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`);
+    console.log(
+      `Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`
+    );
 
     if (failedTests === 0) {
       console.log('\n🎉 All CI tests passed!');
@@ -125,7 +146,7 @@ class CITestSuite {
 // Run the CI tests if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const testSuite = new CITestSuite();
-  testSuite.runCITests().catch(error => {
+  testSuite.runCITests().catch((error) => {
     console.error('CI test suite crashed:', error);
     process.exit(1);
   });

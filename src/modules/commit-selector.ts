@@ -8,6 +8,9 @@ export const commitSelector = async (): Promise<GitCommit | null> => {
     return null;
   }
 
-  const selectedCommit = await interactiveList<GitCommit>(commits, (commit: GitCommit) => `${commit.date} ${commit.hash} - ${commit.subject}`);
+  const selectedCommit = await interactiveList<GitCommit>(
+    commits,
+    (commit: GitCommit) => `${commit.date} ${commit.hash} - ${commit.subject}`
+  );
   return selectedCommit;
 };

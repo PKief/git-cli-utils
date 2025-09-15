@@ -1,0 +1,58 @@
+name: Release + Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: 🛎️ Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Required for fetching tags and generating release notes
+          fetch-depth: 0
+
+      - name: 🛠 Setup Platform
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
+        with:
+          bun-version-file: ".bun-version"
+
+      - name: 📦 Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add -g npm
+
+      - name: 🔧 Configure Git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global push.followTags true
+
+      - name: 📜 Generate changelog and release notes
+        run: |
+          bunx changelogen --hideAuthorEmail --release --push
+          bunx changelogen github release --token ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📝 Get metadata
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          NAME=$(jq -r '.name' package.json)
+          DISPLAY_NAME=$(jq -r '.displayName' package.json)
+
+          echo "VERSION=$VERSION"             >> $GITHUB_ENV
+          echo "NAME=$NAME"                   >> $GITHUB_ENV
+          echo "DISPLAY_NAME=$DISPLAY_NAME"   >> $GITHUB_ENV
+
+      - name: ⚒️ Build
+        run: bun run build
+
+      - name: 🌐 Publish to NPM Registry
+        run: |
+          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+          npm publish --provenance --access public

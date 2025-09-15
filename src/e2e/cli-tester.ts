@@ -1,6 +1,5 @@
-import { spawn, ChildProcess } from 'child_process';
-import { writeFileSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { spawn } from 'child_process';
+import { writeFileSync } from 'fs';
 
 export interface TestResult {
   passed: boolean;
@@ -18,17 +17,21 @@ export class CLITester {
     this.timeout = timeout;
   }
 
-  async runCommand(command: string, inputs: string[] = [], expectedOutputs: string[] = []): Promise<TestResult> {
+  async runCommand(
+    command: string,
+    inputs: string[] = [],
+    expectedOutputs: string[] = []
+  ): Promise<TestResult> {
     const startTime = Date.now();
-    
+
     return new Promise((resolve) => {
       let output = '';
       let errorOutput = '';
       let inputIndex = 0;
-      
+
       const child = spawn('node', [this.cliPath, ...command.split(' ')], {
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, FORCE_COLOR: '0' } // Disable colors for testing
+        env: { ...process.env, FORCE_COLOR: '0' }, // Disable colors for testing
       });
 
       const timeoutId = setTimeout(() => {
@@ -36,13 +39,13 @@ export class CLITester {
         resolve({
           passed: false,
           message: `Command timed out after ${this.timeout}ms`,
-          duration: Date.now() - startTime
+          duration: Date.now() - startTime,
         });
       }, this.timeout);
 
       child.stdout.on('data', (data: Buffer) => {
         output += data.toString();
-        
+
         // Auto-send inputs based on expected prompts
         if (inputIndex < inputs.length) {
           setTimeout(() => {
@@ -58,13 +61,14 @@ export class CLITester {
 
       child.on('close', (code) => {
         clearTimeout(timeoutId);
-        
+
         const duration = Date.now() - startTime;
         const allOutput = output + errorOutput;
-        
+
         // Check if all expected outputs are present
-        const missingOutputs = expectedOutputs.filter(expected => 
-          !allOutput.toLowerCase().includes(expected.toLowerCase())
+        const missingOutputs = expectedOutputs.filter(
+          (expected) =>
+            !allOutput.toLowerCase().includes(expected.toLowerCase())
         );
 
         if (missingOutputs.length > 0) {
@@ -72,13 +76,13 @@ export class CLITester {
             passed: false,
             message: `Missing expected outputs: ${missingOutputs.join(', ')}`,
             duration,
-            error: new Error(`Output: ${allOutput}`)
+            error: new Error(`Output: ${allOutput}`),
           });
         } else {
           resolve({
             passed: true,
             message: `Command executed successfully (exit code: ${code})`,
-            duration
+            duration,
           });
         }
       });
@@ -89,7 +93,7 @@ export class CLITester {
           passed: false,
           message: `Process error: ${error.message}`,
           duration: Date.now() - startTime,
-          error
+          error,
         });
       });
 
@@ -104,12 +108,16 @@ export class CLITester {
   }
 
   async testHelp(): Promise<TestResult> {
-    return this.runCommand('--help', [], [
-      'CLI utilities for managing Git repositories',
-      'search-branches',
-      'search-commits',
-      'init'
-    ]);
+    return this.runCommand(
+      '--help',
+      [],
+      [
+        'CLI utilities for managing Git repositories',
+        'search-branches',
+        'search-commits',
+        'init',
+      ]
+    );
   }
 
   async testVersion(): Promise<TestResult> {
@@ -122,7 +130,11 @@ export class CLITester {
 
   async testInitCancel(): Promise<TestResult> {
     // Test canceling the init process
-    return this.runCommand('init', ['\x03'], ['Setup complete', 'No commands selected']);
+    return this.runCommand(
+      'init',
+      ['\x03'],
+      ['Setup complete', 'No commands selected']
+    );
   }
 
   async simulateGitRepo(): Promise<void> {
@@ -148,7 +160,7 @@ case "$1" in
     ;;
 esac
 `;
-    
+
     writeFileSync('/tmp/mock-git', testGitConfig, { mode: 0o755 });
   }
 }

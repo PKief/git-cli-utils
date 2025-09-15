@@ -7,7 +7,10 @@ export const selectBranch = async (): Promise<GitBranch | null> => {
     console.log('No branches found!');
     return null;
   }
-  
-  const selectedBranch = await interactiveList<GitBranch>(branches, (branch: GitBranch) => `${branch.date} - ${branch.name}`);
+
+  const selectedBranch = await interactiveList<GitBranch>(
+    branches,
+    (branch: GitBranch) => `${branch.date} - ${branch.name}`
+  );
   return selectedBranch;
 };

@@ -1,4 +1,4 @@
-# git-cli-utilities
+# git-cli-utils
 
 A collection of command-line utilities for managing Git repositories, focusing on searching branches and commits, as well as initializing and managing Git aliases.
 
@@ -14,7 +14,7 @@ A collection of command-line utilities for managing Git repositories, focusing o
 You can use this package directly via `npx` without needing to install it globally:
 
 ```bash
-npx git-cli-utilities
+npx git-cli-utils
 ```
 
 ## Commands
@@ -24,7 +24,7 @@ npx git-cli-utilities
 To search for branches in your Git repository and automatically checkout the selected branch:
 
 ```bash
-npx git-cli-utilities search-branches
+npx git-cli-utils search-branches
 ```
 
 🌿 **New**: After selecting a branch, it will automatically be checked out and the process exits cleanly.  
@@ -35,7 +35,7 @@ npx git-cli-utilities search-branches
 To search for commits in your Git repository and copy the commit SHA to clipboard:
 
 ```bash
-npx git-cli-utilities search-commits
+npx git-cli-utils search-commits
 ```
 
 📋 **New**: After selecting a commit, its SHA will be copied to your clipboard and the process exits cleanly.  
@@ -46,7 +46,7 @@ npx git-cli-utilities search-commits
 To initialize the tool and set up Git aliases, use:
 
 ```bash
-npx git-cli-utilities init
+npx git-cli-utils init
 ```
 
 ## Usage

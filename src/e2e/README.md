@@ -1,6 +1,6 @@
-# E2E Testing for git-cli-utilities
+# E2E Testing for git-cli-utils
 
-This directory contains comprehensive end-to-end tests for the git-cli-utilities CLI tool.
+This directory contains comprehensive end-to-end tests for the git-cli-utils CLI tool.
 
 ## Test Architecture
 

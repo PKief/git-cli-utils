@@ -18,7 +18,7 @@ export const confirmOverride = async (alias: string) => {
 export const chooseFromList = async (options: string[]) => {
   const response = await p.select({
     message: 'Choose an option:',
-    options: options.map(option => ({ label: option, value: option })),
+    options: options.map((option) => ({ label: option, value: option })),
   });
   return response;
 };

@@ -3,7 +3,7 @@ import { GitIntegrationTests } from './git-integration-tests.js';
 import { PerformanceTests } from './performance-tests.js';
 
 /**
- * Complete E2E test suite runner for git-cli-utilities
+ * Complete E2E test suite runner for git-cli-utils
  */
 class E2ETestSuite {
   private basicTests: TestRunner;
@@ -17,8 +17,8 @@ class E2ETestSuite {
   }
 
   async runAllTests(): Promise<void> {
-    console.log('🧪 Running E2E Test Suite for git-cli-utilities\n');
-    
+    console.log('🧪 Running E2E Test Suite for git-cli-utils\n');
+
     let totalTests = 0;
     let passedTests = 0;
     let failedTests = 0;
@@ -26,7 +26,7 @@ class E2ETestSuite {
     // Basic CLI Tests
     console.log('📋 Basic CLI Tests');
     console.log('─'.repeat(50));
-    
+
     const basicResults = await this.basicTests.runBasicTests();
     for (const result of basicResults) {
       totalTests++;
@@ -45,12 +45,24 @@ class E2ETestSuite {
     // Git Integration Tests
     console.log('\n🔗 Git Integration Tests');
     console.log('─'.repeat(50));
-    
+
     const gitTestMethods = [
-      { name: 'Git Branch Integration', method: () => this.gitTests.testGitBranchIntegration() },
-      { name: 'Git Commit Integration', method: () => this.gitTests.testGitCommitIntegration() },
-      { name: 'Alias Creation', method: () => this.gitTests.testAliasCreation() },
-      { name: 'List Aliases with Real Data', method: () => this.gitTests.testListAliasesWithRealData() }
+      {
+        name: 'Git Branch Integration',
+        method: () => this.gitTests.testGitBranchIntegration(),
+      },
+      {
+        name: 'Git Commit Integration',
+        method: () => this.gitTests.testGitCommitIntegration(),
+      },
+      {
+        name: 'Alias Creation',
+        method: () => this.gitTests.testAliasCreation(),
+      },
+      {
+        name: 'List Aliases with Real Data',
+        method: () => this.gitTests.testListAliasesWithRealData(),
+      },
     ];
 
     for (const test of gitTestMethods) {
@@ -76,7 +88,7 @@ class E2ETestSuite {
     // Performance Tests
     console.log('\n⚡ Performance Tests');
     console.log('─'.repeat(50));
-    
+
     // Startup time tests
     const startupResults = await this.perfTests.testCommandStartupTime();
     for (const result of startupResults) {
@@ -92,9 +104,18 @@ class E2ETestSuite {
 
     // Response time tests
     const responseTests = [
-      { name: 'Help Response Time', method: () => this.perfTests.testHelpResponseTime() },
-      { name: 'Version Response Time', method: () => this.perfTests.testVersionResponseTime() },
-      { name: 'Large Repository Handling', method: () => this.perfTests.testLargeRepositoryHandling() }
+      {
+        name: 'Help Response Time',
+        method: () => this.perfTests.testHelpResponseTime(),
+      },
+      {
+        name: 'Version Response Time',
+        method: () => this.perfTests.testVersionResponseTime(),
+      },
+      {
+        name: 'Large Repository Handling',
+        method: () => this.perfTests.testLargeRepositoryHandling(),
+      },
     ];
 
     for (const test of responseTests) {
@@ -123,7 +144,9 @@ class E2ETestSuite {
     console.log(`Total Tests: ${totalTests}`);
     console.log(`✅ Passed: ${passedTests}`);
     console.log(`❌ Failed: ${failedTests}`);
-    console.log(`Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`);
+    console.log(
+      `Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`
+    );
 
     if (failedTests === 0) {
       console.log('\n🎉 All tests passed!');
@@ -138,7 +161,7 @@ class E2ETestSuite {
 // Run the tests if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const testSuite = new E2ETestSuite();
-  testSuite.runAllTests().catch(error => {
+  testSuite.runAllTests().catch((error) => {
     console.error('Test suite crashed:', error);
     process.exit(1);
   });

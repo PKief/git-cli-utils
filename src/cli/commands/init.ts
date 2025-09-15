@@ -16,14 +16,14 @@ const availableCommands: Command[] = [
     name: 'Search Branches',
     command: 'search-branches',
     defaultAlias: 'sb',
-    description: 'Interactive branch selection with fuzzy search'
+    description: 'Interactive branch selection with fuzzy search',
   },
   {
     name: 'Search Commits',
-    command: 'search-commits', 
+    command: 'search-commits',
     defaultAlias: 'sc',
-    description: 'Interactive commit selection with fuzzy search'
-  }
+    description: 'Interactive commit selection with fuzzy search',
+  },
 ];
 
 async function checkExistingAlias(alias: string): Promise<boolean> {
@@ -37,7 +37,9 @@ async function checkExistingAlias(alias: string): Promise<boolean> {
 
 async function setGitAlias(alias: string, command: string): Promise<boolean> {
   try {
-    await execAsync(`git config --global alias.${alias} "!npx git-utils ${command}"`);
+    await execAsync(
+      `git config --global alias.${alias} "!npx git-utils ${command}"`
+    );
     return true;
   } catch (error) {
     console.error(`Error setting alias '${alias}': ${error}`);
@@ -47,16 +49,16 @@ async function setGitAlias(alias: string, command: string): Promise<boolean> {
 
 async function init() {
   console.log('🚀 Welcome to Git CLI Utilities Setup!\n');
-  
+
   // Step 1: Multi-select commands
   const selectedCommands = await p.multiselect({
     message: 'Which commands would you like to create git aliases for?',
-    options: availableCommands.map(cmd => ({
+    options: availableCommands.map((cmd) => ({
       value: cmd.command,
       label: `${cmd.name} (${cmd.defaultAlias})`,
-      hint: cmd.description
+      hint: cmd.description,
     })),
-    required: false
+    required: false,
   });
 
   if (p.isCancel(selectedCommands) || selectedCommands.length === 0) {
@@ -68,18 +70,20 @@ async function init() {
 
   // Step 2: Configure alias for each selected command
   for (const commandName of selectedCommands) {
-    const command = availableCommands.find(cmd => cmd.command === commandName);
+    const command = availableCommands.find(
+      (cmd) => cmd.command === commandName
+    );
     if (!command) continue;
 
     // Check if default alias already exists
     const aliasExists = await checkExistingAlias(command.defaultAlias);
-    
+
     let aliasToUse = command.defaultAlias;
-    
+
     if (aliasExists) {
       const shouldOverride = await p.confirm({
         message: `Alias '${command.defaultAlias}' already exists. Override it?`,
-        initialValue: false
+        initialValue: false,
       });
 
       if (p.isCancel(shouldOverride)) {
@@ -94,9 +98,10 @@ async function init() {
           placeholder: command.defaultAlias,
           validate: (value) => {
             if (!value) return 'Alias cannot be empty';
-            if (!/^[a-zA-Z0-9-_]+$/.test(value)) return 'Alias can only contain letters, numbers, hyphens, and underscores';
+            if (!/^[a-zA-Z0-9-_]+$/.test(value))
+              return 'Alias can only contain letters, numbers, hyphens, and underscores';
             return undefined;
-          }
+          },
         });
 
         if (p.isCancel(newAlias)) {
@@ -114,9 +119,10 @@ async function init() {
         defaultValue: command.defaultAlias,
         validate: (value) => {
           if (!value) return 'Alias cannot be empty';
-          if (!/^[a-zA-Z0-9-_]+$/.test(value)) return 'Alias can only contain letters, numbers, hyphens, and underscores';
+          if (!/^[a-zA-Z0-9-_]+$/.test(value))
+            return 'Alias can only contain letters, numbers, hyphens, and underscores';
           return undefined;
-        }
+        },
       });
 
       if (p.isCancel(confirmAlias)) {
@@ -138,7 +144,9 @@ async function init() {
 
   console.log('\n🎉 Setup complete! You can now use:');
   console.log('  git <alias>  - Run the aliased command');
-  console.log('  git config --global --get-regexp alias  - View all your aliases\n');
+  console.log(
+    '  git config --global --get-regexp alias  - View all your aliases\n'
+  );
 }
 
 export default init;
