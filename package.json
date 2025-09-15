@@ -1,0 +1,38 @@
+{
+  "name": "git-cli-utilities",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A collection of CLI utilities for managing Git repositories.",
+  "main": "dist/index.js",
+  "bin": {
+    "git-utils": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "dev": "npm run build && npm start",
+    "test": "npm run build && node test-core.js",
+    "test:e2e": "npm run build && node ./dist/e2e/e2e-test-suite.js",
+    "test:ci": "npm run build && node ./dist/e2e/ci-test-suite.js",
+    "demo": "node demo.js",
+    "demo:new": "node demo-new-features.js"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "clipboardy": "^4.0.0",
+    "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/clipboardy": "^1.1.0",
+    "@types/node": "^24.4.0",
+    "typescript": "^5.9.2"
+  },
+  "keywords": [
+    "git",
+    "cli",
+    "utilities",
+    "command-line"
+  ],
+  "author": "Philipp Kief",
+  "license": "MIT"
+}
