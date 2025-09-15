@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Command } from 'commander';
 import init from './cli/commands/init.js';
 import { searchBranches } from './cli/commands/search-branches.js';

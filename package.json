@@ -9,12 +9,12 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node ./dist/index.js",
+    "start": "bun ./dist/index.js",
     "lint": "biome check",
     "format": "bunx @biomejs/biome format --write ./src",
-    "test": "npm run build && node test-core.js",
-    "test:e2e": "npm run build && node ./dist/e2e/e2e-test-suite.js",
-    "test:ci": "npm run build && node ./dist/e2e/ci-test-suite.js",
+    "test": "npm run build && npm run test:e2e && npm run test:ci",
+    "test:e2e": "npm run build && bun ./dist/e2e/e2e-test-suite.js",
+    "test:ci": "npm run build && bun ./dist/e2e/ci-test-suite.js",
     "prepare": "husky"
   },
   "sponsor": {
