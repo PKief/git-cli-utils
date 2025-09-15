@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.2.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.1.0...v1.2.0)
+
+### 🚀 Enhancements
+
+- Update meta ([db88d4b](https://github.com/PKief/git-cli-utils/commit/db88d4b))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.1.0
 
 
