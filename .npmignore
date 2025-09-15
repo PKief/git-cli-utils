@@ -3,6 +3,6 @@
 */**
 
 # Whitelist what you need
-!dist/*
+!dist/**/*
 !LICENSE.md
 !logo.png
