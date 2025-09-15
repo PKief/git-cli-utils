@@ -7,6 +7,10 @@
   "bin": {
     "git-utils": "./dist/index.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PKief/git-cli-utils.git"
+  },
   "scripts": {
     "build": "tsc",
     "start": "bun ./dist/index.js",
