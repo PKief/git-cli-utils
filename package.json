@@ -14,7 +14,8 @@
     "format": "bunx @biomejs/biome format --write ./src",
     "test": "npm run build && node test-core.js",
     "test:e2e": "npm run build && node ./dist/e2e/e2e-test-suite.js",
-    "test:ci": "npm run build && node ./dist/e2e/ci-test-suite.js"
+    "test:ci": "npm run build && node ./dist/e2e/ci-test-suite.js",
+    "prepare": "husky"
   },
   "sponsor": {
     "url": "https://github.com/sponsors/pkief"
