@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.4.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.3.0...v1.4.0)
+
+### 🚀 Enhancements
+
+- Update npm ignore ([3adf90a](https://github.com/PKief/git-cli-utils/commit/3adf90a))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.3.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.2.0...v1.3.0)
