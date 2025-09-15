@@ -1,4 +1,4 @@
-import { getGitBranches, GitBranch } from '../core/git/branches.js';
+import { GitBranch, getGitBranches } from '../core/git/branches.js';
 import { interactiveList } from '../core/ui/interactive-list.js';
 
 export const selectBranch = async (): Promise<GitBranch | null> => {

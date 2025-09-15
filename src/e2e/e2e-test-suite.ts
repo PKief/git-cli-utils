@@ -1,6 +1,6 @@
-import { TestRunner } from './test-runner.js';
 import { GitIntegrationTests } from './git-integration-tests.js';
 import { PerformanceTests } from './performance-tests.js';
+import { TestRunner } from './test-runner.js';
 
 /**
  * Complete E2E test suite runner for git-cli-utils

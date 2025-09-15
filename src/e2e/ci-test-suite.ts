@@ -1,4 +1,4 @@
-import { CLITester, TestResult } from './cli-tester.js';
+import { CLITester } from './cli-tester.js';
 import { GitIntegrationTests } from './git-integration-tests.js';
 import { PerformanceTests } from './performance-tests.js';
 

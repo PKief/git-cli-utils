@@ -1,6 +1,6 @@
-import { CLITester, TestResult } from './cli-tester.js';
-import { promisify } from 'util';
 import { exec } from 'child_process';
+import { promisify } from 'util';
+import { CLITester, TestResult } from './cli-tester.js';
 
 const execAsync = promisify(exec);
 
@@ -20,7 +20,7 @@ export class PerformanceTests {
 
     for (const command of commands) {
       const start = Date.now();
-      const result = await this.tester.runCommand(command, ['\x03'], []);
+      const _result = await this.tester.runCommand(command, ['\x03'], []);
       const duration = Date.now() - start;
 
       results.push({

@@ -31,6 +31,7 @@ export class CLITester {
 
       const child = spawn('node', [this.cliPath, ...command.split(' ')], {
         stdio: ['pipe', 'pipe', 'pipe'],
+        // biome-ignore lint/style/useNamingConvention: naming convention
         env: { ...process.env, FORCE_COLOR: '0' }, // Disable colors for testing
       });
 

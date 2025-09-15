@@ -21,7 +21,7 @@ export const getGitCommits = (): Promise<GitCommit[]> => {
 
     git.stdout.on('data', (chunk: Buffer) => {
       buffer += chunk.toString();
-      let lines = buffer.split('\n');
+      const lines = buffer.split('\n');
       buffer = lines.pop() || ''; // keep incomplete line
 
       lines.forEach((line) => {

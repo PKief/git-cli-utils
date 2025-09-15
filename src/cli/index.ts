@@ -1,7 +1,7 @@
 import { Command } from 'commander';
+import init from './commands/init.js';
 import { searchBranches } from './commands/search-branches.js';
 import { searchCommits } from './commands/search-commits.js';
-import init from './commands/init.js';
 
 const program = new Command();
 

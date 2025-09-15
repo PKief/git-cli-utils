@@ -1,14 +1,14 @@
-import { getGitCommits, GitCommit } from '../../core/git/commits.js';
-import { interactiveList } from '../../core/ui/interactive-list.js';
+import { GitCommit, getGitCommits } from '../../core/git/commits.js';
 import { GitOperations } from '../../core/git/operations.js';
 import ANSI from '../../core/ui/ansi.js';
+import { interactiveList } from '../../core/ui/interactive-list.js';
 
 export const searchCommits = async () => {
   try {
     const commits = await getGitCommits();
 
     if (commits.length === 0) {
-      console.log(`${ANSI.YELLOW}No commits found!${ANSI.RESET}`);
+      console.log(`${ANSI.yellow}No commits found!${ANSI.reset}`);
       process.exit(0);
     }
 
@@ -26,25 +26,25 @@ export const searchCommits = async () => {
       try {
         await GitOperations.copyToClipboard(selectedCommit.hash);
         console.log(
-          `${ANSI.GREEN}Commit SHA copied to clipboard!${ANSI.RESET}`
+          `${ANSI.green}Commit SHA copied to clipboard!${ANSI.reset}`
         );
         process.exit(0);
       } catch (error) {
         console.error(
-          `${ANSI.RED}Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}${ANSI.RESET}`
+          `${ANSI.red}Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}${ANSI.reset}`
         );
         console.log(
-          `${ANSI.YELLOW}Commit SHA: ${selectedCommit.hash}${ANSI.RESET}`
+          `${ANSI.yellow}Commit SHA: ${selectedCommit.hash}${ANSI.reset}`
         );
         process.exit(1);
       }
     } else {
-      console.log(`${ANSI.YELLOW}No commit selected.${ANSI.RESET}`);
+      console.log(`${ANSI.yellow}No commit selected.${ANSI.reset}`);
       process.exit(0);
     }
   } catch (error) {
     console.error(
-      `${ANSI.RED}Error fetching commits: ${error instanceof Error ? error.message : String(error)}${ANSI.RESET}`
+      `${ANSI.red}Error fetching commits: ${error instanceof Error ? error.message : String(error)}${ANSI.reset}`
     );
     process.exit(1);
   }

@@ -64,10 +64,10 @@ function highlightText(
 
     if (isSelected) {
       // For selected items, use magenta background for search matches to contrast with green selection background
-      return `${before}${ANSI.BG_MAGENTA}${ANSI.BRIGHT_WHITE}${ANSI.BOLD}${match}${ANSI.RESET}${ANSI.BG_GREEN}${ANSI.BRIGHT_WHITE}${ANSI.BOLD}${after}`;
+      return `${before}${ANSI.bgMagenta}${ANSI.brightWhite}${ANSI.bold}${match}${ANSI.reset}${ANSI.bgGreen}${ANSI.brightWhite}${ANSI.bold}${after}`;
     } else {
       // Use cyan background with bright white text for better visibility
-      return `${before}${ANSI.BG_CYAN}${ANSI.BRIGHT_WHITE}${ANSI.BOLD}${match}${ANSI.RESET}${after}`;
+      return `${before}${ANSI.bgCyan}${ANSI.brightWhite}${ANSI.bold}${match}${ANSI.reset}${after}`;
     }
   }
 
@@ -98,9 +98,9 @@ function highlightText(
     ) {
       // Highlight matching character with different colors for selected vs unselected items
       if (isSelected) {
-        result += `${ANSI.BG_MAGENTA}${ANSI.BRIGHT_WHITE}${ANSI.BOLD}${char}${ANSI.RESET}${ANSI.BG_GREEN}${ANSI.BRIGHT_WHITE}${ANSI.BOLD}`;
+        result += `${ANSI.bgMagenta}${ANSI.brightWhite}${ANSI.bold}${char}${ANSI.reset}${ANSI.bgGreen}${ANSI.brightWhite}${ANSI.bold}`;
       } else {
-        result += `${ANSI.BG_CYAN}${ANSI.BRIGHT_WHITE}${ANSI.BOLD}${char}${ANSI.RESET}`;
+        result += `${ANSI.bgCyan}${ANSI.brightWhite}${ANSI.bold}${char}${ANSI.reset}`;
       }
       searchIndex++;
     } else {
@@ -273,7 +273,7 @@ export function interactiveList<T>(
       if (!searchTerm) {
         filteredItems = items;
       } else {
-        const normalizedSearchTerm = searchTerm.toLowerCase();
+        const _normalizedSearchTerm = searchTerm.toLowerCase();
 
         // Create items with relevance scores
         const itemsWithScores = items
@@ -293,7 +293,7 @@ export function interactiveList<T>(
     const render = () => {
       console.clear();
       console.log(
-        `${ANSI.GREEN}Search:${ANSI.RESET} ${searchTerm || '(type to search)'}`
+        `${ANSI.green}Search:${ANSI.reset} ${searchTerm || '(type to search)'}`
       );
       console.log(
         'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit\n'
@@ -301,7 +301,7 @@ export function interactiveList<T>(
 
       if (filteredItems.length === 0) {
         console.log(
-          `${ANSI.YELLOW}No items found matching "${searchTerm}"${ANSI.RESET}`
+          `${ANSI.yellow}No items found matching "${searchTerm}"${ANSI.reset}`
         );
         return;
       }
@@ -332,7 +332,7 @@ export function interactiveList<T>(
           const selectedLine = `=> ${highlightedText}`;
           const paddedLine = selectedLine.padEnd(terminalWidth - 1);
           console.log(
-            `${ANSI.BG_GREEN}${ANSI.BRIGHT_WHITE}${ANSI.BOLD}${paddedLine}${ANSI.RESET}`
+            `${ANSI.bgGreen}${ANSI.brightWhite}${ANSI.bold}${paddedLine}${ANSI.reset}`
           );
         } else {
           // Non-selected items get search highlighting
@@ -346,14 +346,14 @@ export function interactiveList<T>(
       }
 
       if (startIndex > 0) {
-        console.log(`\n${ANSI.BOLD}↑ More items above${ANSI.RESET}`);
+        console.log(`\n${ANSI.bold}↑ More items above${ANSI.reset}`);
       }
       if (endIndex < filteredItems.length) {
-        console.log(`\n${ANSI.BOLD}↓ More items below${ANSI.RESET}`);
+        console.log(`\n${ANSI.bold}↓ More items below${ANSI.reset}`);
       }
     };
 
-    const handleKeypress = (chunk: Buffer, key: any) => {
+    const handleKeypress = (chunk: Buffer, key: readline.Key) => {
       if (key) {
         if (key.ctrl && key.name === 'c') {
           if (typeof process.stdin.setRawMode === 'function') {

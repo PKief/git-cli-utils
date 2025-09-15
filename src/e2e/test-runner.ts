@@ -1,5 +1,5 @@
-import { CLITester, TestResult } from './cli-tester.js';
 import ANSI from '../core/ui/ansi.js';
+import { CLITester, TestResult } from './cli-tester.js';
 
 interface TestSuite {
   name: string;
@@ -28,18 +28,18 @@ class TestRunner {
       this.results.push(result);
 
       if (result.passed) {
-        console.log(`${ANSI.GREEN}✓${ANSI.RESET} (${result.duration}ms)`);
+        console.log(`${ANSI.green}✓${ANSI.reset} (${result.duration}ms)`);
       } else {
-        console.log(`${ANSI.RED}✗${ANSI.RESET} (${result.duration}ms)`);
-        console.log(`    ${ANSI.RED}${result.message}${ANSI.RESET}`);
+        console.log(`${ANSI.red}✗${ANSI.reset} (${result.duration}ms)`);
+        console.log(`    ${ANSI.red}${result.message}${ANSI.reset}`);
         if (result.error) {
-          console.log(`    ${ANSI.YELLOW}${result.error.message}${ANSI.RESET}`);
+          console.log(`    ${ANSI.yellow}${result.error.message}${ANSI.reset}`);
         }
       }
     } catch (error) {
-      console.log(`${ANSI.RED}✗${ANSI.RESET} ERROR`);
+      console.log(`${ANSI.red}✗${ANSI.reset} ERROR`);
       console.log(
-        `    ${ANSI.RED}${error instanceof Error ? error.message : String(error)}${ANSI.RESET}`
+        `    ${ANSI.red}${error instanceof Error ? error.message : String(error)}${ANSI.reset}`
       );
       this.results.push({
         passed: false,
@@ -51,7 +51,7 @@ class TestRunner {
   }
 
   async runSuite(suite: TestSuite): Promise<void> {
-    console.log(`\n${ANSI.BOLD}${suite.name}${ANSI.RESET}`);
+    console.log(`\n${ANSI.bold}${suite.name}${ANSI.reset}`);
 
     for (const test of suite.tests) {
       await this.runTest(test.name, test.test);
@@ -95,12 +95,12 @@ class TestRunner {
     const passed = this.results.filter((r) => r.passed).length;
     const failed = total - passed;
 
-    console.log(`\n${ANSI.BOLD}Test Summary${ANSI.RESET}`);
+    console.log(`\n${ANSI.bold}Test Summary${ANSI.reset}`);
     console.log(`  Total: ${total}`);
-    console.log(`  ${ANSI.GREEN}Passed: ${passed}${ANSI.RESET}`);
+    console.log(`  ${ANSI.green}Passed: ${passed}${ANSI.reset}`);
 
     if (failed > 0) {
-      console.log(`  ${ANSI.RED}Failed: ${failed}${ANSI.RESET}`);
+      console.log(`  ${ANSI.red}Failed: ${failed}${ANSI.reset}`);
     }
 
     const avgDuration =
@@ -109,11 +109,11 @@ class TestRunner {
 
     if (failed === 0) {
       console.log(
-        `\n${ANSI.GREEN}${ANSI.BOLD}🎉 All tests passed!${ANSI.RESET}`
+        `\n${ANSI.green}${ANSI.bold}🎉 All tests passed!${ANSI.reset}`
       );
     } else {
       console.log(
-        `\n${ANSI.RED}${ANSI.BOLD}❌ ${failed} test(s) failed${ANSI.RESET}`
+        `\n${ANSI.red}${ANSI.bold}❌ ${failed} test(s) failed${ANSI.reset}`
       );
       process.exit(1);
     }
@@ -122,7 +122,7 @@ class TestRunner {
 
 async function main() {
   console.log(
-    `${ANSI.BOLD}${ANSI.GREEN}🧪 Git CLI Utilities - E2E Tests${ANSI.RESET}\n`
+    `${ANSI.bold}${ANSI.green}🧪 Git CLI Utilities - E2E Tests${ANSI.reset}\n`
   );
 
   const runner = new TestRunner();
@@ -199,7 +199,7 @@ async function main() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     console.error(
-      `${ANSI.RED}Test runner failed: ${error.message}${ANSI.RESET}`
+      `${ANSI.red}Test runner failed: ${error.message}${ANSI.reset}`
     );
     process.exit(1);
   });

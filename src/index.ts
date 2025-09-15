@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import init from './cli/commands/init.js';
 import { searchBranches } from './cli/commands/search-branches.js';
 import { searchCommits } from './cli/commands/search-commits.js';
-import init from './cli/commands/init.js';
 
 const program = new Command();
 
@@ -52,7 +52,7 @@ program
         console.log('📋 No git aliases found.');
         console.log('💡 Run "git-utils init" to create some!');
       }
-    } catch (error) {
+    } catch (_error) {
       console.log('📋 No git aliases found or error reading config.');
       console.log('💡 Run "git-utils init" to create some!');
     }

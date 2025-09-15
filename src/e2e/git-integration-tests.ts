@@ -1,6 +1,6 @@
-import { CLITester, TestResult } from './cli-tester.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { CLITester, TestResult } from './cli-tester.js';
 
 const execAsync = promisify(exec);
 
