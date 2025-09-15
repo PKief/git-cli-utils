@@ -3,7 +3,6 @@
 */**
 
 # Whitelist what you need
-!lib/*
-!bin/*
+!dist/*
 !LICENSE.md
 !logo.png
