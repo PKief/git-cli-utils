@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'bun:test';
+import { beforeAll, describe, expect, it } from 'bun:test';
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
 import path from 'path';
@@ -18,8 +18,8 @@ async function runCLICommand(
 
     const child = spawn('node', [cliPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
+      // biome-ignore lint/style/useNamingConvention: FORCE_COLOR is a standard environment variable
       env: { ...process.env, FORCE_COLOR: '0' }, // Disable colors for testing
-      // biome-ignore lint/style/useNamingConvention: Environment variable name
     });
 
     let stdout = '';
@@ -152,7 +152,7 @@ describe('CLI E2E Tests', () => {
       ); // Shorter timeout
 
       // Should exit gracefully or handle the cancellation
-      const output = (stdout + stderr).toLowerCase();
+      const _output = (stdout + stderr).toLowerCase();
       // This command may timeout or exit with various codes, so just check it doesn't crash
       expect(exitCode).toBeGreaterThanOrEqual(-1);
     });

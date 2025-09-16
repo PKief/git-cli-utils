@@ -1,11 +1,4 @@
-import {
-  describe,
-  it,
-  expect,
-  spyOn,
-  beforeEach,
-  afterEach,
-} from 'bun:test';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import clipboardy from 'clipboardy';
 import { GitOperations } from '../../src/core/git/operations';
 

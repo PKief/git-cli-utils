@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { spawn } from 'child_process';
 import { existsSync, mkdirSync, rmSync } from 'fs';
 import path from 'path';
@@ -16,8 +16,8 @@ async function runGitCommand(
     const child = spawn('git', args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd,
+      // biome-ignore lint/style/useNamingConvention: FORCE_COLOR is a standard environment variable
       env: { ...process.env, FORCE_COLOR: '0' },
-      // biome-ignore lint/style/useNamingConvention: Environment variable name
     });
 
     let stdout = '';
@@ -56,8 +56,8 @@ async function runCLICommand(
     const child = spawn('node', [cliPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd,
+      // biome-ignore lint/style/useNamingConvention: FORCE_COLOR is a standard environment variable
       env: { ...process.env, FORCE_COLOR: '0' },
-      // biome-ignore lint/style/useNamingConvention: Environment variable name
     });
 
     let stdout = '';

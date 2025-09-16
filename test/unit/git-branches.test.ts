@@ -1,9 +1,9 @@
-import { describe, it, expect, spyOn, beforeEach, afterEach } from 'bun:test';
-import { getGitBranches, type GitBranch } from '../../src/core/git/branches';
+import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import * as cp from 'child_process';
+import { getGitBranches } from '../../src/core/git/branches';
 
 // Mock child_process exec
-let mockExec: any;
+let mockExec: ReturnType<typeof spyOn>;
 
 beforeEach(() => {
   // Reset mocks before each test
@@ -21,12 +21,17 @@ describe('Git Branches', () => {
       // Arrange
       const mockStdout =
         'main|2 hours ago\nfeature/test|1 day ago\ndevelop|3 days ago\n';
-      mockExec.mockImplementation((command: string, callback: any) => {
-        expect(command).toBe(
-          'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list'
-        );
-        callback(null, mockStdout);
-      });
+      mockExec.mockImplementation(
+        (
+          command: string,
+          callback: (error: Error | null, stdout: string) => void
+        ) => {
+          expect(command).toBe(
+            'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list'
+          );
+          callback(null, mockStdout);
+        }
+      );
 
       // Act
       const branches = await getGitBranches();
@@ -41,9 +46,14 @@ describe('Git Branches', () => {
     it('should handle empty git branch output', async () => {
       // Arrange
       const mockStdout = '';
-      mockExec.mockImplementation((command: string, callback: any) => {
-        callback(null, mockStdout);
-      });
+      mockExec.mockImplementation(
+        (
+          command: string,
+          callback: (error: Error | null, stdout: string) => void
+        ) => {
+          callback(null, mockStdout);
+        }
+      );
 
       // Act
       const branches = await getGitBranches();
@@ -55,9 +65,14 @@ describe('Git Branches', () => {
     it('should filter out empty lines', async () => {
       // Arrange
       const mockStdout = 'main|2 hours ago\n\n\nfeature/test|1 day ago\n\n';
-      mockExec.mockImplementation((command: string, callback: any) => {
-        callback(null, mockStdout);
-      });
+      mockExec.mockImplementation(
+        (
+          command: string,
+          callback: (error: Error | null, stdout: string) => void
+        ) => {
+          callback(null, mockStdout);
+        }
+      );
 
       // Act
       const branches = await getGitBranches();
@@ -71,9 +86,14 @@ describe('Git Branches', () => {
     it('should reject on git command error', async () => {
       // Arrange
       const mockError = new Error('Not a git repository');
-      mockExec.mockImplementation((command: string, callback: any) => {
-        callback(mockError, '');
-      });
+      mockExec.mockImplementation(
+        (
+          command: string,
+          callback: (error: Error | null, stdout: string) => void
+        ) => {
+          callback(mockError, '');
+        }
+      );
 
       // Act & Assert
       await expect(getGitBranches()).rejects.toThrow(
@@ -85,9 +105,14 @@ describe('Git Branches', () => {
       // Arrange
       const mockStdout =
         'feature/user-123|1 hour ago\nbugfix/fix-login-issue|yesterday\n';
-      mockExec.mockImplementation((command: string, callback: any) => {
-        callback(null, mockStdout);
-      });
+      mockExec.mockImplementation(
+        (
+          command: string,
+          callback: (error: Error | null, stdout: string) => void
+        ) => {
+          callback(null, mockStdout);
+        }
+      );
 
       // Act
       const branches = await getGitBranches();
