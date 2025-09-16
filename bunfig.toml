@@ -1,6 +1,6 @@
 [test]
-# Load these modules before running tests.
-preload = ["./src/core/tests/mocks"]
+# Configure test runner settings
+timeout = 10000
 
 [install]
 saveTextLockfile = true

@@ -16,9 +16,15 @@
     "start": "bun ./dist/index.js",
     "lint": "biome check",
     "format": "bunx @biomejs/biome format --write ./src",
-    "test": "npm run build && npm run test:e2e && npm run test:ci",
-    "test:e2e": "npm run build && bun ./dist/e2e/e2e-test-suite.js",
-    "test:ci": "npm run build && bun ./dist/e2e/ci-test-suite.js",
+    "test": "npm run build && bun test",
+    "test:unit": "bun test test/unit/",
+    "test:e2e": "npm run build && bun test test/e2e/",
+    "test:integration": "npm run build && bun test test/integration/",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "test:legacy": "npm run build && npm run test:legacy:e2e && npm run test:legacy:ci",
+    "test:legacy:e2e": "npm run build && bun ./dist/e2e/e2e-test-suite.js",
+    "test:legacy:ci": "npm run build && bun ./dist/e2e/ci-test-suite.js",
     "prepare": "husky"
   },
   "sponsor": {
