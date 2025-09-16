@@ -4,17 +4,22 @@ import { existsSync } from 'fs';
 import path from 'path';
 
 // Helper function to run CLI commands
-async function runCLICommand(args: string[], inputs: string[] = [], timeout = 5000): Promise<{
+async function runCLICommand(
+  args: string[],
+  inputs: string[] = [],
+  timeout = 5000
+): Promise<{
   exitCode: number;
   stdout: string;
   stderr: string;
 }> {
   return new Promise((resolve) => {
     const cliPath = path.join(process.cwd(), 'dist', 'index.js');
-    
+
     const child = spawn('node', [cliPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env, FORCE_COLOR: '0' }, // Disable colors for testing
+      // biome-ignore lint/style/useNamingConvention: Environment variable name
     });
 
     let stdout = '';
@@ -28,7 +33,7 @@ async function runCLICommand(args: string[], inputs: string[] = [], timeout = 50
 
     child.stdout?.on('data', (data) => {
       stdout += data.toString();
-      
+
       // Auto-send inputs based on output
       if (inputIndex < inputs.length) {
         setTimeout(() => {
@@ -72,9 +77,11 @@ describe('CLI E2E Tests', () => {
   describe('Basic CLI functionality', () => {
     it('should show help when --help flag is provided', async () => {
       const { exitCode, stdout } = await runCLICommand(['--help']);
-      
+
       expect(exitCode).toBe(0);
-      expect(stdout.toLowerCase()).toContain('cli utilities for managing git repositories');
+      expect(stdout.toLowerCase()).toContain(
+        'cli utilities for managing git repositories'
+      );
       expect(stdout.toLowerCase()).toContain('search-branches');
       expect(stdout.toLowerCase()).toContain('search-commits');
       expect(stdout.toLowerCase()).toContain('init');
@@ -82,15 +89,17 @@ describe('CLI E2E Tests', () => {
 
     it('should show version when --version flag is provided', async () => {
       const { exitCode, stdout } = await runCLICommand(['--version']);
-      
+
       expect(exitCode).toBe(0);
       // Should show some version number format
       expect(stdout.trim()).toMatch(/\d+\.\d+\.\d+/);
     });
 
     it('should show error for invalid command', async () => {
-      const { exitCode, stdout, stderr } = await runCLICommand(['invalid-command']);
-      
+      const { exitCode, stdout, stderr } = await runCLICommand([
+        'invalid-command',
+      ]);
+
       expect(exitCode).toBe(1);
       const output = (stdout + stderr).toLowerCase();
       expect(output).toContain('unknown command');
@@ -104,22 +113,31 @@ describe('CLI E2E Tests', () => {
 
   describe('Command help functionality', () => {
     it('should show help for search-branches command', async () => {
-      const { exitCode, stdout } = await runCLICommand(['search-branches', '--help']);
-      
+      const { exitCode, stdout } = await runCLICommand([
+        'search-branches',
+        '--help',
+      ]);
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('interactive branch selection');
     });
 
     it('should show help for search-commits command', async () => {
-      const { exitCode, stdout } = await runCLICommand(['search-commits', '--help']);
-      
+      const { exitCode, stdout } = await runCLICommand([
+        'search-commits',
+        '--help',
+      ]);
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('interactive commit selection');
     });
 
     it('should show help for list-aliases command', async () => {
-      const { exitCode, stdout } = await runCLICommand(['list-aliases', '--help']);
-      
+      const { exitCode, stdout } = await runCLICommand([
+        'list-aliases',
+        '--help',
+      ]);
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('show current git aliases');
     });
@@ -127,8 +145,12 @@ describe('CLI E2E Tests', () => {
 
   describe('Interactive commands', () => {
     it('should handle cancellation of init command', async () => {
-      const { exitCode, stdout, stderr } = await runCLICommand(['init'], ['\x03'], 2000); // Shorter timeout
-      
+      const { exitCode, stdout, stderr } = await runCLICommand(
+        ['init'],
+        ['\x03'],
+        2000
+      ); // Shorter timeout
+
       // Should exit gracefully or handle the cancellation
       const output = (stdout + stderr).toLowerCase();
       // This command may timeout or exit with various codes, so just check it doesn't crash
@@ -137,7 +159,7 @@ describe('CLI E2E Tests', () => {
 
     it('should execute list-aliases command', async () => {
       const { exitCode, stdout } = await runCLICommand(['list-aliases']);
-      
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('git aliases');
     });
@@ -148,7 +170,7 @@ describe('CLI E2E Tests', () => {
       const startTime = Date.now();
       const { exitCode } = await runCLICommand(['--version']);
       const duration = Date.now() - startTime;
-      
+
       expect(exitCode).toBe(0);
       expect(duration).toBeLessThan(1000); // Less than 1 second
     }, 2000);
@@ -157,7 +179,7 @@ describe('CLI E2E Tests', () => {
       const startTime = Date.now();
       const { exitCode } = await runCLICommand(['--help']);
       const duration = Date.now() - startTime;
-      
+
       expect(exitCode).toBe(0);
       expect(duration).toBeLessThan(500); // Less than 500ms
     }, 1000);

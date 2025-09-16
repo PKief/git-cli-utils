@@ -19,7 +19,8 @@ describe('Git Branches', () => {
   describe('getGitBranches', () => {
     it('should parse git branches correctly', async () => {
       // Arrange
-      const mockStdout = 'main|2 hours ago\nfeature/test|1 day ago\ndevelop|3 days ago\n';
+      const mockStdout =
+        'main|2 hours ago\nfeature/test|1 day ago\ndevelop|3 days ago\n';
       mockExec.mockImplementation((command: string, callback: any) => {
         expect(command).toBe(
           'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list'
@@ -75,12 +76,15 @@ describe('Git Branches', () => {
       });
 
       // Act & Assert
-      await expect(getGitBranches()).rejects.toThrow('Error executing git command: Not a git repository');
+      await expect(getGitBranches()).rejects.toThrow(
+        'Error executing git command: Not a git repository'
+      );
     });
 
     it('should handle branches with special characters', async () => {
       // Arrange
-      const mockStdout = 'feature/user-123|1 hour ago\nbugfix/fix-login-issue|yesterday\n';
+      const mockStdout =
+        'feature/user-123|1 hour ago\nbugfix/fix-login-issue|yesterday\n';
       mockExec.mockImplementation((command: string, callback: any) => {
         callback(null, mockStdout);
       });
@@ -90,8 +94,14 @@ describe('Git Branches', () => {
 
       // Assert
       expect(branches).toHaveLength(2);
-      expect(branches[0]).toEqual({ name: 'feature/user-123', date: '1 hour ago' });
-      expect(branches[1]).toEqual({ name: 'bugfix/fix-login-issue', date: 'yesterday' });
+      expect(branches[0]).toEqual({
+        name: 'feature/user-123',
+        date: '1 hour ago',
+      });
+      expect(branches[1]).toEqual({
+        name: 'bugfix/fix-login-issue',
+        date: 'yesterday',
+      });
     });
   });
 });

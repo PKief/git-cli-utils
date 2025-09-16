@@ -1,15 +1,22 @@
-import { describe, it, expect, spyOn, beforeEach, afterEach, mock } from 'bun:test';
-import { GitOperations } from '../../src/core/git/operations';
+import {
+  describe,
+  it,
+  expect,
+  spyOn,
+  beforeEach,
+  afterEach,
+} from 'bun:test';
 import clipboardy from 'clipboardy';
+import { GitOperations } from '../../src/core/git/operations';
 
 // Mock dependencies
-let mockClipboardy: any;
-let consoleSpy: any;
+let mockClipboardy: unknown;
+let consoleSpy: unknown;
 
 beforeEach(() => {
   // Mock clipboardy
   mockClipboardy = spyOn(clipboardy, 'write').mockResolvedValue();
-  
+
   // Mock console.log to avoid output during tests
   consoleSpy = spyOn(console, 'log').mockImplementation(() => {});
 });
@@ -32,7 +39,9 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
-      expect(consoleSpy).toHaveBeenCalledWith(`📋 Copied to clipboard: ${text}`);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        `📋 Copied to clipboard: ${text}`
+      );
     });
 
     it('should throw error when clipboard operation fails', async () => {
