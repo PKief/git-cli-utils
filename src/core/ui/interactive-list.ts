@@ -130,9 +130,9 @@ function calculateRelevanceScore(text: string, searchTerm: string): number {
       score += 200;
     }
 
-    // Bonus for match at beginning
+    // Bonus for match at beginning (reduced to allow recency to compete)
     if (normalizedText.startsWith(normalizedSearch)) {
-      score += 300;
+      score += 150;
     } else if (
       normalizedText.indexOf(normalizedSearch) <
       normalizedText.length * 0.3
@@ -275,15 +275,27 @@ export function interactiveList<T>(
       } else {
         const _normalizedSearchTerm = searchTerm.toLowerCase();
 
-        // Create items with relevance scores
+        // Create items with relevance scores and add small recency bonus
         const itemsWithScores = items
-          .map((item) => {
+          .map((item, originalIndex) => {
             const itemText = getSearchableText(item);
-            const score = calculateRelevanceScore(itemText, searchTerm);
-            return { item, score };
+            const baseScore = calculateRelevanceScore(itemText, searchTerm);
+
+            // Add recency bonus based on original position (earlier = more recent)
+            // This helps newer items compete with older ones that have slightly higher text relevance
+            const recencyBonus = Math.max(
+              0,
+              (items.length - originalIndex) * 150
+            );
+            const finalScore = baseScore + recencyBonus;
+
+            return { item, score: finalScore, originalIndex };
           })
           .filter(({ score }) => score > 0) // Only include items with matches
-          .sort((a, b) => b.score - a.score); // Sort by score (highest first)
+          .sort((a, b) => {
+            // Primary sort: by final score (highest first)
+            return b.score - a.score;
+          });
 
         filteredItems = itemsWithScores.map(({ item }) => item);
       }
