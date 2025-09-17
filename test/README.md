@@ -20,11 +20,6 @@ test/
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
 
-### Legacy test commands (for backwards compatibility)
-- `npm run test:legacy` - Run the old custom test runner
-- `npm run test:legacy:e2e` - Run legacy E2E tests
-- `npm run test:legacy:ci` - Run legacy CI tests
-
 ## Test Categories
 
 ### Unit Tests (`test/unit/`)

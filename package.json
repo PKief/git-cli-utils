@@ -22,9 +22,6 @@
     "test:integration": "npm run build && bun test test/integration/",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
-    "test:legacy": "npm run build && npm run test:legacy:e2e && npm run test:legacy:ci",
-    "test:legacy:e2e": "npm run build && bun ./dist/e2e/e2e-test-suite.js",
-    "test:legacy:ci": "npm run build && bun ./dist/e2e/ci-test-suite.js",
     "prepare": "husky"
   },
   "sponsor": {
