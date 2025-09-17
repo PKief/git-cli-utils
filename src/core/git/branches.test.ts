@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import * as cp from 'child_process';
-import { getGitBranches, filterBranches, type GitBranch } from './branches';
+import { filterBranches, type GitBranch, getGitBranches } from './branches';
 
 // Mock child_process exec
 let mockExec: ReturnType<typeof spyOn>;

@@ -8,26 +8,26 @@ describe('Git Commits', () => {
         hash: 'abc123',
         date: '2023-09-15',
         branch: 'main',
-        subject: 'Initial commit with authentication'
+        subject: 'Initial commit with authentication',
       },
       {
         hash: 'def456',
         date: '2023-09-14',
         branch: 'feature/user-profile',
-        subject: 'Add user profile functionality'
+        subject: 'Add user profile functionality',
       },
       {
         hash: 'ghi789',
         date: '2023-09-13',
         branch: 'bugfix/login-issue',
-        subject: 'Fix login validation bug'
+        subject: 'Fix login validation bug',
       },
       {
         hash: 'jkl012',
         date: '2023-09-12',
         branch: 'develop',
-        subject: 'Update documentation'
-      }
+        subject: 'Update documentation',
+      },
     ];
 
     it('should return all commits when search term is empty', () => {
@@ -130,7 +130,7 @@ describe('Git Commits', () => {
 
     it('should return no matches for null search term', () => {
       // Act
-      const result = filterCommits(mockCommits, null as any);
+      const result = filterCommits(mockCommits, null as unknown as string);
 
       // Assert
       expect(result).toEqual(mockCommits);

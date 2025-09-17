@@ -104,11 +104,6 @@ describe('CLI E2E Tests', () => {
       const output = (stdout + stderr).toLowerCase();
       expect(output).toContain('unknown command');
     });
-
-    it.skip('should show help when no arguments provided', async () => {
-      // This test is skipped as the CLI behavior varies when no args provided
-      // Some CLIs show help, others show error - both are valid behaviors
-    });
   });
 
   describe('Command help functionality', () => {
