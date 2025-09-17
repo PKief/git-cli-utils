@@ -4,7 +4,10 @@ import { existsSync } from 'fs';
 import path from 'path';
 
 // Helper function to run CLI commands using Bun directly on TypeScript
-async function runCLICommand(args: string[], timeout = 5000): Promise<{
+async function runCLICommand(
+  args: string[],
+  timeout = 5000
+): Promise<{
   exitCode: number;
   stdout: string;
   stderr: string;
@@ -12,9 +15,10 @@ async function runCLICommand(args: string[], timeout = 5000): Promise<{
   return new Promise((resolve) => {
     // Use bun to run the TypeScript file directly
     const indexPath = path.join(process.cwd(), 'src', 'index.ts');
-    
+
     const child = spawn('bun', ['run', indexPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
+      // biome-ignore lint/style/useNamingConvention: FORCE_COLOR is a standard environment variable
       env: { ...process.env, FORCE_COLOR: '0' }, // Disable colors for testing
     });
 
@@ -56,14 +60,14 @@ describe('CLI E2E Tests', () => {
   describe('Basic CLI functionality', () => {
     it('should show help when --help flag is provided', async () => {
       const { exitCode, stdout } = await runCLICommand(['--help']);
-      
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('usage');
     });
 
     it('should show version when --version flag is provided', async () => {
       const { exitCode, stdout } = await runCLICommand(['--version']);
-      
+
       expect(exitCode).toBe(0);
       // Should show some version number format
       expect(stdout.trim()).toMatch(/\d+\.\d+\.\d+/);
@@ -71,7 +75,7 @@ describe('CLI E2E Tests', () => {
 
     it('should show error for invalid command', async () => {
       const { exitCode } = await runCLICommand(['invalid-command']);
-      
+
       // Should exit with non-zero code for invalid command
       expect(exitCode).not.toBe(0);
     });
@@ -79,22 +83,31 @@ describe('CLI E2E Tests', () => {
 
   describe('Command help functionality', () => {
     it('should show help for search-branches command', async () => {
-      const { exitCode, stdout } = await runCLICommand(['search-branches', '--help']);
-      
+      const { exitCode, stdout } = await runCLICommand([
+        'search-branches',
+        '--help',
+      ]);
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('branch');
     });
 
     it('should show help for search-commits command', async () => {
-      const { exitCode, stdout } = await runCLICommand(['search-commits', '--help']);
-      
+      const { exitCode, stdout } = await runCLICommand([
+        'search-commits',
+        '--help',
+      ]);
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('commit');
     });
 
     it('should show help for list-aliases command', async () => {
-      const { exitCode, stdout } = await runCLICommand(['list-aliases', '--help']);
-      
+      const { exitCode, stdout } = await runCLICommand([
+        'list-aliases',
+        '--help',
+      ]);
+
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('alias');
     });
@@ -105,7 +118,7 @@ describe('CLI E2E Tests', () => {
       const startTime = Date.now();
       const { exitCode } = await runCLICommand(['--version']);
       const duration = Date.now() - startTime;
-      
+
       expect(exitCode).toBe(0);
       expect(duration).toBeLessThan(2000); // Less than 2 seconds
     }, 3000);
@@ -114,7 +127,7 @@ describe('CLI E2E Tests', () => {
       const startTime = Date.now();
       const { exitCode } = await runCLICommand(['--help']);
       const duration = Date.now() - startTime;
-      
+
       expect(exitCode).toBe(0);
       expect(duration).toBeLessThan(1000); // Less than 1 second
     }, 2000);

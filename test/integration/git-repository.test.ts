@@ -16,6 +16,7 @@ async function runGitCommand(
     const child = spawn('git', args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd,
+      // biome-ignore lint/style/useNamingConvention: FORCE_COLOR is a standard environment variable
       env: { ...process.env, FORCE_COLOR: '0' },
     });
 
@@ -55,6 +56,7 @@ async function runCLICommand(
     const child = spawn('bun', ['run', indexPath, ...args], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd,
+      // biome-ignore lint/style/useNamingConvention: FORCE_COLOR is a standard environment variable
       env: { ...process.env, FORCE_COLOR: '0' },
     });
 
@@ -90,15 +92,21 @@ describe('Git Integration Tests', () => {
 
     // Create a test git repository
     mkdirSync(testRepoPath, { recursive: true });
-    
+
     // Initialize git repo
     await runGitCommand(['init'], testRepoPath);
     await runGitCommand(['config', 'user.name', 'Test User'], testRepoPath);
-    await runGitCommand(['config', 'user.email', 'test@example.com'], testRepoPath);
-    
+    await runGitCommand(
+      ['config', 'user.email', 'test@example.com'],
+      testRepoPath
+    );
+
     // Create initial commit
-    await runGitCommand(['commit', '--allow-empty', '-m', 'Initial commit'], testRepoPath);
-    
+    await runGitCommand(
+      ['commit', '--allow-empty', '-m', 'Initial commit'],
+      testRepoPath
+    );
+
     // Create some git aliases for testing
     await runGitCommand(['config', 'alias.st', 'status'], testRepoPath);
     await runGitCommand(['config', 'alias.co', 'checkout'], testRepoPath);
@@ -113,8 +121,11 @@ describe('Git Integration Tests', () => {
 
   describe('list-aliases command', () => {
     it('should handle list-aliases command in git repository', async () => {
-      const { exitCode, stdout } = await runCLICommand(['list-aliases'], testRepoPath);
-      
+      const { exitCode, stdout } = await runCLICommand(
+        ['list-aliases'],
+        testRepoPath
+      );
+
       // Command should complete successfully
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('git aliases');
@@ -124,14 +135,23 @@ describe('Git Integration Tests', () => {
       // Create a new repo without aliases
       const cleanRepoPath = path.join(process.cwd(), 'clean-test-repo');
       mkdirSync(cleanRepoPath, { recursive: true });
-      
+
       try {
         await runGitCommand(['init'], cleanRepoPath);
-        await runGitCommand(['config', 'user.name', 'Test User'], cleanRepoPath);
-        await runGitCommand(['config', 'user.email', 'test@example.com'], cleanRepoPath);
-        
-        const { exitCode, stdout } = await runCLICommand(['list-aliases'], cleanRepoPath);
-        
+        await runGitCommand(
+          ['config', 'user.name', 'Test User'],
+          cleanRepoPath
+        );
+        await runGitCommand(
+          ['config', 'user.email', 'test@example.com'],
+          cleanRepoPath
+        );
+
+        const { exitCode, stdout } = await runCLICommand(
+          ['list-aliases'],
+          cleanRepoPath
+        );
+
         expect(exitCode).toBe(0);
         expect(stdout.toLowerCase()).toContain('git aliases');
       } finally {
@@ -144,8 +164,11 @@ describe('Git Integration Tests', () => {
 
   describe('CLI behavior in git repository', () => {
     it('should work when run from inside a git repository', async () => {
-      const { exitCode, stdout } = await runCLICommand(['--version'], testRepoPath);
-      
+      const { exitCode, stdout } = await runCLICommand(
+        ['--version'],
+        testRepoPath
+      );
+
       expect(exitCode).toBe(0);
       expect(stdout.trim()).toMatch(/\d+\.\d+\.\d+/);
     });
@@ -153,10 +176,13 @@ describe('Git Integration Tests', () => {
     it('should work when run from outside a git repository', async () => {
       const tempDir = path.join(process.cwd(), 'temp-no-git');
       mkdirSync(tempDir, { recursive: true });
-      
+
       try {
-        const { exitCode, stdout } = await runCLICommand(['--version'], tempDir);
-        
+        const { exitCode, stdout } = await runCLICommand(
+          ['--version'],
+          tempDir
+        );
+
         expect(exitCode).toBe(0);
         expect(stdout.trim()).toMatch(/\d+\.\d+\.\d+/);
       } finally {
@@ -172,7 +198,7 @@ describe('Git Integration Tests', () => {
       const startTime = Date.now();
       const { exitCode } = await runCLICommand(['list-aliases'], testRepoPath);
       const duration = Date.now() - startTime;
-      
+
       expect(exitCode).toBe(0);
       expect(duration).toBeLessThan(2000); // Should complete within 2 seconds
     });

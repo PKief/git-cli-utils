@@ -54,7 +54,7 @@ describe('ANSI', () => {
 
   it('should be an object with string values', () => {
     // Assert that all values are strings
-    Object.values(ANSI).forEach(value => {
+    Object.values(ANSI).forEach((value) => {
       expect(typeof value).toBe('string');
       expect(value).toMatch(/^\x1b\[\d+m$/);
     });

@@ -92,7 +92,9 @@ describe('Search', () => {
       mockGetGitBranches.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(searchBranches('test')).rejects.toThrow('Not a git repository');
+      await expect(searchBranches('test')).rejects.toThrow(
+        'Not a git repository'
+      );
     });
   });
 
@@ -102,19 +104,19 @@ describe('Search', () => {
         hash: 'abc123',
         date: '2023-09-15',
         branch: 'main',
-        subject: 'Initial commit with authentication'
+        subject: 'Initial commit with authentication',
       },
       {
         hash: 'def456',
         date: '2023-09-14',
         branch: 'feature/user-profile',
-        subject: 'Add user profile functionality'
+        subject: 'Add user profile functionality',
       },
       {
         hash: 'ghi789',
         date: '2023-09-13',
         branch: 'bugfix/login-issue',
-        subject: 'Fix login validation bug'
+        subject: 'Fix login validation bug',
       },
     ];
 
@@ -182,7 +184,9 @@ describe('Search', () => {
       mockGetGitCommits.mockRejectedValue(error);
 
       // Act & Assert
-      await expect(searchCommits('test')).rejects.toThrow('Not a git repository');
+      await expect(searchCommits('test')).rejects.toThrow(
+        'Not a git repository'
+      );
     });
 
     it('should handle word boundaries correctly', async () => {
