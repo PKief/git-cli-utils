@@ -26,12 +26,34 @@ test/
 
 ## Test Commands
 
-- `npm test` - Run all tests (builds first)
+- `npm test` - **Run all tests directly from TypeScript** (no build required)
 - `npm run test:unit` - Run only unit tests (co-located with source)
-- `npm run test:e2e` - Run only E2E tests
+- `npm run test:e2e` - Run only E2E tests (simplified CLI testing)
 - `npm run test:integration` - Run only integration tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
+
+### Legacy test commands (for backwards compatibility)
+- `npm run test:legacy` - Run the old custom test runner
+- `npm run test:legacy:e2e` - Run legacy E2E tests
+- `npm run test:legacy:ci` - Run legacy CI tests
+
+## Key Improvements
+
+### **Bun runs TypeScript directly**
+- No build step required for tests
+- Faster test execution
+- Real-time TypeScript testing
+
+### **Optimized Configuration**
+- `bunfig.toml` excludes `dist` folder from test discovery
+- `tsconfig.json` excludes test files from compilation
+- No duplicate test execution from dist folder
+
+### **Simplified Test Implementation**
+- E2E tests use `bun run src/index.ts` directly
+- Integration tests create real git repositories for testing
+- Performance-focused with reasonable timeouts
 
 ## Test Categories
 

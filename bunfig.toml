@@ -1,6 +1,8 @@
 [test]
 # Configure test runner settings
 timeout = 10000
+# Exclude dist folder from test discovery
+exclude = ["dist", "node_modules"]
 
 [install]
 saveTextLockfile = true
