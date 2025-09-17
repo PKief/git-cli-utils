@@ -1,20 +1,33 @@
 # Test Setup Documentation
 
-This project uses Bun's native testing framework for all tests. The test suite is organized into three categories:
+This project uses Bun's native testing framework for all tests. The test suite is organized with co-located unit tests and dedicated directories for E2E and integration tests.
 
 ## Test Structure
 
 ```
+src/                    # Source code with co-located unit tests
+├── core/
+│   ├── git/
+│   │   ├── branches.ts
+│   │   ├── branches.test.ts      # Unit tests for branches
+│   │   ├── operations.ts
+│   │   ├── operations.test.ts    # Unit tests for operations
+│   │   ├── commits.ts
+│   │   └── commits.test.ts       # Unit tests for commits
+│   └── ui/
+│       ├── ansi.ts
+│       ├── ansi.test.ts          # Unit tests for ANSI codes
+│       ├── search.ts
+│       └── search.test.ts        # Unit tests for search
 test/
-├── unit/           # Unit tests for individual modules
-├── e2e/           # End-to-end tests for CLI functionality
-└── integration/   # Integration tests with real git repositories
+├── e2e/               # End-to-end tests for CLI functionality
+└── integration/       # Integration tests with real git repositories
 ```
 
 ## Test Commands
 
 - `npm test` - Run all tests (builds first)
-- `npm run test:unit` - Run only unit tests
+- `npm run test:unit` - Run only unit tests (co-located with source)
 - `npm run test:e2e` - Run only E2E tests
 - `npm run test:integration` - Run only integration tests
 - `npm run test:watch` - Run tests in watch mode
@@ -22,10 +35,11 @@ test/
 
 ## Test Categories
 
-### Unit Tests (`test/unit/`)
+### Unit Tests (co-located with source files)
 - Test individual functions and modules in isolation
 - Fast execution with mocked dependencies
 - Focus on business logic and edge cases
+- Located next to their source files for easy maintenance
 
 ### E2E Tests (`test/e2e/`)
 - Test the complete CLI application

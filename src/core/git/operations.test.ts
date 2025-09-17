@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import clipboardy from 'clipboardy';
-import { GitOperations } from '../../src/core/git/operations';
+import { GitOperations } from './operations';
 
 // Mock dependencies
-let mockClipboardy: unknown;
-let consoleSpy: unknown;
+let mockClipboardy: ReturnType<typeof spyOn>;
+let consoleSpy: ReturnType<typeof spyOn>;
 
 beforeEach(() => {
   // Mock clipboardy
@@ -57,6 +57,34 @@ describe('GitOperations', () => {
       // Act & Assert
       await expect(GitOperations.copyToClipboard(text)).rejects.toThrow(
         'Failed to copy to clipboard: String error'
+      );
+    });
+
+    it('should handle empty text', async () => {
+      // Arrange
+      const text = '';
+      mockClipboardy.mockResolvedValue(undefined);
+
+      // Act
+      await GitOperations.copyToClipboard(text);
+
+      // Assert
+      expect(mockClipboardy).toHaveBeenCalledWith('');
+      expect(consoleSpy).toHaveBeenCalledWith('📋 Copied to clipboard: ');
+    });
+
+    it('should handle special characters', async () => {
+      // Arrange
+      const text = 'feature/user-123 🚀 ñáéíóú';
+      mockClipboardy.mockResolvedValue(undefined);
+
+      // Act
+      await GitOperations.copyToClipboard(text);
+
+      // Assert
+      expect(mockClipboardy).toHaveBeenCalledWith(text);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        `📋 Copied to clipboard: ${text}`
       );
     });
   });
