@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 
 export interface GitBranch {
   name: string;
-  date: string;
+  date: string | undefined;
 }
 
 export function getGitBranches(): Promise<GitBranch[]> {
