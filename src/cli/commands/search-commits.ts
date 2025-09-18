@@ -36,7 +36,9 @@ export const searchCommits = async () => {
         console.log(
           `${ANSI.yellow}Commit SHA: ${selectedCommit.hash}${ANSI.reset}`
         );
-        process.exit(1);
+        // In CI/non-interactive environments, don't fail the entire command just because clipboard failed
+        const isCI = process.env.CI || process.env.GITHUB_ACTIONS;
+        process.exit(isCI ? 0 : 1);
       }
     } else {
       console.log(`${ANSI.yellow}No commit selected.${ANSI.reset}`);

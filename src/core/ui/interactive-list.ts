@@ -247,8 +247,13 @@ export function interactiveList<T>(
     const getSearchableText = searchFunction || itemRenderer;
 
     // Check if we're in an interactive environment
+    // More robust detection for CI environments
     const isInteractive =
-      process.stdin.isTTY && typeof process.stdin.setRawMode === 'function';
+      process.stdin.isTTY &&
+      typeof process.stdin.setRawMode === 'function' &&
+      !process.env.CI && // Not in CI environment
+      !process.env.GITHUB_ACTIONS && // Not in GitHub Actions
+      process.env.TERM !== 'dumb'; // Not a dumb terminal
 
     if (!isInteractive) {
       // In non-interactive mode (like tests), just return the first item
