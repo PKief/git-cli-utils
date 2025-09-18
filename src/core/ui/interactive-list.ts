@@ -436,7 +436,8 @@ export function interactiveList<T>(
         if (
           key.sequence &&
           key.sequence.length === 1 &&
-          /[a-zA-Z0-9\-_\/\s]/.test(key.sequence)
+          key.sequence >= ' ' &&
+          key.sequence <= '~' // Allow all printable ASCII characters
         ) {
           searchTerm += key.sequence;
           filterItems();
