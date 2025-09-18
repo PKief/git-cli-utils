@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v1.5.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.4.0...v1.5.0)
+
+### 🚀 Enhancements
+
+- Improve search ranking to prioritize recent branches with similar relevance ([#3](https://github.com/PKief/git-cli-utils/pull/3))
+
+### 🩹 Fixes
+
+- Tests with interactive mode ([9cc9d31](https://github.com/PKief/git-cli-utils/commit/9cc9d31))
+
+### 🏡 Chore
+
+- Migrate to Bun native testing framework with TypeScript direct execution and optimized test configuration ([#4](https://github.com/PKief/git-cli-utils/pull/4))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+- Copilot ([@MicrosoftCopilot](https://github.com/MicrosoftCopilot))
+
 ## v1.4.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.3.0...v1.4.0)
