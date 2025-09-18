@@ -23,11 +23,11 @@ export async function isGitUtilsAvailable(): Promise<boolean> {
  */
 export async function getOptimalCommand(subCommand: string): Promise<string> {
   const isAvailable = await isGitUtilsAvailable();
-  
+
   if (isAvailable) {
     return `!git-utils ${subCommand}`;
   }
-  
+
   // Fallback to npx
   return `!npx git-cli-utils ${subCommand}`;
 }
@@ -37,10 +37,10 @@ export async function getOptimalCommand(subCommand: string): Promise<string> {
  */
 export async function getPerformanceStatus(): Promise<string> {
   const isAvailable = await isGitUtilsAvailable();
-  
+
   if (isAvailable) {
     return 'Using global git-utils binary (fast)';
   }
-  
+
   return 'Using npx (slower startup due to package resolution)';
 }
