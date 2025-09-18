@@ -32,6 +32,91 @@ function calculateRelevanceScore(text: string, searchTerm: string): number {
     return score;
   }
 
+  // 2. Word-based matching - only score if ALL words are found
+  const searchWords = normalizedSearch
+    .split(/\s+/)
+    .filter((word) => word.length > 0);
+  const textWords = normalizedText.split(/\s+/);
+
+  let matchedWords = 0;
+  let totalWordScore = 0;
+
+  for (const searchWord of searchWords) {
+    let bestWordScore = 0;
+    let wordMatched = false;
+
+    for (let i = 0; i < textWords.length; i++) {
+      const textWord = textWords[i];
+
+      if (textWord === searchWord) {
+        // Exact word match
+        bestWordScore = Math.max(
+          bestWordScore,
+          100 + (textWords.length - i) * 2
+        );
+        wordMatched = true;
+      } else if (textWord.startsWith(searchWord)) {
+        // Word starts with search term
+        bestWordScore = Math.max(
+          bestWordScore,
+          80 + (textWords.length - i) * 2
+        );
+        wordMatched = true;
+      } else if (textWord.includes(searchWord)) {
+        // Word contains search term
+        bestWordScore = Math.max(
+          bestWordScore,
+          60 + (textWords.length - i) * 2
+        );
+        wordMatched = true;
+      }
+    }
+
+    if (wordMatched) {
+      matchedWords++;
+      totalWordScore += bestWordScore;
+    }
+  }
+
+  // Only add word score if ALL search words were found
+  if (matchedWords === searchWords.length) {
+    score += totalWordScore;
+    // Bonus for matching all words
+    if (searchWords.length > 1) {
+      score += 200;
+    }
+  }
+
+  // 3. Fuzzy character matching (fallback)
+  if (score === 0) {
+    const textNoSeparators = normalizedText.replace(/[-_\/\.\s]/g, '');
+    const searchNoSeparators = normalizedSearch.replace(/[-_\/\.\s]/g, '');
+
+    if (textNoSeparators.includes(searchNoSeparators)) {
+      score += 50;
+    } else {
+      // Sequential character matching - require matching ALL characters
+      let searchIndex = 0;
+      for (
+        let i = 0;
+        i < textNoSeparators.length && searchIndex < searchNoSeparators.length;
+        i++
+      ) {
+        if (textNoSeparators[i] === searchNoSeparators[searchIndex]) {
+          searchIndex++;
+        }
+      }
+
+      // Only count if we matched ALL characters AND the search term is reasonable length
+      if (
+        searchIndex === searchNoSeparators.length &&
+        searchNoSeparators.length >= 2
+      ) {
+        score = searchIndex; // Points equal to number of characters matched
+      }
+    }
+  }
+
   return score;
 }
 
@@ -162,27 +247,59 @@ describe('Interactive List Search Ranking', () => {
       expect(results[2].name).toBe('feature/test');
     });
 
-    it('should filter out non-matching branches', () => {
-      // Arrange: Mix of matching and non-matching branches
+    it('should return empty array when no items match the search term', () => {
+      // Arrange: Branches that don't match the search term
       const branches = [
-        { name: 'feature/cypress-tests', date: '1 day ago' },
-        { name: 'bugfix/api-fix', date: '2 days ago' },
-        { name: 'cypress-integration', date: '1 week ago' },
+        { name: 'master', date: '1 minute ago' },
+        { name: 'develop', date: '1 day ago' },
+        { name: 'feature/api', date: '1 week ago' },
       ];
 
       const searchFunction = (branch: (typeof branches)[0]) => branch.name;
 
-      // Act: Search for "cypress"
+      // Act: Search for something that doesn't match any branch
+      const results = simulateSearchRanking(branches, searchFunction, 'wwwwww');
+
+      // Assert: Should return empty array
+      expect(results).toHaveLength(0);
+    });
+
+    it('should return empty array for random gibberish search terms', () => {
+      // Arrange: Real branch names
+      const branches = [
+        { name: 'chore/cypress-update-migration', date: '6 days ago' },
+        { name: 'feature/api-integration', date: '1 week ago' },
+        { name: 'bugfix/validation-fix', date: '2 weeks ago' },
+      ];
+
+      const searchFunction = (branch: (typeof branches)[0]) => branch.name;
+
+      // Act: Search for gibberish that doesn't match
       const results = simulateSearchRanking(
         branches,
         searchFunction,
-        'cypress'
+        'xyzabc123'
       );
 
-      // Assert: Only cypress-related branches should be returned
-      expect(results).toHaveLength(2);
-      expect(results[0].name).toBe('feature/cypress-tests'); // More recent
-      expect(results[1].name).toBe('cypress-integration'); // Older but starts with cypress
+      // Assert: Should return empty array
+      expect(results).toHaveLength(0);
+    });
+
+    it('should properly filter real branch names with test search', () => {
+      // Arrange: Real branch names that match your scenario
+      const branches = [
+        { name: 'copilot/fix-2', date: '22 hours ago' },
+        { name: 'main', date: '22 hours ago' },
+        { name: 'copilot/fix-1', date: '24 hours ago' },
+      ];
+
+      const searchFunction = (branch: (typeof branches)[0]) => branch.name;
+
+      // Act: Search for "test" - none of these branches should match
+      const results = simulateSearchRanking(branches, searchFunction, 'test');
+
+      // Assert: Should return empty array since none contain "test"
+      expect(results).toHaveLength(0);
     });
   });
 });

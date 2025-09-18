@@ -207,7 +207,7 @@ function calculateRelevanceScore(text: string, searchTerm: string): number {
     if (textNoSeparators.includes(searchNoSeparators)) {
       score += 50;
     } else {
-      // Sequential character matching
+      // Sequential character matching - require matching ALL characters
       let searchIndex = 0;
       for (
         let i = 0;
@@ -216,13 +216,15 @@ function calculateRelevanceScore(text: string, searchTerm: string): number {
       ) {
         if (textNoSeparators[i] === searchNoSeparators[searchIndex]) {
           searchIndex++;
-          score += 1;
         }
       }
 
-      // Only count if we matched all characters
-      if (searchIndex < searchNoSeparators.length) {
-        score = 0;
+      // Only count if we matched ALL characters AND the search term is reasonable length
+      if (
+        searchIndex === searchNoSeparators.length &&
+        searchNoSeparators.length >= 2
+      ) {
+        score = searchIndex; // Points equal to number of characters matched
       }
     }
   }
@@ -289,9 +291,9 @@ export function interactiveList<T>(
             );
             const finalScore = baseScore + recencyBonus;
 
-            return { item, score: finalScore, originalIndex };
+            return { item, score: finalScore, originalIndex, baseScore };
           })
-          .filter(({ score }) => score > 0) // Only include items with matches
+          .filter(({ baseScore }) => baseScore > 0) // Only include items that actually match the search text
           .sort((a, b) => {
             // Primary sort: by final score (highest first)
             return b.score - a.score;
@@ -299,7 +301,8 @@ export function interactiveList<T>(
 
         filteredItems = itemsWithScores.map(({ item }) => item);
       }
-      currentIndex = 0;
+      // Reset current index to 0, but ensure it's within bounds
+      currentIndex = filteredItems.length > 0 ? 0 : -1;
     };
 
     const render = () => {
@@ -388,19 +391,30 @@ export function interactiveList<T>(
             process.stdin.setRawMode(false);
           }
           process.stdin.removeAllListeners('keypress');
-          resolve(filteredItems[currentIndex] || null);
+          // Only resolve with an item if there are filtered items available
+          resolve(
+            filteredItems.length > 0
+              ? filteredItems[currentIndex] || null
+              : null
+          );
           return;
         }
 
         if (key.name === 'up') {
-          currentIndex = Math.max(0, currentIndex - 1);
-          render();
+          // Only navigate if there are items to navigate
+          if (filteredItems.length > 0) {
+            currentIndex = Math.max(0, currentIndex - 1);
+            render();
+          }
           return;
         }
 
         if (key.name === 'down') {
-          currentIndex = Math.min(filteredItems.length - 1, currentIndex + 1);
-          render();
+          // Only navigate if there are items to navigate
+          if (filteredItems.length > 0) {
+            currentIndex = Math.min(filteredItems.length - 1, currentIndex + 1);
+            render();
+          }
           return;
         }
 
