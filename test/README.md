@@ -1,6 +1,6 @@
 # Test Setup Documentation
 
-This project uses Bun's native testing framework for all tests. The test suite is organized with co-located unit tests and dedicated directories for E2E and integration tests.
+This project uses Bun's native testing framework for all tests. The test suite is organized with co-located unit tests and dedicated directories for E2E tests.
 
 ## Test Structure
 
@@ -20,8 +20,7 @@ src/                    # Source code with co-located unit tests
 │       ├── search.ts
 │       └── search.test.ts        # Unit tests for search
 test/
-├── e2e/               # End-to-end tests for CLI functionality
-└── integration/       # Integration tests with real git repositories
+└── e2e/               # End-to-end tests for CLI functionality
 ```
 
 ## Test Commands
@@ -29,7 +28,6 @@ test/
 - `npm test` - **Run all tests directly from TypeScript** (no build required)
 - `npm run test:unit` - Run only unit tests (co-located with source)
 - `npm run test:e2e` - Run only E2E tests (simplified CLI testing)
-- `npm run test:integration` - Run only integration tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage report
 
@@ -52,7 +50,6 @@ test/
 
 ### **Simplified Test Implementation**
 - E2E tests use `bun run src/index.ts` directly
-- Integration tests create real git repositories for testing
 - Performance-focused with reasonable timeouts
 
 ## Test Categories
@@ -67,11 +64,6 @@ test/
 - Test the complete CLI application
 - Real subprocess execution
 - Verify command-line interface behavior
-
-### Integration Tests (`test/integration/`)
-- Test interaction with real git repositories
-- File system operations
-- Cross-module functionality
 
 ## Writing Tests
 

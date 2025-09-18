@@ -1,6 +1,11 @@
 import * as p from '@clack/prompts';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import {
+  getOptimalCommand,
+  getPerformanceStatus,
+  isGitUtilsAvailable,
+} from '../utils/binary-detection.js';
 
 const execAsync = promisify(exec);
 
@@ -37,9 +42,8 @@ async function checkExistingAlias(alias: string): Promise<boolean> {
 
 async function setGitAlias(alias: string, command: string): Promise<boolean> {
   try {
-    await execAsync(
-      `git config --global alias.${alias} "!npx git-utils ${command}"`
-    );
+    const optimalCommand = await getOptimalCommand(command);
+    await execAsync(`git config --global alias.${alias} "${optimalCommand}"`);
     return true;
   } catch (error) {
     console.error(`Error setting alias '${alias}': ${error}`);
@@ -49,6 +53,34 @@ async function setGitAlias(alias: string, command: string): Promise<boolean> {
 
 async function init() {
   console.log('🚀 Welcome to Git CLI Utilities Setup!\n');
+
+  // Check for global installation and inform user about performance
+  const performanceStatus = await getPerformanceStatus();
+  console.log(`📊 Performance Status: ${performanceStatus}\n`);
+
+  const isGloballyAvailable = await isGitUtilsAvailable();
+  if (!isGloballyAvailable) {
+    console.log(
+      '💡 Performance Tip: Install git-cli-utils globally for faster git aliases:'
+    );
+    console.log('   npm install -g git-cli-utils');
+    console.log('   # or');
+    console.log('   bun install -g git-cli-utils\n');
+
+    const continueWithNpx = await p.confirm({
+      message:
+        'Continue with npx setup (slower but works without global install)?',
+      initialValue: true,
+    });
+
+    if (p.isCancel(continueWithNpx) || !continueWithNpx) {
+      console.log(
+        'Setup cancelled. Install globally and run "git-utils init" again for optimal performance.'
+      );
+      return;
+    }
+    console.log('');
+  }
 
   // Step 1: Multi-select commands
   const selectedCommands = await p.multiselect({
