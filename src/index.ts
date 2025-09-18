@@ -1,15 +1,23 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import init from './cli/commands/init.js';
 import { searchBranches } from './cli/commands/search-branches.js';
 import { searchCommits } from './cli/commands/search-commits.js';
+
+// Get version from package.json
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packagePath = join(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'));
 
 const program = new Command();
 
 program
   .name('git-utils')
   .description('CLI utilities for managing Git repositories')
-  .version('1.0.0');
+  .version(packageJson.version);
 
 program
   .command('search-branches')
