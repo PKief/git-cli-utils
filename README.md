@@ -20,10 +20,30 @@ A collection of command-line utilities for managing Git repositories, focusing o
 
 ## Installation
 
-You can use this package directly via `npx` without needing to install it globally:
+You can use this package directly via `npx` or install it globally for better performance:
+
+### Quick Usage (npx)
 
 ```bash
-npm i -g git-cli-utils
+npx git-cli-utils search-branches
+npx git-cli-utils search-commits
+npx git-cli-utils init
+```
+
+### Global Installation (Recommended for Performance)
+
+```bash
+npm install -g git-cli-utils
+```
+
+**Performance Benefits**: Global installation provides significantly faster git alias execution since it avoids the package resolution overhead of `npx`. The tool automatically detects if you have it installed globally and uses the faster method.
+
+After global installation, you can use commands directly:
+
+```bash
+git-utils search-branches
+git-utils search-commits
+git-utils init
 ```
 
 ## Commands
