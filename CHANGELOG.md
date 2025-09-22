@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v1.5.1
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.5.0...v1.5.1)
+
+### 🩹 Fixes
+
+- Read version dynamically from package.json instead of hardcoded value ([bf9378d](https://github.com/PKief/git-cli-utils/commit/bf9378d))
+- Allow all printable ASCII characters for search input in interactive list ([6c0a169](https://github.com/PKief/git-cli-utils/commit/6c0a169))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.5.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.4.0...v1.5.0)
