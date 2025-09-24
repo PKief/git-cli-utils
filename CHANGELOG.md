@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.6.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.5.1...v1.6.0)
+
+### 🚀 Enhancements
+
+- Implement search ranking logic and tests ([3568ed7](https://github.com/PKief/git-cli-utils/commit/3568ed7))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.5.1
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.5.0...v1.5.1)
