@@ -17,4 +17,34 @@ const ANSI = {
   bgRed: '\x1b[41m',
 };
 
+// Helper functions for colored text
+export const colorText = (text: string, color: keyof typeof ANSI): string => {
+  return `${ANSI[color]}${text}${ANSI.reset}`;
+};
+
+// Multi-color combination helper
+export const multiColor = (
+  text: string,
+  ...colors: (keyof typeof ANSI)[]
+): string => {
+  const colorCodes = colors.map((color) => ANSI[color]).join('');
+  return `${colorCodes}${text}${ANSI.reset}`;
+};
+
+// Common single-color helpers
+export const yellow = (text: string): string => colorText(text, 'yellow');
+export const green = (text: string): string => colorText(text, 'green');
+export const red = (text: string): string => colorText(text, 'red');
+export const bold = (text: string): string => colorText(text, 'bold');
+
+// Complex highlighting helpers for interactive list
+export const highlightExact = (text: string): string =>
+  multiColor(text, 'bgMagenta', 'brightWhite', 'bold');
+
+export const highlightFuzzy = (text: string): string =>
+  multiColor(text, 'bgCyan', 'brightWhite', 'bold');
+
+export const highlightSelected = (text: string): string =>
+  multiColor(text, 'bgGreen', 'brightWhite', 'bold');
+
 export default ANSI;

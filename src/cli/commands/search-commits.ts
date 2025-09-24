@@ -1,6 +1,6 @@
 import { GitCommit, getGitCommits } from '@core/git/commits.js';
 import { GitOperations } from '@core/git/operations.js';
-import ANSI from '../ui/ansi.js';
+import { green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 
 export const searchCommits = async () => {
@@ -8,7 +8,7 @@ export const searchCommits = async () => {
     const commits = await getGitCommits();
 
     if (commits.length === 0) {
-      console.log(`${ANSI.yellow}No commits found!${ANSI.reset}`);
+      console.log(yellow('No commits found!'));
       process.exit(0);
     }
 
@@ -25,28 +25,28 @@ export const searchCommits = async () => {
 
       try {
         await GitOperations.copyToClipboard(selectedCommit.hash);
-        console.log(
-          `${ANSI.green}Commit SHA copied to clipboard!${ANSI.reset}`
-        );
+        console.log(green('Commit SHA copied to clipboard!'));
         process.exit(0);
       } catch (error) {
         console.error(
-          `${ANSI.red}Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}${ANSI.reset}`
+          red(
+            `Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}`
+          )
         );
-        console.log(
-          `${ANSI.yellow}Commit SHA: ${selectedCommit.hash}${ANSI.reset}`
-        );
+        console.log(yellow(`Commit SHA: ${selectedCommit.hash}`));
         // In CI/non-interactive environments, don't fail the entire command just because clipboard failed
         const isCI = process.env.CI || process.env.GITHUB_ACTIONS;
         process.exit(isCI ? 0 : 1);
       }
     } else {
-      console.log(`${ANSI.yellow}No commit selected.${ANSI.reset}`);
+      console.log(yellow('No commit selected.'));
       process.exit(0);
     }
   } catch (error) {
     console.error(
-      `${ANSI.red}Error fetching commits: ${error instanceof Error ? error.message : String(error)}${ANSI.reset}`
+      red(
+        `Error fetching commits: ${error instanceof Error ? error.message : String(error)}`
+      )
     );
     process.exit(1);
   }

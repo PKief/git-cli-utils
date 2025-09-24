@@ -1,5 +1,12 @@
 import * as readline from 'readline';
-import ANSI from './ansi.js';
+import {
+  bold,
+  green,
+  highlightExact,
+  highlightFuzzy,
+  highlightSelected,
+  yellow,
+} from './ansi.js';
 import { rankSearchResults } from './search-scoring.js';
 
 /**
@@ -65,10 +72,10 @@ function highlightText(
 
     if (isSelected) {
       // For selected items, use magenta background for search matches to contrast with green selection background
-      return `${before}${ANSI.bgMagenta}${ANSI.brightWhite}${ANSI.bold}${match}${ANSI.reset}${ANSI.bgGreen}${ANSI.brightWhite}${ANSI.bold}${after}`;
+      return `${before}${highlightExact(match)}${highlightSelected(after)}`;
     } else {
       // Use cyan background with bright white text for better visibility
-      return `${before}${ANSI.bgCyan}${ANSI.brightWhite}${ANSI.bold}${match}${ANSI.reset}${after}`;
+      return `${before}${highlightFuzzy(match)}${after}`;
     }
   }
 
@@ -99,9 +106,9 @@ function highlightText(
     ) {
       // Highlight matching character with different colors for selected vs unselected items
       if (isSelected) {
-        result += `${ANSI.bgMagenta}${ANSI.brightWhite}${ANSI.bold}${char}${ANSI.reset}${ANSI.bgGreen}${ANSI.brightWhite}${ANSI.bold}`;
+        result += `${highlightExact(char)}${highlightSelected('')}`;
       } else {
-        result += `${ANSI.bgCyan}${ANSI.brightWhite}${ANSI.bold}${char}${ANSI.reset}`;
+        result += highlightFuzzy(char);
       }
       searchIndex++;
     } else {
@@ -175,17 +182,13 @@ export function interactiveList<T>(
 
     const render = () => {
       console.clear();
-      console.log(
-        `${ANSI.green}Search:${ANSI.reset} ${searchTerm || '(type to search)'}`
-      );
+      console.log(`${green('Search:')} ${searchTerm || '(type to search)'}`);
       console.log(
         'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit\n'
       );
 
       if (filteredItems.length === 0) {
-        console.log(
-          `${ANSI.yellow}No items found matching "${searchTerm}"${ANSI.reset}`
-        );
+        console.log(yellow(`No items found matching "${searchTerm}"`));
         return;
       }
 
@@ -214,9 +217,7 @@ export function interactiveList<T>(
           const terminalWidth = process.stdout.columns || 80;
           const selectedLine = `=> ${highlightedText}`;
           const paddedLine = selectedLine.padEnd(terminalWidth - 1);
-          console.log(
-            `${ANSI.bgGreen}${ANSI.brightWhite}${ANSI.bold}${paddedLine}${ANSI.reset}`
-          );
+          console.log(highlightSelected(paddedLine));
         } else {
           // Non-selected items get search highlighting
           const highlightedText = highlightMatchesInDisplay(
@@ -229,10 +230,10 @@ export function interactiveList<T>(
       }
 
       if (startIndex > 0) {
-        console.log(`\n${ANSI.bold}↑ More items above${ANSI.reset}`);
+        console.log(`\n${bold('↑ More items above')}`);
       }
       if (endIndex < filteredItems.length) {
-        console.log(`\n${ANSI.bold}↓ More items below${ANSI.reset}`);
+        console.log(`\n${bold('↓ More items below')}`);
       }
     };
 

@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'bun:test';
-import ANSI from './ansi';
+import ANSI, {
+  bold,
+  colorText,
+  green,
+  highlightExact,
+  highlightFuzzy,
+  highlightSelected,
+  multiColor,
+  red,
+  yellow,
+} from './ansi';
 
 describe('ANSI', () => {
   it('should export all expected ANSI color codes', () => {
@@ -70,6 +80,59 @@ describe('ANSI', () => {
     // All ANSI codes should start with ESC[ and end with m
     Object.entries(ANSI).forEach(([key, value]) => {
       expect(value).toMatch(/^\x1b\[\d+m$/);
+    });
+  });
+
+  describe('Color Helper Functions', () => {
+    it('should create colored text with colorText helper', () => {
+      const result = colorText('Hello', 'green');
+      expect(result).toBe('\x1b[32mHello\x1b[0m');
+    });
+
+    it('should create yellow text with yellow helper', () => {
+      const result = yellow('Warning');
+      expect(result).toBe('\x1b[33mWarning\x1b[0m');
+    });
+
+    it('should create green text with green helper', () => {
+      const result = green('Success');
+      expect(result).toBe('\x1b[32mSuccess\x1b[0m');
+    });
+
+    it('should create red text with red helper', () => {
+      const result = red('Error');
+      expect(result).toBe('\x1b[31mError\x1b[0m');
+    });
+
+    it('should create bold text with bold helper', () => {
+      const result = bold('Important');
+      expect(result).toBe('\x1b[1mImportant\x1b[0m');
+    });
+
+    it('should handle empty strings', () => {
+      expect(yellow('')).toBe('\x1b[33m\x1b[0m');
+      expect(green('')).toBe('\x1b[32m\x1b[0m');
+      expect(red('')).toBe('\x1b[31m\x1b[0m');
+    });
+
+    it('should create multi-color text with multiColor helper', () => {
+      const result = multiColor('Text', 'bold', 'red');
+      expect(result).toBe('\x1b[1m\x1b[31mText\x1b[0m');
+    });
+
+    it('should create exact highlight with highlightExact helper', () => {
+      const result = highlightExact('match');
+      expect(result).toBe('\x1b[45m\x1b[97m\x1b[1mmatch\x1b[0m');
+    });
+
+    it('should create fuzzy highlight with highlightFuzzy helper', () => {
+      const result = highlightFuzzy('match');
+      expect(result).toBe('\x1b[46m\x1b[97m\x1b[1mmatch\x1b[0m');
+    });
+
+    it('should create selected highlight with highlightSelected helper', () => {
+      const result = highlightSelected('selected');
+      expect(result).toBe('\x1b[42m\x1b[97m\x1b[1mselected\x1b[0m');
     });
   });
 });
