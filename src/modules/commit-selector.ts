@@ -1,5 +1,5 @@
-import { GitCommit, getGitCommits } from '../core/git/commits.js';
-import { interactiveList } from '../core/ui/interactive-list.js';
+import { GitCommit, getGitCommits } from '@core/git/commits.js';
+import { interactiveList } from '../cli/ui/interactive-list.js';
 
 export const commitSelector = async (): Promise<GitCommit | null> => {
   const commits = await getGitCommits();
