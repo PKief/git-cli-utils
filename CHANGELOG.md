@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.6.1
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.6.0...v1.6.1)
+
+### 🩹 Fixes
+
+- Handle remaining buffer content in getGitCommits function ([8421ad3](https://github.com/PKief/git-cli-utils/commit/8421ad3))
+
+### ❤️ Contributors
+
+- Philipp Kief
+
 ## v1.6.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.5.1...v1.6.0)
