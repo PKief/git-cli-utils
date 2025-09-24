@@ -42,6 +42,21 @@ export const getGitCommits = (): Promise<GitCommit[]> => {
     });
 
     git.stdout.on('end', () => {
+      // Process any remaining buffer content (handles the last line if it doesn't end with \n)
+      if (buffer.trim()) {
+        const [hash, date, refs, subject] = buffer.split('|');
+        const branches = refs
+          .split(',')
+          .map((r) => r.trim())
+          .filter((r) => r && !r.startsWith('tag:') && !r.startsWith('HEAD'));
+
+        commits.push({
+          hash,
+          date,
+          branch: branches.join(', '),
+          subject,
+        });
+      }
       resolve(commits);
     });
 
