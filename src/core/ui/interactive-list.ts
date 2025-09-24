@@ -1,5 +1,6 @@
 import * as readline from 'readline';
 import ANSI from './ansi.js';
+import { rankSearchResults } from './search-scoring.js';
 
 /**
  * Highlights matching characters in display text based on search term matching against searchable text
@@ -112,126 +113,6 @@ function highlightText(
   return result;
 }
 
-/**
- * Calculate relevance score for how well a search term matches target text
- * Higher scores indicate better matches
- */
-function calculateRelevanceScore(text: string, searchTerm: string): number {
-  const normalizedText = text.toLowerCase();
-  const normalizedSearch = searchTerm.toLowerCase();
-  let score = 0;
-
-  // 1. Exact phrase match (highest priority)
-  if (normalizedText.includes(normalizedSearch)) {
-    score += 1000;
-
-    // Bonus for exact case match
-    if (text.includes(searchTerm)) {
-      score += 200;
-    }
-
-    // Bonus for match at beginning (reduced to allow recency to compete)
-    if (normalizedText.startsWith(normalizedSearch)) {
-      score += 150;
-    } else if (
-      normalizedText.indexOf(normalizedSearch) <
-      normalizedText.length * 0.3
-    ) {
-      // Bonus for match in first third of text
-      score += 100;
-    }
-
-    return score;
-  }
-
-  // 2. Word-based matching - only score if ALL words are found
-  const searchWords = normalizedSearch
-    .split(/\s+/)
-    .filter((word) => word.length > 0);
-  const textWords = normalizedText.split(/\s+/);
-
-  let matchedWords = 0;
-  let totalWordScore = 0;
-
-  for (const searchWord of searchWords) {
-    let bestWordScore = 0;
-    let wordMatched = false;
-
-    for (let i = 0; i < textWords.length; i++) {
-      const textWord = textWords[i];
-
-      if (textWord === searchWord) {
-        // Exact word match
-        bestWordScore = Math.max(
-          bestWordScore,
-          100 + (textWords.length - i) * 2
-        );
-        wordMatched = true;
-      } else if (textWord.startsWith(searchWord)) {
-        // Word starts with search term
-        bestWordScore = Math.max(
-          bestWordScore,
-          80 + (textWords.length - i) * 2
-        );
-        wordMatched = true;
-      } else if (textWord.includes(searchWord)) {
-        // Word contains search term
-        bestWordScore = Math.max(
-          bestWordScore,
-          60 + (textWords.length - i) * 2
-        );
-        wordMatched = true;
-      }
-    }
-
-    if (wordMatched) {
-      matchedWords++;
-      totalWordScore += bestWordScore;
-    }
-  }
-
-  // Only add word score if ALL search words were found
-  if (matchedWords === searchWords.length) {
-    score += totalWordScore;
-    // Bonus for matching all words
-    if (searchWords.length > 1) {
-      score += 200;
-    }
-  }
-
-  // 3. Fuzzy character matching (fallback)
-  if (score === 0) {
-    const textNoSeparators = normalizedText.replace(/[-_\/\.\s]/g, '');
-    const searchNoSeparators = normalizedSearch.replace(/[-_\/\.\s]/g, '');
-
-    if (textNoSeparators.includes(searchNoSeparators)) {
-      score += 50;
-    } else {
-      // Sequential character matching - require matching ALL characters
-      let searchIndex = 0;
-      for (
-        let i = 0;
-        i < textNoSeparators.length && searchIndex < searchNoSeparators.length;
-        i++
-      ) {
-        if (textNoSeparators[i] === searchNoSeparators[searchIndex]) {
-          searchIndex++;
-        }
-      }
-
-      // Only count if we matched ALL characters AND the search term is reasonable length
-      if (
-        searchIndex === searchNoSeparators.length &&
-        searchNoSeparators.length >= 2
-      ) {
-        score = searchIndex; // Points equal to number of characters matched
-      }
-    }
-  }
-
-  return score;
-}
-
 export function interactiveList<T>(
   items: T[],
   itemRenderer: (item: T) => string,
@@ -280,31 +161,13 @@ export function interactiveList<T>(
       if (!searchTerm) {
         filteredItems = items;
       } else {
-        const _normalizedSearchTerm = searchTerm.toLowerCase();
-
-        // Create items with relevance scores and add small recency bonus
-        const itemsWithScores = items
-          .map((item, originalIndex) => {
-            const itemText = getSearchableText(item);
-            const baseScore = calculateRelevanceScore(itemText, searchTerm);
-
-            // Add recency bonus based on original position (earlier = more recent)
-            // This helps newer items compete with older ones that have slightly higher text relevance
-            const recencyBonus = Math.max(
-              0,
-              (items.length - originalIndex) * 150
-            );
-            const finalScore = baseScore + recencyBonus;
-
-            return { item, score: finalScore, originalIndex, baseScore };
-          })
-          .filter(({ baseScore }) => baseScore > 0) // Only include items that actually match the search text
-          .sort((a, b) => {
-            // Primary sort: by final score (highest first)
-            return b.score - a.score;
-          });
-
-        filteredItems = itemsWithScores.map(({ item }) => item);
+        // Use the extracted search scoring logic
+        const rankedResults = rankSearchResults(
+          items,
+          searchTerm,
+          getSearchableText
+        );
+        filteredItems = rankedResults.map(({ item }) => item);
       }
       // Reset current index to 0, but ensure it's within bounds
       currentIndex = filteredItems.length > 0 ? 0 : -1;
