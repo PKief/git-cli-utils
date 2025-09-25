@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import init from './commands/init.js';
 import { searchBranches } from './commands/search-branches.js';
 import { searchCommits } from './commands/search-commits.js';
+import { topAuthors } from './commands/top-authors.js';
 
 const program = new Command();
 
@@ -19,6 +20,14 @@ program
   .command('search-commits')
   .description('Search for commits in the git repository')
   .action(searchCommits);
+
+program
+  .command('top-authors')
+  .description(
+    'Show top contributors by commit count, optionally for a specific file'
+  )
+  .argument('[file]', 'file path to analyze (optional)')
+  .action(topAuthors);
 
 program
   .command('init')

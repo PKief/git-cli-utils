@@ -29,6 +29,13 @@ const availableCommands: Command[] = [
     defaultAlias: 'sc',
     description: 'Interactive commit selection with fuzzy search',
   },
+  {
+    name: 'Top Authors',
+    command: 'top-authors',
+    defaultAlias: 'ta',
+    description:
+      'Show top contributors by commit count for files or repository',
+  },
 ];
 
 async function checkExistingAlias(alias: string): Promise<boolean> {

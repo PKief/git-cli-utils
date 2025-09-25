@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import init from './cli/commands/init.js';
 import { searchBranches } from './cli/commands/search-branches.js';
 import { searchCommits } from './cli/commands/search-commits.js';
+import { topAuthors } from './cli/commands/top-authors.js';
 
 // Get version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,6 +29,14 @@ program
   .command('search-commits')
   .description('Interactive commit selection with fuzzy search')
   .action(searchCommits);
+
+program
+  .command('top-authors')
+  .description(
+    'Show top contributors by commit count, optionally for a specific file'
+  )
+  .argument('[file]', 'file path to analyze (optional)')
+  .action(topAuthors);
 
 program
   .command('init')
