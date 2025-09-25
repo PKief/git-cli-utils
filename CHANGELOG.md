@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v1.7.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.6.1...v1.7.0)
+
+### 🚀 Enhancements
+
+- Add 'top-authors' command to display top contributors by commit count ([7e82ba2](https://github.com/PKief/git-cli-utils/commit/7e82ba2))
+
+### 💅 Refactors
+
+- Replace ANSI utility with color helper functions for improved readability ([124f2d5](https://github.com/PKief/git-cli-utils/commit/124f2d5))
+
+### 🏡 Chore
+
+- Refactor import paths and add ANSI utility for improved UI ([0452026](https://github.com/PKief/git-cli-utils/commit/0452026))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.6.1
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.6.0...v1.6.1)
