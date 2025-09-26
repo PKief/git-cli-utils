@@ -19,11 +19,11 @@ Fast CLI tools for Git with **real-time search**, **fuzzy matching**, and **keyb
 
 ## Features
 
-**Interactive Branch Search** - Find and checkout branches with fuzzy matching
-**Commit Explorer** - Search commit history with SHA copying to clipboard
-**Author Analytics** - Analyze top contributors by file or repository
-**Git Aliases** - Setup shortcuts for faster workflows
-**Smart Highlighting** - Visual feedback for exact and fuzzy matches
+- 🌿 **Interactive Branch Search** – Find and checkout branches with fuzzy matching
+- 🔍 **Commit Explorer** – Search commit history with SHA copying to clipboard
+- 👤 **Author Analytics** – Analyze top contributors by file or repository
+- ⚡ **Git Aliases** – Setup shortcuts for faster workflows
+- ✨ **Smart Highlighting** – Visual feedback for exact and fuzzy matches
 
 ## Quick Start
 
@@ -143,21 +143,6 @@ Now use:
 | `top-authors` | Show top contributors by commits | `git ta` |
 | `init` | Setup git aliases interactively | - |
 | `list-aliases` | Show current git aliases | - |
-
-## Search Features
-
-**Real-time filtering** - Results update as you type
-**Fuzzy matching** - `fdb` matches `feature/dashboard-bug`
-**Smart ranking** - Exact matches appear first, then fuzzy matches
-**Visual highlighting** - Different colors for exact/fuzzy/selected matches
-**Keyboard navigation** - Arrow keys + Enter, no mouse needed
-**Fast performance** - Handles large repositories efficiently
-
-## Requirements
-
-- **Node.js** 14+
-- **Git** repository
-- **Terminal** with color support
 
 ## Contributing
 
