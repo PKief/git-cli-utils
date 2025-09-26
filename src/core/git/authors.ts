@@ -1,7 +1,4 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { gitExecutor } from './executor.js';
 
 export interface FileAuthor {
   name: string;
@@ -26,13 +23,13 @@ export const getLastAuthor = async (
 ): Promise<LastAuthor | null> => {
   try {
     const command = `git log -1 --pretty=format:'%an|%ae|%h|%cd' --date=format:'%d.%m.%Y %H:%M' -- "${filePath}"`;
-    const { stdout } = await execAsync(command);
+    const result = await gitExecutor.executeCommand(command);
 
-    if (!stdout.trim()) {
+    if (!result.stdout.trim()) {
       return null;
     }
 
-    const [name, email, commitHash, date] = stdout.trim().split('|');
+    const [name, email, commitHash, date] = result.stdout.split('|');
     return {
       name,
       email,
@@ -59,18 +56,13 @@ export const getFileAuthors = async (
       command = `git log --pretty=format:'%an <%ae>' -- "${filePath}" | sort | uniq -c | sort -nr`;
     }
 
-    const { stdout, stderr } = await execAsync(command);
-
-    if (stderr) {
-      throw new Error(`Git command failed: ${stderr}`);
-    }
-
+    const result = await gitExecutor.executeCommand(command);
     const authors: Map<string, FileAuthor> = new Map();
 
     // Process the output line by line
-    const lines = stdout.trim().split('\n');
+    const lines = result.stdout.split('\n');
 
-    lines.forEach((line) => {
+    lines.forEach((line: string) => {
       if (!line.trim()) return;
 
       // Parse format: "  19 John Doe <john.doe@example.com>"
@@ -128,13 +120,13 @@ const getLastCommitByAuthor = async (
     if (filePath) {
       command += ` -- "${filePath}"`;
     }
-    const { stdout } = await execAsync(command);
+    const result = await gitExecutor.executeCommand(command);
 
-    if (!stdout.trim()) {
+    if (!result.stdout.trim()) {
       return null;
     }
 
-    const [hash, date] = stdout.trim().split('|');
+    const [hash, date] = result.stdout.split('|');
     return { hash, date };
   } catch {
     return null;

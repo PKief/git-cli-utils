@@ -1,8 +1,5 @@
-import { exec } from 'child_process';
 import clipboardy from 'clipboardy';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { gitExecutor } from './executor.js';
 
 /**
  * Git operations utility functions
@@ -13,21 +10,21 @@ export class GitOperations {
    */
   static async checkoutBranch(branchName: string): Promise<void> {
     try {
-      const { stdout, stderr } = await execAsync(
+      const result = await gitExecutor.executeCommand(
         `git checkout "${branchName}"`
       );
 
       if (
-        stderr &&
-        !stderr.includes('Switched to branch') &&
-        !stderr.includes('Already on')
+        result.stderr &&
+        !result.stderr.includes('Switched to branch') &&
+        !result.stderr.includes('Already on')
       ) {
-        throw new Error(stderr);
+        throw new Error(result.stderr);
       }
 
       console.log(`Switched to branch '${branchName}'`);
-      if (stdout) {
-        console.log(stdout.trim());
+      if (result.stdout) {
+        console.log(result.stdout);
       }
     } catch (error) {
       throw new Error(

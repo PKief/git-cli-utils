@@ -1,7 +1,140 @@
-import { describe, expect, it } from 'bun:test';
-import { filterCommits, type GitCommit } from './commits';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { filterCommits, type GitCommit, getGitCommits } from './commits';
+
+// Mock the GitExecutor
+const mockExecuteStreamingCommand = mock();
+
+mock.module('./executor.js', () => ({
+  gitExecutor: {
+    executeStreamingCommand: mockExecuteStreamingCommand,
+  },
+}));
 
 describe('Git Commits', () => {
+  beforeEach(() => {
+    mockExecuteStreamingCommand.mockClear();
+  });
+
+  afterEach(() => {
+    mockExecuteStreamingCommand.mockReset();
+  });
+
+  describe('getGitCommits', () => {
+    it('should return commits for current branch', async () => {
+      // Arrange
+      const mockOutput = [
+        'abc123|2023-09-15|main|Initial commit',
+        'def456|2023-09-14|main|Add feature',
+        'ghi789|2023-09-13|main|Fix bug',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits();
+
+      // Assert
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
+        'git log --all --date=short --pretty=format:%h|%cd|%D|%s'
+      );
+      expect(commits).toHaveLength(3);
+      expect(commits[0]).toEqual({
+        hash: 'abc123',
+        date: '2023-09-15',
+        branch: 'main',
+        subject: 'Initial commit',
+      });
+    });
+
+    it('should return commits from all branches', async () => {
+      // Arrange
+      const mockOutput = [
+        'abc123|2023-09-15|main|Update main branch',
+        'def456|2023-09-14|origin/feature, feature|Add feature',
+        'ghi789|2023-09-13|develop|Fix on develop',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits();
+
+      // Assert
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
+        'git log --all --date=short --pretty=format:%h|%cd|%D|%s'
+      );
+      expect(commits).toHaveLength(3);
+      expect(commits[1]).toEqual({
+        hash: 'def456',
+        date: '2023-09-14',
+        branch: 'origin/feature, feature',
+        subject: 'Add feature',
+      });
+    });
+
+    it('should handle empty commit history', async () => {
+      // Arrange
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [],
+      });
+
+      // Act
+      const commits = await getGitCommits();
+
+      // Assert
+      expect(commits).toHaveLength(0);
+    });
+
+    it('should handle git command errors', async () => {
+      // Arrange
+      const mockError = new Error('Not a git repository');
+      mockExecuteStreamingCommand.mockRejectedValue(mockError);
+
+      // Act & Assert
+      await expect(getGitCommits()).rejects.toThrow('Not a git repository');
+    });
+
+    it('should parse complex branch names correctly', async () => {
+      // Arrange
+      const mockOutput = [
+        'abc123|2023-09-15|origin/feature/test, feature/test|Add feature',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits();
+
+      // Assert
+      expect(commits).toHaveLength(1);
+      expect(commits[0].branch).toBe('origin/feature/test, feature/test');
+    });
+
+    it('should handle malformed commit lines gracefully', async () => {
+      // Arrange - malformed lines should cause an error due to undefined refs
+      const mockOutput = [
+        'abc123|2023-09-15|main|Valid commit',
+        'invalid line without proper format',
+        'def456|2023-09-14|main|Another valid commit',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act & Assert - expect error due to malformed line
+      await expect(getGitCommits()).rejects.toThrow(
+        'Error executing git command'
+      );
+    });
+  });
+
   describe('filterCommits', () => {
     const mockCommits: GitCommit[] = [
       {

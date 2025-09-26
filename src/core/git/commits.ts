@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { gitExecutor } from './executor.js';
 
 export interface GitCommit {
   hash: string;
@@ -7,63 +7,35 @@ export interface GitCommit {
   subject: string;
 }
 
-export const getGitCommits = (): Promise<GitCommit[]> => {
-  return new Promise((resolve, reject) => {
-    const git = spawn('git', [
-      'log',
-      '--all',
-      '--date=short',
-      '--pretty=format:%h|%cd|%D|%s',
-    ]);
+export const getGitCommits = async (): Promise<GitCommit[]> => {
+  try {
+    const command = 'git log --all --date=short --pretty=format:%h|%cd|%D|%s';
+    const result = await gitExecutor.executeStreamingCommand(command);
 
     const commits: GitCommit[] = [];
-    let buffer = '';
 
-    git.stdout.on('data', (chunk: Buffer) => {
-      buffer += chunk.toString();
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // keep incomplete line
+    result.data.forEach((line) => {
+      if (!line.trim()) return;
+      const [hash, date, refs, subject] = line.split('|');
+      const branches = refs
+        .split(',')
+        .map((r) => r.trim())
+        .filter((r) => r && !r.startsWith('tag:') && !r.startsWith('HEAD'));
 
-      lines.forEach((line) => {
-        if (!line.trim()) return;
-        const [hash, date, refs, subject] = line.split('|');
-        const branches = refs
-          .split(',')
-          .map((r) => r.trim())
-          .filter((r) => r && !r.startsWith('tag:') && !r.startsWith('HEAD'));
-
-        commits.push({
-          hash,
-          date,
-          branch: branches.join(', '),
-          subject,
-        });
+      commits.push({
+        hash,
+        date,
+        branch: branches.join(', '),
+        subject,
       });
     });
 
-    git.stdout.on('end', () => {
-      // Process any remaining buffer content (handles the last line if it doesn't end with \n)
-      if (buffer.trim()) {
-        const [hash, date, refs, subject] = buffer.split('|');
-        const branches = refs
-          .split(',')
-          .map((r) => r.trim())
-          .filter((r) => r && !r.startsWith('tag:') && !r.startsWith('HEAD'));
-
-        commits.push({
-          hash,
-          date,
-          branch: branches.join(', '),
-          subject,
-        });
-      }
-      resolve(commits);
-    });
-
-    git.on('error', (error: Error) => {
-      reject(error);
-    });
-  });
+    return commits;
+  } catch (error) {
+    throw new Error(
+      `Error executing git command: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
 };
 
 export const filterCommits = (

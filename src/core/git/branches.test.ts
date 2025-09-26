@@ -1,18 +1,21 @@
-import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
-import * as cp from 'child_process';
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { filterBranches, type GitBranch, getGitBranches } from './branches';
 
-// Mock child_process exec
-let mockExec: ReturnType<typeof spyOn>;
+// Mock the GitExecutor
+const mockExecuteCommand = mock();
+
+mock.module('./executor.js', () => ({
+  gitExecutor: {
+    executeCommand: mockExecuteCommand,
+  },
+}));
 
 beforeEach(() => {
-  // Reset mocks before each test
-  mockExec = spyOn(cp, 'exec');
+  mockExecuteCommand.mockClear();
 });
 
 afterEach(() => {
-  // Restore mocks after each test
-  mockExec.mockRestore();
+  mockExecuteCommand.mockReset();
 });
 
 describe('Git Branches', () => {
@@ -21,22 +24,18 @@ describe('Git Branches', () => {
       // Arrange
       const mockStdout =
         'main|2 hours ago\nfeature/test|1 day ago\ndevelop|3 days ago\n';
-      mockExec.mockImplementation(
-        (
-          command: string,
-          callback: (error: Error | null, stdout: string) => void
-        ) => {
-          expect(command).toBe(
-            'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list'
-          );
-          callback(null, mockStdout);
-        }
-      );
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockStdout,
+        stderr: '',
+      });
 
       // Act
       const branches = await getGitBranches();
 
       // Assert
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list'
+      );
       expect(branches).toHaveLength(3);
       expect(branches[0]).toEqual({ name: 'main', date: '2 hours ago' });
       expect(branches[1]).toEqual({ name: 'feature/test', date: '1 day ago' });
@@ -45,15 +44,10 @@ describe('Git Branches', () => {
 
     it('should handle empty git branch output', async () => {
       // Arrange
-      const mockStdout = '';
-      mockExec.mockImplementation(
-        (
-          command: string,
-          callback: (error: Error | null, stdout: string) => void
-        ) => {
-          callback(null, mockStdout);
-        }
-      );
+      mockExecuteCommand.mockResolvedValue({
+        stdout: '',
+        stderr: '',
+      });
 
       // Act
       const branches = await getGitBranches();
@@ -65,14 +59,10 @@ describe('Git Branches', () => {
     it('should filter out empty lines', async () => {
       // Arrange
       const mockStdout = 'main|2 hours ago\n\n\nfeature/test|1 day ago\n\n';
-      mockExec.mockImplementation(
-        (
-          command: string,
-          callback: (error: Error | null, stdout: string) => void
-        ) => {
-          callback(null, mockStdout);
-        }
-      );
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockStdout,
+        stderr: '',
+      });
 
       // Act
       const branches = await getGitBranches();
@@ -86,33 +76,20 @@ describe('Git Branches', () => {
     it('should reject on git command error', async () => {
       // Arrange
       const mockError = new Error('Not a git repository');
-      mockExec.mockImplementation(
-        (
-          command: string,
-          callback: (error: Error | null, stdout: string) => void
-        ) => {
-          callback(mockError, '');
-        }
-      );
+      mockExecuteCommand.mockRejectedValue(mockError);
 
       // Act & Assert
-      await expect(getGitBranches()).rejects.toThrow(
-        'Error executing git command: Not a git repository'
-      );
+      await expect(getGitBranches()).rejects.toThrow('Not a git repository');
     });
 
     it('should handle branches with special characters', async () => {
       // Arrange
       const mockStdout =
         'feature/user-123|1 hour ago\nbugfix/fix-login-issue|yesterday\n';
-      mockExec.mockImplementation(
-        (
-          command: string,
-          callback: (error: Error | null, stdout: string) => void
-        ) => {
-          callback(null, mockStdout);
-        }
-      );
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockStdout,
+        stderr: '',
+      });
 
       // Act
       const branches = await getGitBranches();
@@ -132,14 +109,10 @@ describe('Git Branches', () => {
     it('should handle malformed branch output gracefully', async () => {
       // Arrange
       const mockStdout = 'main\nfeature/test|1 day ago\nbugfix|today|\n';
-      mockExec.mockImplementation(
-        (
-          command: string,
-          callback: (error: Error | null, stdout: string) => void
-        ) => {
-          callback(null, mockStdout);
-        }
-      );
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockStdout,
+        stderr: '',
+      });
 
       // Act
       const branches = await getGitBranches();
