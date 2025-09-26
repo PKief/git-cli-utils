@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v1.7.2
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.1...v1.7.2)
+
+### 💅 Refactors
+
+- Remove emoji from console messages for cleaner output ([f34fb8a](https://github.com/PKief/git-cli-utils/commit/f34fb8a))
+- Simplify header formatting in top-authors command ([e61a6e3](https://github.com/PKief/git-cli-utils/commit/e61a6e3))
+- Introduce git executor to bundle git logic ([fcba180](https://github.com/PKief/git-cli-utils/commit/fcba180))
+- Format test code for better readability ([269c942](https://github.com/PKief/git-cli-utils/commit/269c942))
+- Update GitExecutor tests for consistency and clarity ([812973f](https://github.com/PKief/git-cli-utils/commit/812973f))
+
+### 🏡 Chore
+
+- Update dependencies to latest versions ([2a1da82](https://github.com/PKief/git-cli-utils/commit/2a1da82))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.7.1
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.0...v1.7.1)
