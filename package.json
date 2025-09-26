@@ -28,17 +28,17 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",
-    "clipboardy": "^4.0.0",
-    "commander": "^12.0.0"
+    "clipboardy": "^5.0.0",
+    "commander": "^14.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
     "@types/bun": "^1.2.22",
-    "@types/clipboardy": "^1.1.0",
-    "@types/node": "^24.4.0",
+    "@types/clipboardy": "^2.0.4",
+    "@types/node": "^24.5.2",
     "changelogen": "^0.6.2",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.6",
+    "lint-staged": "^16.2.1",
     "typescript": "^5.9.2"
   },
   "keywords": [
