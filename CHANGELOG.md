@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v1.7.3
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.2...v1.7.3)
+
+### 🩹 Fixes
+
+- Add missing prepublish script to package.json ([c3a02ac](https://github.com/PKief/git-cli-utils/commit/c3a02ac))
+
+### 📖 Documentation
+
+- Update readme and contributing ([d708854](https://github.com/PKief/git-cli-utils/commit/d708854))
+- Improve readme ([b8851b9](https://github.com/PKief/git-cli-utils/commit/b8851b9))
+
+### 🏡 Chore
+
+- Add dependabot configuration ([6ed7bb9](https://github.com/PKief/git-cli-utils/commit/6ed7bb9))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.7.2
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.1...v1.7.2)
