@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.7.1
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.0...v1.7.1)
+
+### 💅 Refactors
+
+- Update import paths for core modules to relative paths ([e548156](https://github.com/PKief/git-cli-utils/commit/e548156))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.7.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.6.1...v1.7.0)
