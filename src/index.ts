@@ -56,7 +56,7 @@ program
         'git config --global --get-regexp alias'
       );
       if (stdout.trim()) {
-        console.log('📋 Current git aliases:\n');
+        console.log('Current git aliases:\n');
         stdout
           .trim()
           .split('\n')
@@ -66,12 +66,12 @@ program
             console.log(`  git ${aliasName} → ${command}`);
           });
       } else {
-        console.log('📋 No git aliases found.');
-        console.log('💡 Run "git-utils init" to create some!');
+        console.log('No git aliases found.');
+        console.log('Run "git-utils init" to create some!');
       }
     } catch (_error) {
-      console.log('📋 No git aliases found or error reading config.');
-      console.log('💡 Run "git-utils init" to create some!');
+      console.log('No git aliases found or error reading config.');
+      console.log('Run "git-utils init" to create some!');
     }
   });
 

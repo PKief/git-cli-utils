@@ -59,16 +59,16 @@ async function setGitAlias(alias: string, command: string): Promise<boolean> {
 }
 
 async function init() {
-  console.log('🚀 Welcome to Git CLI Utilities Setup!\n');
+  console.log('Welcome to Git CLI Utilities Setup!\n');
 
   // Check for global installation and inform user about performance
   const performanceStatus = await getPerformanceStatus();
-  console.log(`📊 Performance Status: ${performanceStatus}\n`);
+  console.log(`Performance Status: ${performanceStatus}\n`);
 
   const isGloballyAvailable = await isGitUtilsAvailable();
   if (!isGloballyAvailable) {
     console.log(
-      '💡 Performance Tip: Install git-cli-utils globally for faster git aliases:'
+      'Performance Tip: Install git-cli-utils globally for faster git aliases:'
     );
     console.log('   npm install -g git-cli-utils');
     console.log('   # or');
@@ -105,7 +105,7 @@ async function init() {
     return;
   }
 
-  console.log('\n📝 Setting up aliases...\n');
+  console.log('\nSetting up aliases...\n');
 
   // Step 2: Configure alias for each selected command
   for (const commandName of selectedCommands) {
@@ -175,13 +175,13 @@ async function init() {
     // Set the alias
     const success = await setGitAlias(aliasToUse, command.command);
     if (success) {
-      console.log(`✅ Created alias: git ${aliasToUse} → ${command.name}`);
+      console.log(`Created alias: git ${aliasToUse} → ${command.name}`);
     } else {
-      console.log(`❌ Failed to create alias for ${command.name}`);
+      console.log(`Failed to create alias for ${command.name}`);
     }
   }
 
-  console.log('\n🎉 Setup complete! You can now use:');
+  console.log('\nSetup complete! You can now use:');
   console.log('  git <alias>  - Run the aliased command');
   console.log(
     '  git config --global --get-regexp alias  - View all your aliases\n'

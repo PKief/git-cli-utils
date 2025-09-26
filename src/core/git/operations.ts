@@ -25,7 +25,7 @@ export class GitOperations {
         throw new Error(stderr);
       }
 
-      console.log(`✅ Switched to branch '${branchName}'`);
+      console.log(`Switched to branch '${branchName}'`);
       if (stdout) {
         console.log(stdout.trim());
       }
@@ -42,7 +42,7 @@ export class GitOperations {
   static async copyToClipboard(text: string): Promise<void> {
     try {
       await clipboardy.write(text);
-      console.log(`📋 Copied to clipboard: ${text}`);
+      console.log(`Copied to clipboard: ${text}`);
     } catch (error) {
       throw new Error(
         `Failed to copy to clipboard: ${error instanceof Error ? error.message : String(error)}`

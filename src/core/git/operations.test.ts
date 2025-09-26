@@ -32,9 +32,7 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        `📋 Copied to clipboard: ${text}`
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(`Copied to clipboard: ${text}`);
     });
 
     it('should throw error when clipboard operation fails', async () => {
@@ -70,12 +68,12 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith('');
-      expect(consoleSpy).toHaveBeenCalledWith('📋 Copied to clipboard: ');
+      expect(consoleSpy).toHaveBeenCalledWith('Copied to clipboard: ');
     });
 
     it('should handle special characters', async () => {
       // Arrange
-      const text = 'feature/user-123 🚀 ñáéíóú';
+      const text = 'feature/user-123 ñáéíóú';
       mockClipboardy.mockResolvedValue(undefined);
 
       // Act
@@ -83,9 +81,7 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
-      expect(consoleSpy).toHaveBeenCalledWith(
-        `📋 Copied to clipboard: ${text}`
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(`Copied to clipboard: ${text}`);
     });
   });
 });

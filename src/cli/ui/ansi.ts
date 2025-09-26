@@ -7,6 +7,8 @@ const ANSI = {
   red: '\x1b[31m',
   white: '\x1b[37m',
   black: '\x1b[30m',
+  gray: '\x1b[90m', // Bright black / dark gray
+  blue: '\x1b[34m', // Blue
   brightWhite: '\x1b[97m',
   bgWhite: '\x1b[47m',
   bgYellow: '\x1b[43m',
@@ -36,6 +38,8 @@ export const yellow = (text: string): string => colorText(text, 'yellow');
 export const green = (text: string): string => colorText(text, 'green');
 export const red = (text: string): string => colorText(text, 'red');
 export const bold = (text: string): string => colorText(text, 'bold');
+export const gray = (text: string): string => colorText(text, 'gray');
+export const blue = (text: string): string => colorText(text, 'blue');
 
 // Complex highlighting helpers for interactive list
 export const highlightExact = (text: string): string =>

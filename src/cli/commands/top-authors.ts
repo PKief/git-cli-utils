@@ -4,32 +4,11 @@ import {
   getLastAuthor,
 } from '../../core/git/authors.js';
 import { GitOperations } from '../../core/git/operations.js';
-import { green, red, yellow } from '../ui/ansi.js';
+import { blue, gray, green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 
 export const topAuthors = async (filePath?: string) => {
   try {
-    // If a file path is provided, show last author info first
-    if (filePath) {
-      console.log(`📁 File: ${filePath}\n`);
-
-      try {
-        const lastAuthor = await getLastAuthor(filePath);
-        if (lastAuthor) {
-          console.log(yellow('Last person worked on this file:'));
-          console.log(
-            `${lastAuthor.name} #${lastAuthor.commitHash} ${lastAuthor.date}\n`
-          );
-        } else {
-          console.log(yellow('No commit history found for this file.\n'));
-        }
-      } catch {
-        console.log(yellow('Could not retrieve last author information.\n'));
-      }
-    } else {
-      console.log(yellow('📊 Repository-wide author statistics\n'));
-    }
-
     // Get authors sorted by commit count
     const authors = await getFileAuthors(filePath);
 
@@ -38,7 +17,28 @@ export const topAuthors = async (filePath?: string) => {
       process.exit(0);
     }
 
-    // Create a scrollable list
+    // Prepare header with file context if provided
+    let header = '';
+    if (filePath) {
+      try {
+        const lastAuthor = await getLastAuthor(filePath);
+        if (lastAuthor) {
+          header = gray(
+            `${lastAuthor.name} edited ${blue(filePath)} with commit #${lastAuthor.commitHash} on ${lastAuthor.date} for the last time`
+          );
+        } else {
+          header = yellow(`No commit history found for ${filePath}.`);
+        }
+      } catch {
+        header = yellow(
+          `Could not retrieve last author information for ${filePath}.`
+        );
+      }
+    } else {
+      header = yellow('Repository-wide author statistics');
+    }
+
+    // Create a scrollable list with persistent header
     const selectedAuthor = await interactiveList<FileAuthor>(
       authors,
       (author: FileAuthor) => {
@@ -48,18 +48,19 @@ export const topAuthors = async (filePath?: string) => {
           : '';
         return `${author.name} (${author.commitCount} ${commits})${lastCommitInfo}`;
       },
-      (author: FileAuthor) => author.name // Search by author name only
+      (author: FileAuthor) => author.name, // Search by author name only
+      header // Pass the header to stay visible during selection
     );
 
     if (selectedAuthor) {
       console.log(
-        `\n📧 Selected author: ${selectedAuthor.name} <${selectedAuthor.email}>`
+        `\nSelected author: ${selectedAuthor.name} <${selectedAuthor.email}>`
       );
-      console.log(`📈 Total commits: ${selectedAuthor.commitCount}`);
+      console.log(`Total commits: ${selectedAuthor.commitCount}`);
 
       if (selectedAuthor.lastCommitHash) {
         console.log(
-          `🕒 Last commit: #${selectedAuthor.lastCommitHash} on ${selectedAuthor.lastCommitDate}`
+          `Last commit: #${selectedAuthor.lastCommitHash} on ${selectedAuthor.lastCommitDate}`
         );
       }
 

@@ -1,4 +1,7 @@
-import { spawn } from 'child_process';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 export interface FileAuthor {
   name: string;
@@ -18,179 +21,122 @@ export interface LastAuthor {
 /**
  * Get the last author who worked on a specific file
  */
-export const getLastAuthor = (filePath: string): Promise<LastAuthor | null> => {
-  return new Promise((resolve, reject) => {
-    const git = spawn('git', [
-      'log',
-      '-1',
-      '--pretty=format:%an|%ae|%h|%cd',
-      '--date=format:%d.%m.%Y %H:%M',
-      '--',
-      filePath,
-    ]);
+export const getLastAuthor = async (
+  filePath: string
+): Promise<LastAuthor | null> => {
+  try {
+    const command = `git log -1 --pretty=format:'%an|%ae|%h|%cd' --date=format:'%d.%m.%Y %H:%M' -- "${filePath}"`;
+    const { stdout } = await execAsync(command);
 
-    let buffer = '';
+    if (!stdout.trim()) {
+      return null;
+    }
 
-    git.stdout.on('data', (chunk: Buffer) => {
-      buffer += chunk.toString();
-    });
-
-    git.stdout.on('end', () => {
-      if (!buffer.trim()) {
-        resolve(null);
-        return;
-      }
-
-      const [name, email, commitHash, date] = buffer.trim().split('|');
-      resolve({
-        name,
-        email,
-        commitHash,
-        date,
-      });
-    });
-
-    git.on('error', (error: Error) => {
-      reject(error);
-    });
-  });
+    const [name, email, commitHash, date] = stdout.trim().split('|');
+    return {
+      name,
+      email,
+      commitHash,
+      date,
+    };
+  } catch {
+    return null;
+  }
 };
 
 /**
  * Get authors sorted by their commit count on a specific file
  */
-export const getFileAuthors = (filePath?: string): Promise<FileAuthor[]> => {
-  return new Promise((resolve, reject) => {
-    const args = ['shortlog', '-sne', '--all'];
+export const getFileAuthors = async (
+  filePath?: string
+): Promise<FileAuthor[]> => {
+  try {
+    // Use git log instead of shortlog to avoid hanging issues
+    let command =
+      "git log --pretty=format:'%an <%ae>' | sort | uniq -c | sort -nr";
 
     if (filePath) {
-      args.push('--', filePath);
+      command = `git log --pretty=format:'%an <%ae>' -- "${filePath}" | sort | uniq -c | sort -nr`;
     }
 
-    const git = spawn('git', args);
+    const { stdout, stderr } = await execAsync(command);
+
+    if (stderr) {
+      throw new Error(`Git command failed: ${stderr}`);
+    }
 
     const authors: Map<string, FileAuthor> = new Map();
-    let buffer = '';
 
-    git.stdout.on('data', (chunk: Buffer) => {
-      buffer += chunk.toString();
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || ''; // keep incomplete line
+    // Process the output line by line
+    const lines = stdout.trim().split('\n');
 
-      lines.forEach((line) => {
-        if (!line.trim()) return;
+    lines.forEach((line) => {
+      if (!line.trim()) return;
 
-        // Parse format: "     5  John Doe <john.doe@example.com>"
-        const match = line.match(/^\s*(\d+)\s+(.+?)\s+<(.+?)>$/);
-        if (!match) return;
+      // Parse format: "  19 John Doe <john.doe@example.com>"
+      const match = line.match(/^\s*(\d+)\s+(.+?)\s+<(.+?)>$/);
+      if (!match) return;
 
-        const [, countStr, name, email] = match;
-        const commitCount = parseInt(countStr, 10);
+      const [, countStr, name, email] = match;
+      const commitCount = parseInt(countStr, 10);
 
-        authors.set(email, {
-          name,
-          email,
-          commitCount,
-          lastCommitHash: '',
-          lastCommitDate: '',
-        });
+      authors.set(email, {
+        name,
+        email,
+        commitCount,
+        lastCommitHash: '',
+        lastCommitDate: '',
       });
     });
 
-    git.stdout.on('end', async () => {
-      // Process any remaining buffer content
-      if (buffer.trim()) {
-        const match = buffer.match(/^\s*(\d+)\s+(.+?)\s+<(.+?)>$/);
-        if (match) {
-          const [, countStr, name, email] = match;
-          const commitCount = parseInt(countStr, 10);
+    // Get last commit info for each author
+    const authorList = Array.from(authors.values());
 
-          authors.set(email, {
-            name,
-            email,
-            commitCount,
-            lastCommitHash: '',
-            lastCommitDate: '',
-          });
-        }
-      }
-
-      // Get last commit info for each author
-      const authorList = Array.from(authors.values());
-
-      // Get last commit details for each author
-      const promises = authorList.map(async (author) => {
-        try {
-          const lastCommit = await getLastCommitByAuthor(
-            author.email,
-            filePath
-          );
-          return {
-            ...author,
-            lastCommitHash: lastCommit?.hash || '',
-            lastCommitDate: lastCommit?.date || '',
-          };
-        } catch {
-          return author;
-        }
-      });
-
+    // Get last commit details for each author
+    const promises = authorList.map(async (author) => {
       try {
-        const authorsWithLastCommit = await Promise.all(promises);
-        // Sort by commit count descending
-        authorsWithLastCommit.sort((a, b) => b.commitCount - a.commitCount);
-        resolve(authorsWithLastCommit);
-      } catch (error) {
-        reject(error);
+        const lastCommit = await getLastCommitByAuthor(author.email, filePath);
+        return {
+          ...author,
+          lastCommitHash: lastCommit?.hash || '',
+          lastCommitDate: lastCommit?.date || '',
+        };
+      } catch {
+        return author;
       }
     });
 
-    git.on('error', (error: Error) => {
-      reject(error);
-    });
-  });
+    const authorsWithLastCommit = await Promise.all(promises);
+    // Sort by commit count descending
+    authorsWithLastCommit.sort((a, b) => b.commitCount - a.commitCount);
+    return authorsWithLastCommit;
+  } catch (error) {
+    throw error;
+  }
 };
 
 /**
  * Get the last commit by a specific author for a file or repository
  */
-const getLastCommitByAuthor = (
+const getLastCommitByAuthor = async (
   authorEmail: string,
   filePath?: string
 ): Promise<{ hash: string; date: string } | null> => {
-  return new Promise((resolve, reject) => {
-    const args = [
-      'log',
-      '-1',
-      '--pretty=format:%h|%cd',
-      '--date=format:%d.%m.%Y %H:%M',
-      `--author=${authorEmail}`,
-    ];
+  try {
+    let command = `git log -1 --pretty=format:'%h|%cd' --date=format:'%d.%m.%Y %H:%M' --author='${authorEmail}'`;
 
     if (filePath) {
-      args.push('--', filePath);
+      command += ` -- "${filePath}"`;
+    }
+    const { stdout } = await execAsync(command);
+
+    if (!stdout.trim()) {
+      return null;
     }
 
-    const git = spawn('git', args);
-
-    let buffer = '';
-
-    git.stdout.on('data', (chunk: Buffer) => {
-      buffer += chunk.toString();
-    });
-
-    git.stdout.on('end', () => {
-      if (!buffer.trim()) {
-        resolve(null);
-        return;
-      }
-
-      const [hash, date] = buffer.trim().split('|');
-      resolve({ hash, date });
-    });
-
-    git.on('error', (error: Error) => {
-      reject(error);
-    });
-  });
+    const [hash, date] = stdout.trim().split('|');
+    return { hash, date };
+  } catch {
+    return null;
+  }
 };

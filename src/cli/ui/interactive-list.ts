@@ -123,7 +123,8 @@ function highlightText(
 export function interactiveList<T>(
   items: T[],
   itemRenderer: (item: T) => string,
-  searchFunction?: (item: T) => string
+  searchFunction?: (item: T) => string,
+  header?: string
 ): Promise<T | null> {
   return new Promise((resolve, reject) => {
     if (items.length === 0) {
@@ -149,6 +150,14 @@ export function interactiveList<T>(
       console.log(
         'Use arrow keys to navigate, Enter to select, Escape to clear search, Ctrl+C to cancel'
       );
+
+      // Show optional header/description if provided
+      if (header) {
+        console.log('');
+        console.log(header);
+        console.log('');
+      }
+
       items.slice(0, 5).forEach((item, index) => {
         console.log(`${index === 0 ? '→' : ' '} ${itemRenderer(item)}`);
       });
@@ -186,6 +195,12 @@ export function interactiveList<T>(
       console.log(
         'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit\n'
       );
+
+      // Show optional header/description if provided
+      if (header) {
+        console.log(header);
+        console.log(''); // Add blank line after header
+      }
 
       if (filteredItems.length === 0) {
         console.log(yellow(`No items found matching "${searchTerm}"`));
