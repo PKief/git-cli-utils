@@ -21,6 +21,7 @@
     "test:e2e": "bun test test/e2e/",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
+    "prepublish": "npm run build",
     "prepare": "husky"
   },
   "sponsor": {
