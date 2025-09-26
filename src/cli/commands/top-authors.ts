@@ -4,7 +4,7 @@ import {
   getLastAuthor,
 } from '../../core/git/authors.js';
 import { GitOperations } from '../../core/git/operations.js';
-import { blue, gray, green, red, yellow } from '../ui/ansi.js';
+import { blue, green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 
 export const topAuthors = async (filePath?: string) => {
@@ -23,9 +23,7 @@ export const topAuthors = async (filePath?: string) => {
       try {
         const lastAuthor = await getLastAuthor(filePath);
         if (lastAuthor) {
-          header = gray(
-            `${lastAuthor.name} edited ${blue(filePath)} with commit #${lastAuthor.commitHash} on ${lastAuthor.date} for the last time`
-          );
+          header = `${yellow(lastAuthor.name)} ${yellow('edited')} ${blue(filePath)} ${yellow('with commit #' + lastAuthor.commitHash + ' on ' + lastAuthor.date + ' for the last time')}`;
         } else {
           header = yellow(`No commit history found for ${filePath}.`);
         }
