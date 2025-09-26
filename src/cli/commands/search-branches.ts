@@ -1,5 +1,5 @@
-import { GitBranch, getGitBranches } from '@core/git/branches.js';
-import { GitOperations } from '@core/git/operations.js';
+import { GitBranch, getGitBranches } from '../../core/git/branches.js';
+import { GitOperations } from '../../core/git/operations.js';
 import { green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 

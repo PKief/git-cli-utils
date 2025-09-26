@@ -1,5 +1,5 @@
-import { GitBranch, getGitBranches } from '@core/git/branches.js';
-import { GitCommit, getGitCommits } from '@core/git/commits.js';
+import { GitBranch, getGitBranches } from '../../core/git/branches.js';
+import { GitCommit, getGitCommits } from '../../core/git/commits.js';
 
 export const searchBranches = async (
   searchTerm: string

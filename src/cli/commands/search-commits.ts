@@ -1,5 +1,5 @@
-import { GitCommit, getGitCommits } from '@core/git/commits.js';
-import { GitOperations } from '@core/git/operations.js';
+import { GitCommit, getGitCommits } from '../../core/git/commits.js';
+import { GitOperations } from '../../core/git/operations.js';
 import { green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
-import * as branches from '@core/git/branches';
-import * as commits from '@core/git/commits';
+import * as branches from '../../core/git/branches';
+import * as commits from '../../core/git/commits';
 import { searchBranches, searchCommits } from './search';
 
 // Mock dependencies

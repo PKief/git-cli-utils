@@ -10,10 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": "./src",
-    "paths": {
-      "@core/*": ["core/*"]
-    },
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,

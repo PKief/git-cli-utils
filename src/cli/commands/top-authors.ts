@@ -2,8 +2,8 @@ import {
   FileAuthor,
   getFileAuthors,
   getLastAuthor,
-} from '@core/git/authors.js';
-import { GitOperations } from '@core/git/operations.js';
+} from '../../core/git/authors.js';
+import { GitOperations } from '../../core/git/operations.js';
 import { green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 
