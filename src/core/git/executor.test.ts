@@ -12,7 +12,12 @@ describe('GitExecutor', () => {
 
   describe('GitError', () => {
     it('should create GitError with all parameters', () => {
-      const error = new GitError('Test error', 'git status', 'stderr output', 128);
+      const error = new GitError(
+        'Test error',
+        'git status',
+        'stderr output',
+        128
+      );
       expect(error.message).toBe('Test error');
       expect(error.command).toBe('git status');
       expect(error.stderr).toBe('stderr output');
@@ -46,8 +51,9 @@ describe('GitExecutor', () => {
     });
 
     it('should handle non-existent git commands', async () => {
-      await expect(gitExecutor.executeCommand('git invalid-command-that-does-not-exist'))
-        .rejects.toThrow(GitError);
+      await expect(
+        gitExecutor.executeCommand('git invalid-command-that-does-not-exist')
+      ).rejects.toThrow(GitError);
     });
 
     it('should execute streaming commands', async () => {
@@ -59,8 +65,9 @@ describe('GitExecutor', () => {
     });
 
     it('should handle invalid streaming commands', async () => {
-      await expect(gitExecutor.executeStreamingCommand('git invalid-streaming-command'))
-        .rejects.toThrow(GitError);
+      await expect(
+        gitExecutor.executeStreamingCommand('git invalid-streaming-command')
+      ).rejects.toThrow(GitError);
     });
   });
 });
