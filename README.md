@@ -150,8 +150,6 @@ Found a bug or want a feature? **Contributions welcome!** See [CONTRIBUTING.md](
 
 ## License
 
-## License
-
 MIT © [Philipp Kief](https://github.com/PKief)
 
 ---
