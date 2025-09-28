@@ -22,7 +22,7 @@ export const getLastAuthor = async (
   filePath: string
 ): Promise<LastAuthor | null> => {
   try {
-    const command = `git log -1 --pretty=format:'%an|%ae|%h|%cd' --date=format:'%d.%m.%Y %H:%M' -- "${filePath}"`;
+    const command = `git log -1 --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M" -- "${filePath}"`;
     const result = await gitExecutor.executeCommand(command);
 
     if (!result.stdout.trim()) {
@@ -49,10 +49,11 @@ export const getFileAuthors = async (
 ): Promise<FileAuthor[]> => {
   try {
     // Use pure git log without shell piping to ensure Windows compatibility
-    let command = "git log --pretty=format:'%an <%ae>'";
+    // Use double quotes instead of single quotes for Windows Command Prompt compatibility
+    let command = 'git log --pretty=format:"%an <%ae>"';
 
     if (filePath) {
-      command = `git log --pretty=format:'%an <%ae>' -- "${filePath}"`;
+      command = `git log --pretty=format:"%an <%ae>" -- "${filePath}"`;
     }
 
     const result = await gitExecutor.executeCommand(command);
@@ -128,7 +129,7 @@ const getLastCommitByAuthor = async (
   filePath?: string
 ): Promise<{ hash: string; date: string } | null> => {
   try {
-    let command = `git log -1 --pretty=format:'%h|%cd' --date=format:'%d.%m.%Y %H:%M' --author='${authorEmail}'`;
+    let command = `git log -1 --pretty=format:"%h|%cd" --date=format:"%d.%m.%Y %H:%M" --author="${authorEmail}"`;
 
     if (filePath) {
       command += ` -- "${filePath}"`;
