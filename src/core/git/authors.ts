@@ -60,7 +60,10 @@ export const getFileAuthors = async (
 
     // Process the output line by line and count manually (JavaScript equivalent of sort | uniq -c)
     const lines = result.stdout.split('\n');
-    const authorCounts: Map<string, { name: string; email: string; count: number }> = new Map();
+    const authorCounts: Map<
+      string,
+      { name: string; email: string; count: number }
+    > = new Map();
 
     lines.forEach((line: string) => {
       if (!line.trim()) return;
@@ -71,7 +74,7 @@ export const getFileAuthors = async (
 
       const [, name, email] = match;
       const key = email; // Use email as unique key
-      
+
       if (authorCounts.has(key)) {
         const existing = authorCounts.get(key)!;
         existing.count++;
