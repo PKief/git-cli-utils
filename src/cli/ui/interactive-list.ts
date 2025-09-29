@@ -1,6 +1,5 @@
 import * as readline from 'readline';
 import {
-  bold,
   green,
   highlightExact,
   highlightFuzzy,
@@ -169,7 +168,7 @@ export function interactiveList<T>(
     }
 
     let currentIndex = 0;
-    const maxDisplayItems = 10;
+    const maxDisplayItems = 7;
     let searchTerm = '';
     let filteredItems = items;
 
@@ -242,13 +241,6 @@ export function interactiveList<T>(
           );
           console.log(`   ${highlightedText}`);
         }
-      }
-
-      if (startIndex > 0) {
-        console.log(`\n${bold('↑ More items above')}`);
-      }
-      if (endIndex < filteredItems.length) {
-        console.log(`\n${bold('↓ More items below')}`);
       }
     };
 
