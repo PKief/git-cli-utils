@@ -139,6 +139,13 @@ describe('CLI E2E Tests', () => {
       // In non-interactive mode, it should show the available items and return the first one
       const { exitCode, stdout } = await runCLICommand(['search-branches']);
 
+      // Debug output for CI troubleshooting
+      if (exitCode !== 0) {
+        console.log('DEBUG - Exit Code:', exitCode);
+        console.log('DEBUG - Stdout:', stdout);
+        console.log('DEBUG - Stderr:', stderr);
+      }
+
       // The command should complete successfully
       expect(exitCode).toBe(0);
 

@@ -22,7 +22,7 @@ export const getLastAuthor = async (
   filePath: string
 ): Promise<LastAuthor | null> => {
   try {
-    const command = `git log -1 --pretty=format:'%an|%ae|%h|%cd' --date=format:'%d.%m.%Y %H:%M' -- "${filePath}"`;
+    const command = `git log -1 --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M" -- "${filePath}"`;
     const result = await gitExecutor.executeCommand(command);
 
     if (!result.stdout.trim()) {
@@ -48,34 +48,48 @@ export const getFileAuthors = async (
   filePath?: string
 ): Promise<FileAuthor[]> => {
   try {
-    // Use git log instead of shortlog to avoid hanging issues
-    let command =
-      "git log --pretty=format:'%an <%ae>' | sort | uniq -c | sort -nr";
+    // Use pure git log without shell piping to ensure Windows compatibility
+    // Use double quotes instead of single quotes for Windows Command Prompt compatibility
+    let command = 'git log --pretty=format:"%an <%ae>"';
 
     if (filePath) {
-      command = `git log --pretty=format:'%an <%ae>' -- "${filePath}" | sort | uniq -c | sort -nr`;
+      command = `git log --pretty=format:"%an <%ae>" -- "${filePath}"`;
     }
 
     const result = await gitExecutor.executeCommand(command);
     const authors: Map<string, FileAuthor> = new Map();
 
-    // Process the output line by line
+    // Process the output line by line and count manually (JavaScript equivalent of sort | uniq -c)
     const lines = result.stdout.split('\n');
+    const authorCounts: Map<
+      string,
+      { name: string; email: string; count: number }
+    > = new Map();
 
     lines.forEach((line: string) => {
       if (!line.trim()) return;
 
-      // Parse format: "  19 John Doe <john.doe@example.com>"
-      const match = line.match(/^\s*(\d+)\s+(.+?)\s+<(.+?)>$/);
+      // Parse format: "John Doe <john.doe@example.com>"
+      const match = line.match(/^(.+?)\s+<(.+?)>$/);
       if (!match) return;
 
-      const [, countStr, name, email] = match;
-      const commitCount = parseInt(countStr, 10);
+      const [, name, email] = match;
+      const key = email; // Use email as unique key
 
+      if (authorCounts.has(key)) {
+        const existing = authorCounts.get(key)!;
+        existing.count++;
+      } else {
+        authorCounts.set(key, { name: name.trim(), email, count: 1 });
+      }
+    });
+
+    // Convert to FileAuthor format
+    authorCounts.forEach(({ name, email, count }) => {
       authors.set(email, {
         name,
         email,
-        commitCount,
+        commitCount: count,
         lastCommitHash: '',
         lastCommitDate: '',
       });
@@ -115,7 +129,7 @@ const getLastCommitByAuthor = async (
   filePath?: string
 ): Promise<{ hash: string; date: string } | null> => {
   try {
-    let command = `git log -1 --pretty=format:'%h|%cd' --date=format:'%d.%m.%Y %H:%M' --author='${authorEmail}'`;
+    let command = `git log -1 --pretty=format:"%h|%cd" --date=format:"%d.%m.%Y %H:%M" --author="${authorEmail}"`;
 
     if (filePath) {
       command += ` -- "${filePath}"`;

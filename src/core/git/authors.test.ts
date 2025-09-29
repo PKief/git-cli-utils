@@ -33,7 +33,7 @@ describe('authors', () => {
       const result = await getLastAuthor(filePath);
 
       expect(mockExecuteCommand).toHaveBeenCalledWith(
-        `git log -1 --pretty=format:'%an|%ae|%h|%cd' --date=format:'%d.%m.%Y %H:%M' -- "${filePath}"`
+        `git log -1 --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M" -- "${filePath}"`
       );
 
       expect(result).toEqual({
@@ -90,9 +90,16 @@ describe('authors', () => {
 
   describe('getFileAuthors', () => {
     test('should return authors sorted by commit count for repository', async () => {
-      const mockUniqOutput = `      5 John Doe <john.doe@example.com>
-      3 Jane Smith <jane.smith@example.com>
-      1 Bob Wilson <bob.wilson@example.com>`;
+      // Mock the raw git log output (what the new implementation expects)
+      const mockGitLogOutput = `John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+Jane Smith <jane.smith@example.com>
+Jane Smith <jane.smith@example.com>
+Jane Smith <jane.smith@example.com>
+Bob Wilson <bob.wilson@example.com>`;
 
       const mockLastCommitOutputs = [
         'abc123|25.09.2025 14:30', // John Doe
@@ -105,7 +112,7 @@ describe('authors', () => {
         if (callCount === 0) {
           callCount++;
           return Promise.resolve({
-            stdout: mockUniqOutput,
+            stdout: mockGitLogOutput,
             stderr: '',
           });
         } else {
@@ -133,8 +140,10 @@ describe('authors', () => {
 
     test('should return authors for specific file', async () => {
       const filePath = 'src/test.ts';
-      const mockUniqOutput = `      2 John Doe <john.doe@example.com>
-      1 Jane Smith <jane.smith@example.com>`;
+      // Mock the raw git log output for a specific file
+      const mockGitLogOutput = `John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+Jane Smith <jane.smith@example.com>`;
 
       const mockLastCommitOutputs = [
         'abc123|25.09.2025 14:30',
@@ -146,7 +155,7 @@ describe('authors', () => {
         if (callCount === 0) {
           callCount++;
           return Promise.resolve({
-            stdout: mockUniqOutput,
+            stdout: mockGitLogOutput,
             stderr: '',
           });
         } else {
@@ -186,10 +195,16 @@ describe('authors', () => {
     });
 
     test('should handle malformed log output gracefully', async () => {
-      const mockUniqOutput = `invalid line without proper format
-      5 John Doe <john.doe@example.com>
+      // Mock raw git log output with some malformed lines
+      const mockGitLogOutput = `invalid line without proper format
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
 another invalid line
-      2 Jane Smith <jane.smith@example.com>`;
+Jane Smith <jane.smith@example.com>
+Jane Smith <jane.smith@example.com>`;
 
       const mockLastCommitOutputs = [
         'abc123|25.09.2025 14:30',
@@ -201,7 +216,7 @@ another invalid line
         if (callCount === 0) {
           callCount++;
           return Promise.resolve({
-            stdout: mockUniqOutput,
+            stdout: mockGitLogOutput,
             stderr: '',
           });
         } else {
@@ -223,14 +238,16 @@ another invalid line
     });
 
     test('should handle errors in getLastCommitByAuthor gracefully', async () => {
-      const mockUniqOutput = `      3 John Doe <john.doe@example.com>`;
+      const mockGitLogOutput = `John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>
+John Doe <john.doe@example.com>`;
 
       let callCount = 0;
       mockExecuteCommand.mockImplementation(() => {
         if (callCount === 0) {
           callCount++;
           return Promise.resolve({
-            stdout: mockUniqOutput,
+            stdout: mockGitLogOutput,
             stderr: '',
           });
         } else {

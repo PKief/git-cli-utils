@@ -17,6 +17,14 @@ export async function getGitBranches(): Promise<GitBranch[]> {
       .map((branch) => {
         const [name, date] = branch.trim().split('|');
         return { name, date };
+      })
+      .filter((branch) => {
+        // Filter out detached HEAD states which are not valid branch names
+        return (
+          !branch.name.startsWith('(HEAD detached at ') &&
+          !branch.name.startsWith('(HEAD detached from ') &&
+          !branch.name.includes('detached HEAD')
+        );
       });
 
     return branches;

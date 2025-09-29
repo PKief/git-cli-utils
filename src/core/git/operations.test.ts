@@ -95,18 +95,26 @@ describe('GitOperations', () => {
       );
     });
 
-    it('should throw error for unexpected stderr', async () => {
+    it('should not throw error for stderr when git command succeeds', async () => {
       // Arrange
       const branchName = 'test';
+      const consoleSpy = spyOn(console, 'log').mockImplementation(() => {});
       mockExecuteCommand.mockResolvedValue({
         stdout: '',
-        stderr: 'Unexpected error message',
+        stderr: 'Informational message or hint',
       });
 
-      // Act & Assert
-      await expect(GitOperations.checkoutBranch(branchName)).rejects.toThrow(
-        "Failed to checkout branch 'test': Unexpected error message"
+      // Act & Assert - Should not throw, just log the stderr and succeed
+      await expect(
+        GitOperations.checkoutBranch(branchName)
+      ).resolves.toBeUndefined();
+
+      expect(consoleSpy).toHaveBeenCalledWith('Informational message or hint');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        `Switched to branch '${branchName}'`
       );
+
+      consoleSpy.mockRestore();
     });
 
     it('should handle branch names with special characters', async () => {
