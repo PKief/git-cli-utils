@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.7.5
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.4...v1.7.5)
+
+### 🩹 Fixes
+
+- Reduce maximum display items from 10 to 7 in interactive list ([bf72f62](https://github.com/PKief/git-cli-utils/commit/bf72f62))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.7.4
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.3...v1.7.4)
