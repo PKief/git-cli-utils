@@ -14,18 +14,11 @@ export class GitOperations {
         `git checkout "${branchName}"`
       );
 
-      if (
-        result.stderr &&
-        !result.stderr.includes('Switched to branch') &&
-        !result.stderr.includes('Already on')
-      ) {
-        throw new Error(result.stderr);
-      }
-
+      // If we reach here, git exited with code 0. Git sometimes writes informational
+      // messages to stderr even on success (hints, advice). Treat those as non-fatal.
+      if (result.stdout) console.log(result.stdout);
+      if (result.stderr) console.log(result.stderr);
       console.log(`Switched to branch '${branchName}'`);
-      if (result.stdout) {
-        console.log(result.stdout);
-      }
     } catch (error) {
       throw new Error(
         `Failed to checkout branch '${branchName}': ${error instanceof Error ? error.message : String(error)}`
