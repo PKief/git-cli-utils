@@ -137,7 +137,7 @@ describe('CLI E2E Tests', () => {
     it('should handle search with no matches gracefully in non-interactive mode', async () => {
       // This test verifies that when there are items available, the search UI shows them
       // In non-interactive mode, it should show the available items and return the first one
-      const { exitCode, stdout, stderr } = await runCLICommand(['search-branches']);
+      const { exitCode, stdout } = await runCLICommand(['search-branches']);
 
       // Debug output for CI troubleshooting
       if (exitCode !== 0) {
