@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v1.7.4
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.3...v1.7.4)
+
+### 🩹 Fixes
+
+- Windows compatibility issue with top-authors command shell dependencies and quote handling ([#6](https://github.com/PKief/git-cli-utils/pull/6))
+
+### 📖 Documentation
+
+- Improve readme ([18b2993](https://github.com/PKief/git-cli-utils/commit/18b2993))
+
+### ❤️ Contributors
+
+- Copilot ([@MicrosoftCopilot](https://github.com/MicrosoftCopilot))
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.7.3
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.2...v1.7.3)
