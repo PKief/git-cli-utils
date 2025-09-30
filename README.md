@@ -17,6 +17,35 @@
 
 Fast CLI tools for Git with **real-time search**, **fuzzy matching**, and **keyboard navigation**.
 
+## 🚀 Interactive Command Selector
+
+**Run without installing** – get an instant overview of all available commands:
+
+```bash
+npx git-cli-utils
+```
+
+**Live terminal output:**
+```
+Select a command to run:
+
+Search: (type to search)
+Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit
+
+=> branches     Interactive branch selection with fuzzy search
+   commits      Interactive commit selection with fuzzy search
+   authors      Show top contributors by commit count, optionally for a specific file
+   init         Setup git aliases for git-utils commands
+   aliases      Show current git aliases
+```
+
+**What you can do:**
+- **Browse all commands** with descriptions
+- **Search commands** by typing (e.g., type "branch" to filter)
+- **Navigate** with arrow keys and **execute** with Enter
+- **No installation required** – works instantly with `npx`
+- **Perfect for discovery** – explore features without memorizing commands
+
 ## Features
 
 - 🌿 **Interactive Branch Search** – Find and checkout branches with fuzzy matching
@@ -24,12 +53,17 @@ Fast CLI tools for Git with **real-time search**, **fuzzy matching**, and **keyb
 - 👤 **Author Analytics** – Analyze top contributors by file or repository
 - ⚡ **Git Aliases** – Setup shortcuts for faster workflows
 - ✨ **Smart Highlighting** – Visual feedback for exact and fuzzy matches
+- 🎯 **Command Discovery** – Interactive menu to explore all features
 
 ## Quick Start
 
 ```bash
-# Try instantly
+# Interactive command selector (recommended)
+npx git-cli-utils
+
+# Or run specific commands directly
 npx git-cli-utils branches
+npx git-cli-utils commits
 
 # Install globally for better performance
 npm install -g git-cli-utils
@@ -102,11 +136,22 @@ Search: auth
    feature/author-analytics      2 weeks ago    (fuzzy match)
 ```
 
-### Author Analytics
+### Command Discovery
 
 ```bash
-git-utils authors
-git-utils authors src/file.ts  # File-specific analysis
+npx git-cli-utils  # Start with the interactive selector
+```
+
+**Type to search commands:**
+```
+Search: author
+=> authors      Show top contributors by commit count, optionally for a specific file
+```
+
+**Then explore author analytics:**
+```bash
+npx git-cli-utils authors
+npx git-cli-utils authors src/file.ts  # File-specific analysis
 ```
 
 ```
@@ -136,13 +181,20 @@ Now use:
 
 ## All Commands
 
-| Command | Description | Git Alias |
-|---------|-------------|-----------|
-| `branches` | Interactive branch finder with checkout | `git sb` |
-| `commits` | Interactive commit explorer with SHA copy | `git sc` |
-| `authors` | Show top contributors by commits | `git ta` |
-| `init` | Setup git aliases interactively | - |
-| `list-aliases` | Show current git aliases | - |
+### Interactive Mode (Recommended)
+```bash
+npx git-cli-utils  # Shows command selector with search
+```
+
+### Direct Commands
+
+| Command | Description | Usage | Git Alias |
+|---------|-------------|-------|-----------|
+| `branches` | Interactive branch finder with checkout | `npx git-cli-utils branches` | `git sb` |
+| `commits` | Interactive commit explorer with SHA copy | `npx git-cli-utils commits` | `git sc` |
+| `authors` | Show top contributors by commits | `npx git-cli-utils authors [file]` | `git ta` |
+| `init` | Setup git aliases interactively | `npx git-cli-utils init` | - |
+| `aliases` | Browse and execute git aliases | `npx git-cli-utils aliases` | - |
 
 ## Contributing
 
