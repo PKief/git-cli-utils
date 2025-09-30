@@ -12,17 +12,17 @@ program
   .version('1.0.0');
 
 program
-  .command('search-branches')
+  .command('branches')
   .description('Search for branches in the git repository')
   .action(searchBranches);
 
 program
-  .command('search-commits')
+  .command('commits')
   .description('Search for commits in the git repository')
   .action(searchCommits);
 
 program
-  .command('top-authors')
+  .command('authors')
   .description(
     'Show top contributors by commit count, optionally for a specific file'
   )

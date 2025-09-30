@@ -30,9 +30,9 @@ bun run format        # Format code
 **Option 1: Build and test locally**
 ```bash
 bun run build
-bun start -- search-branches    # Test search-branches command
-bun start -- search-commits     # Test search-commits command
-bun start -- top-authors        # Test top-authors command
+bun start -- branches    # Test branches command
+bun start -- commits     # Test commits command
+bun start -- authors        # Test authors command
 ```
 
 **Option 2: Link for global testing**
@@ -43,15 +43,15 @@ bun link
 npm link
 
 # Test as if installed globally
-git-utils search-branches
+git-utils branches
 git-utils init
 ```
 
 **Option 3: Direct TypeScript execution**
 ```bash
 # Run directly without building (development mode)
-bun run src/index.ts search-branches
-bun run src/index.ts search-commits
+bun run src/index.ts branches
+bun run src/index.ts commits
 ```
 
 ## Writing Tests

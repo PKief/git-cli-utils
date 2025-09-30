@@ -19,19 +19,19 @@ interface Command {
 const availableCommands: Command[] = [
   {
     name: 'Search Branches',
-    command: 'search-branches',
+    command: 'branches',
     defaultAlias: 'sb',
     description: 'Interactive branch selection with fuzzy search',
   },
   {
     name: 'Search Commits',
-    command: 'search-commits',
+    command: 'commits',
     defaultAlias: 'sc',
     description: 'Interactive commit selection with fuzzy search',
   },
   {
     name: 'Top Authors',
-    command: 'top-authors',
+    command: 'authors',
     defaultAlias: 'ta',
     description:
       'Show top contributors by commit count for files or repository',

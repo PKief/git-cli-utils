@@ -82,21 +82,15 @@ describe('CLI E2E Tests', () => {
   });
 
   describe('Command help functionality', () => {
-    it('should show help for search-branches command', async () => {
-      const { exitCode, stdout } = await runCLICommand([
-        'search-branches',
-        '--help',
-      ]);
+    it('should show help for branches command', async () => {
+      const { exitCode, stdout } = await runCLICommand(['branches', '--help']);
 
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('branch');
     });
 
-    it('should show help for search-commits command', async () => {
-      const { exitCode, stdout } = await runCLICommand([
-        'search-commits',
-        '--help',
-      ]);
+    it('should show help for commits command', async () => {
+      const { exitCode, stdout } = await runCLICommand(['commits', '--help']);
 
       expect(exitCode).toBe(0);
       expect(stdout.toLowerCase()).toContain('commit');
@@ -137,7 +131,7 @@ describe('CLI E2E Tests', () => {
     it('should handle search with no matches gracefully in non-interactive mode', async () => {
       // This test verifies that when there are items available, the search UI shows them
       // In non-interactive mode, it should show the available items and return the first one
-      const { exitCode, stdout } = await runCLICommand(['search-branches']);
+      const { exitCode, stdout } = await runCLICommand(['branches']);
 
       // Debug output for CI troubleshooting
       if (exitCode !== 0) {
@@ -162,9 +156,9 @@ describe('CLI E2E Tests', () => {
       }
     });
 
-    it('should handle search-commits command in non-interactive mode', async () => {
-      // Test the search-commits command in non-interactive mode
-      const { exitCode, stdout } = await runCLICommand(['search-commits']);
+    it('should handle commits command in non-interactive mode', async () => {
+      // Test the commits command in non-interactive mode
+      const { exitCode, stdout } = await runCLICommand(['commits']);
 
       // The command might exit with code 1 due to clipboard failures in CI
       // but should still show expected output
@@ -186,7 +180,7 @@ describe('CLI E2E Tests', () => {
     it('should handle search cancellation gracefully', async () => {
       // Test that the search handles termination properly
       // In test environments, the process should complete normally in non-interactive mode
-      const { exitCode } = await runCLICommand(['search-branches'], 2000);
+      const { exitCode } = await runCLICommand(['branches'], 2000);
 
       // The command should complete (either successfully or with expected error)
       expect(typeof exitCode).toBe('number');
@@ -195,10 +189,7 @@ describe('CLI E2E Tests', () => {
     it('should demonstrate no-match behavior through CLI output', async () => {
       // This test verifies that the CLI handles the search flow properly
       // Even in non-interactive mode, we can verify the basic functionality works
-      const { exitCode, stdout } = await runCLICommand(
-        ['search-commits'],
-        3000
-      );
+      const { exitCode, stdout } = await runCLICommand(['commits'], 3000);
 
       // Command should complete
       expect(typeof exitCode).toBe('number');
@@ -217,7 +208,7 @@ describe('CLI E2E Tests', () => {
       // This test ensures the CLI handles cases where git commands might fail
       // or return empty results gracefully
       const { exitCode, stdout, stderr } = await runCLICommand(
-        ['search-branches'],
+        ['branches'],
         2000
       );
 

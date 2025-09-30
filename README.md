@@ -29,7 +29,7 @@ Fast CLI tools for Git with **real-time search**, **fuzzy matching**, and **keyb
 
 ```bash
 # Try instantly
-npx git-cli-utils search-branches
+npx git-cli-utils branches
 
 # Install globally for better performance
 npm install -g git-cli-utils
@@ -43,7 +43,7 @@ git-utils init  # Setup git aliases
 ### Commit Search with Highlighting
 
 ```bash
-git-utils search-commits
+git-utils commits
 ```
 
 **Live terminal output:**
@@ -54,7 +54,7 @@ Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit
 => 2025-09-26 812973f - refactor: update GitExecutor tests for consistency and clarity
    2025-09-26 269c942 - refactor: format test code for better readability
    2025-09-26 fcba180 - refactor: introduce git executor to bundle git logic
-   2025-09-26 e61a6e3 - refactor: simplify header formatting in top-authors command
+   2025-09-26 e61a6e3 - refactor: simplify header formatting in authors command
    2025-09-26 f34fb8a - refactor: remove emoji from console messages for cleaner output
    2025-09-26 e548156 - refactor: update import paths for core modules to relative paths
    2025-09-24 124f2d5 - refactor: replace ANSI utility with color helper functions
@@ -75,7 +75,7 @@ Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit
 ### Branch Search Examples
 
 ```bash
-git-utils search-branches
+git-utils branches
 ```
 
 **Exact matching:**
@@ -105,8 +105,8 @@ Search: auth
 ### Author Analytics
 
 ```bash
-git-utils top-authors
-git-utils top-authors src/file.ts  # File-specific analysis
+git-utils authors
+git-utils authors src/file.ts  # File-specific analysis
 ```
 
 ```
@@ -138,9 +138,9 @@ Now use:
 
 | Command | Description | Git Alias |
 |---------|-------------|-----------|
-| `search-branches` | Interactive branch finder with checkout | `git sb` |
-| `search-commits` | Interactive commit explorer with SHA copy | `git sc` |
-| `top-authors` | Show top contributors by commits | `git ta` |
+| `branches` | Interactive branch finder with checkout | `git sb` |
+| `commits` | Interactive commit explorer with SHA copy | `git sc` |
+| `authors` | Show top contributors by commits | `git ta` |
 | `init` | Setup git aliases interactively | - |
 | `list-aliases` | Show current git aliases | - |
 

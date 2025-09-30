@@ -21,17 +21,17 @@ program
   .version(packageJson.version);
 
 program
-  .command('search-branches')
+  .command('branches')
   .description('Interactive branch selection with fuzzy search')
   .action(searchBranches);
 
 program
-  .command('search-commits')
+  .command('commits')
   .description('Interactive commit selection with fuzzy search')
   .action(searchCommits);
 
 program
-  .command('top-authors')
+  .command('authors')
   .description(
     'Show top contributors by commit count, optionally for a specific file'
   )

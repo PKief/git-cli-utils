@@ -19,7 +19,7 @@
 
 ### 🩹 Fixes
 
-- Windows compatibility issue with top-authors command shell dependencies and quote handling ([#6](https://github.com/PKief/git-cli-utils/pull/6))
+- Windows compatibility issue with authors command shell dependencies and quote handling ([#6](https://github.com/PKief/git-cli-utils/pull/6))
 
 ### 📖 Documentation
 
@@ -58,7 +58,7 @@
 ### 💅 Refactors
 
 - Remove emoji from console messages for cleaner output ([f34fb8a](https://github.com/PKief/git-cli-utils/commit/f34fb8a))
-- Simplify header formatting in top-authors command ([e61a6e3](https://github.com/PKief/git-cli-utils/commit/e61a6e3))
+- Simplify header formatting in authors command ([e61a6e3](https://github.com/PKief/git-cli-utils/commit/e61a6e3))
 - Introduce git executor to bundle git logic ([fcba180](https://github.com/PKief/git-cli-utils/commit/fcba180))
 - Format test code for better readability ([269c942](https://github.com/PKief/git-cli-utils/commit/269c942))
 - Update GitExecutor tests for consistency and clarity ([812973f](https://github.com/PKief/git-cli-utils/commit/812973f))
@@ -89,7 +89,7 @@
 
 ### 🚀 Enhancements
 
-- Add 'top-authors' command to display top contributors by commit count ([7e82ba2](https://github.com/PKief/git-cli-utils/commit/7e82ba2))
+- Add 'authors' command to display top contributors by commit count ([7e82ba2](https://github.com/PKief/git-cli-utils/commit/7e82ba2))
 
 ### 💅 Refactors
 
