@@ -2,13 +2,14 @@ import { GitBranch, getGitBranches } from '../../core/git/branches.js';
 import { GitOperations } from '../../core/git/operations.js';
 import { green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
+import { writeErrorLine, writeLine } from '../utils/terminal.js';
 
 export const searchBranches = async () => {
   try {
     const branches = await getGitBranches();
 
     if (branches.length === 0) {
-      console.log(yellow('No branches found!'));
+      writeLine(yellow('No branches found!'));
       process.exit(0);
     }
 
@@ -20,16 +21,17 @@ export const searchBranches = async () => {
       );
 
       if (selectedBranch) {
-        console.log(`\nSelected branch: ${selectedBranch.name}`);
+        writeLine();
+        writeLine(`Selected branch: ${selectedBranch.name}`);
 
         try {
           await GitOperations.checkoutBranch(selectedBranch.name);
-          console.log(
+          writeLine(
             green(`Successfully checked out branch '${selectedBranch.name}'`)
           );
           process.exit(0);
         } catch (error) {
-          console.error(
+          writeErrorLine(
             red(
               `Error checking out branch: ${error instanceof Error ? error.message : String(error)}`
             )
@@ -37,19 +39,19 @@ export const searchBranches = async () => {
           process.exit(1);
         }
       } else {
-        console.log(yellow('No branch selected.'));
+        writeLine(yellow('No branch selected.'));
         process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
-        console.log(yellow('Selection cancelled.'));
+        writeLine(yellow('Selection cancelled.'));
         process.exit(0);
       }
       throw error; // Re-throw other errors
     }
   } catch (error) {
-    console.error(
+    writeErrorLine(
       red(
         `Error fetching branches: ${error instanceof Error ? error.message : String(error)}`
       )

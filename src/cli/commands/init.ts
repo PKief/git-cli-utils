@@ -6,6 +6,7 @@ import {
   getPerformanceStatus,
   isGitUtilsAvailable,
 } from '../utils/binary-detection.js';
+import { writeErrorLine, writeLine } from '../utils/terminal.js';
 
 const execAsync = promisify(exec);
 
@@ -53,26 +54,29 @@ async function setGitAlias(alias: string, command: string): Promise<boolean> {
     await execAsync(`git config --global alias.${alias} "${optimalCommand}"`);
     return true;
   } catch (error) {
-    console.error(`Error setting alias '${alias}': ${error}`);
+    writeErrorLine(`Error setting alias '${alias}': ${error}`);
     return false;
   }
 }
 
 async function init() {
-  console.log('Welcome to Git CLI Utilities Setup!\n');
+  writeLine('Welcome to Git CLI Utilities Setup!');
+  writeLine();
 
   // Check for global installation and inform user about performance
   const performanceStatus = await getPerformanceStatus();
-  console.log(`Performance Status: ${performanceStatus}\n`);
+  writeLine(`Performance Status: ${performanceStatus}`);
+  writeLine();
 
   const isGloballyAvailable = await isGitUtilsAvailable();
   if (!isGloballyAvailable) {
-    console.log(
+    writeLine(
       'Performance Tip: Install git-cli-utils globally for faster git aliases:'
     );
-    console.log('   npm install -g git-cli-utils');
-    console.log('   # or');
-    console.log('   bun install -g git-cli-utils\n');
+    writeLine('   npm install -g git-cli-utils');
+    writeLine('   # or');
+    writeLine('   bun install -g git-cli-utils');
+    writeLine();
 
     const continueWithNpx = await p.confirm({
       message:
@@ -81,12 +85,12 @@ async function init() {
     });
 
     if (p.isCancel(continueWithNpx) || !continueWithNpx) {
-      console.log(
+      writeLine(
         'Setup cancelled. Install globally and run "git-utils init" again for optimal performance.'
       );
       return;
     }
-    console.log('');
+    writeLine();
   }
 
   // Step 1: Multi-select commands
@@ -101,11 +105,13 @@ async function init() {
   });
 
   if (p.isCancel(selectedCommands) || selectedCommands.length === 0) {
-    console.log('No commands selected. Setup cancelled.');
+    writeLine('No commands selected. Setup cancelled.');
     return;
   }
 
-  console.log('\nSetting up aliases...\n');
+  writeLine();
+  writeLine('Setting up aliases...');
+  writeLine();
 
   // Step 2: Configure alias for each selected command
   for (const commandName of selectedCommands) {
@@ -126,7 +132,7 @@ async function init() {
       });
 
       if (p.isCancel(shouldOverride)) {
-        console.log(`Skipping ${command.name}...`);
+        writeLine(`Skipping ${command.name}...`);
         continue;
       }
 
@@ -144,7 +150,7 @@ async function init() {
         });
 
         if (p.isCancel(newAlias)) {
-          console.log(`Skipping ${command.name}...`);
+          writeLine(`Skipping ${command.name}...`);
           continue;
         }
 
@@ -165,7 +171,7 @@ async function init() {
       });
 
       if (p.isCancel(confirmAlias)) {
-        console.log(`Skipping ${command.name}...`);
+        writeLine(`Skipping ${command.name}...`);
         continue;
       }
 
@@ -175,17 +181,19 @@ async function init() {
     // Set the alias
     const success = await setGitAlias(aliasToUse, command.command);
     if (success) {
-      console.log(`Created alias: git ${aliasToUse} → ${command.name}`);
+      writeLine(`Created alias: git ${aliasToUse} → ${command.name}`);
     } else {
-      console.log(`Failed to create alias for ${command.name}`);
+      writeLine(`Failed to create alias for ${command.name}`);
     }
   }
 
-  console.log('\nSetup complete! You can now use:');
-  console.log('  git <alias>  - Run the aliased command');
-  console.log(
-    '  git config --global --get-regexp alias  - View all your aliases\n'
+  writeLine();
+  writeLine('Setup complete! You can now use:');
+  writeLine('  git <alias>  - Run the aliased command');
+  writeLine(
+    '  git config --global --get-regexp alias  - View all your aliases'
   );
+  writeLine();
 }
 
 export default init;

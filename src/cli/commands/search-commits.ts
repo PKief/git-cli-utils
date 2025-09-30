@@ -2,13 +2,14 @@ import { GitCommit, getGitCommits } from '../../core/git/commits.js';
 import { GitOperations } from '../../core/git/operations.js';
 import { green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
+import { writeErrorLine, writeLine } from '../utils/terminal.js';
 
 export const searchCommits = async () => {
   try {
     const commits = await getGitCommits();
 
     if (commits.length === 0) {
-      console.log(yellow('No commits found!'));
+      writeLine(yellow('No commits found!'));
       process.exit(0);
     }
 
@@ -21,38 +22,39 @@ export const searchCommits = async () => {
       );
 
       if (selectedCommit) {
-        console.log(`\nSelected commit: ${selectedCommit.hash}`);
-        console.log(`Subject: ${selectedCommit.subject}`);
+        writeLine();
+        writeLine(`Selected commit: ${selectedCommit.hash}`);
+        writeLine(`Subject: ${selectedCommit.subject}`);
 
         try {
           await GitOperations.copyToClipboard(selectedCommit.hash);
-          console.log(green('Commit SHA copied to clipboard!'));
+          writeLine(green('Commit SHA copied to clipboard!'));
           process.exit(0);
         } catch (error) {
-          console.error(
+          writeErrorLine(
             red(
               `Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}`
             )
           );
-          console.log(yellow(`Commit SHA: ${selectedCommit.hash}`));
+          writeLine(yellow(`Commit SHA: ${selectedCommit.hash}`));
           // In CI/non-interactive environments, don't fail the entire command just because clipboard failed
           const isCI = process.env.CI || process.env.GITHUB_ACTIONS;
           process.exit(isCI ? 0 : 1);
         }
       } else {
-        console.log(yellow('No commit selected.'));
+        writeLine(yellow('No commit selected.'));
         process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
-        console.log(yellow('Selection cancelled.'));
+        writeLine(yellow('Selection cancelled.'));
         process.exit(0);
       }
       throw error; // Re-throw other errors
     }
   } catch (error) {
-    console.error(
+    writeErrorLine(
       red(
         `Error fetching commits: ${error instanceof Error ? error.message : String(error)}`
       )

@@ -8,24 +8,17 @@ import { listAliases } from './cli/commands/list-aliases.js';
 import { searchBranches } from './cli/commands/search-branches.js';
 import { searchCommits } from './cli/commands/search-commits.js';
 import { topAuthors } from './cli/commands/top-authors.js';
-import { green, yellow } from './cli/ui/ansi.js';
-import { interactiveList } from './cli/ui/interactive-list.js';
+import {
+  type GitUtilsCommand,
+  showCommandSelector,
+} from './cli/ui/command-selector.js';
 
 // Get version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packagePath = join(__dirname, '..', 'package.json');
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'));
 
-// Define available commands for both interactive selection and CLI registration
-interface GitUtilsCommand {
-  name: string;
-  description: string;
-  action: (...args: string[]) => Promise<void>;
-  argument?: {
-    name: string;
-    description: string;
-  };
-}
+// Commands are now defined with the imported GitUtilsCommand interface
 
 // Centralized command definitions
 const commands: GitUtilsCommand[] = [
@@ -61,35 +54,7 @@ const commands: GitUtilsCommand[] = [
   },
 ];
 
-// Interactive command selector
-async function showCommandSelector(): Promise<void> {
-  console.log(green('🚀 Git CLI Utils'));
-  console.log('Select a command to run:\n');
-
-  try {
-    const selectedCommand = await interactiveList<GitUtilsCommand>(
-      commands,
-      (cmd: GitUtilsCommand) => `${cmd.name.padEnd(12)} ${cmd.description}`,
-      (cmd: GitUtilsCommand) => `${cmd.name} ${cmd.description}` // Search both name and description
-    );
-
-    if (selectedCommand) {
-      console.log(yellow(`\nExecuting: ${selectedCommand.name}\n`));
-      await selectedCommand.action();
-    } else {
-      console.log(yellow('No command selected. Exiting.'));
-      process.exit(0);
-    }
-  } catch (error) {
-    // Handle user cancellation gracefully
-    if (error instanceof Error && error.message === 'Selection cancelled') {
-      console.log(yellow('\nSelection cancelled. Exiting.'));
-      process.exit(0);
-    }
-    // Re-throw other errors
-    throw error;
-  }
-}
+// Command selector is now handled by the UI module
 
 // Register commands with the CLI program
 function registerCommands(program: Command): void {
@@ -121,7 +86,7 @@ async function main() {
   const args = process.argv.slice(2);
   if (args.length === 0) {
     // Show interactive command selector when no arguments provided
-    await showCommandSelector();
+    await showCommandSelector(commands);
   } else {
     // Parse arguments normally for direct command usage
     program.parse(process.argv);

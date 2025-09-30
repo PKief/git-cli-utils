@@ -6,6 +6,7 @@ import {
 import { GitOperations } from '../../core/git/operations.js';
 import { blue, green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
+import { writeErrorLine, writeLine } from '../utils/terminal.js';
 
 export const topAuthors = async (filePath?: string) => {
   try {
@@ -13,7 +14,7 @@ export const topAuthors = async (filePath?: string) => {
     const authors = await getFileAuthors(filePath);
 
     if (authors.length === 0) {
-      console.log(yellow('No authors found!'));
+      writeLine(yellow('No authors found!'));
       process.exit(0);
     }
 
@@ -52,46 +53,47 @@ export const topAuthors = async (filePath?: string) => {
       );
 
       if (selectedAuthor) {
-        console.log(
-          `\nSelected author: ${selectedAuthor.name} <${selectedAuthor.email}>`
+        writeLine();
+        writeLine(
+          `Selected author: ${selectedAuthor.name} <${selectedAuthor.email}>`
         );
-        console.log(`Total commits: ${selectedAuthor.commitCount}`);
+        writeLine(`Total commits: ${selectedAuthor.commitCount}`);
 
         if (selectedAuthor.lastCommitHash) {
-          console.log(
+          writeLine(
             `Last commit: #${selectedAuthor.lastCommitHash} on ${selectedAuthor.lastCommitDate}`
           );
         }
 
         try {
           await GitOperations.copyToClipboard(selectedAuthor.name);
-          console.log(green('Author name copied to clipboard!'));
+          writeLine(green('Author name copied to clipboard!'));
           process.exit(0);
         } catch (error) {
-          console.error(
+          writeErrorLine(
             red(
               `Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}`
             )
           );
-          console.log(yellow(`Author name: ${selectedAuthor.name}`));
+          writeLine(yellow(`Author name: ${selectedAuthor.name}`));
           // In CI/non-interactive environments, don't fail the entire command just because clipboard failed
           const isCI = process.env.CI || process.env.GITHUB_ACTIONS;
           process.exit(isCI ? 0 : 1);
         }
       } else {
-        console.log(yellow('No author selected.'));
+        writeLine(yellow('No author selected.'));
         process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
-        console.log(yellow('Selection cancelled.'));
+        writeLine(yellow('Selection cancelled.'));
         process.exit(0);
       }
       throw error; // Re-throw other errors
     }
   } catch (error) {
-    console.error(
+    writeErrorLine(
       red(
         `Error fetching authors: ${error instanceof Error ? error.message : String(error)}`
       )

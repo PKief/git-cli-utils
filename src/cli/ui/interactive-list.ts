@@ -71,8 +71,8 @@ function highlightText(
     const after = text.substring(exactIndex + searchTerm.length);
 
     if (isSelected) {
-      // For selected items, use magenta background for search matches to contrast with green selection background
-      return `${before}${highlightExact(match)}${highlightSelected(after)}`;
+      // For selected items, apply green background to all parts, with magenta highlight for search matches
+      return `${highlightSelected(before)}${highlightExact(match)}${highlightSelected(after)}`;
     } else {
       // Use cyan background with bright white text for better visibility
       return `${before}${highlightFuzzy(match)}${after}`;
@@ -106,13 +106,18 @@ function highlightText(
     ) {
       // Highlight matching character with different colors for selected vs unselected items
       if (isSelected) {
-        result += `${highlightExact(char)}${highlightSelected('')}`;
+        result += `${highlightExact(char)}`;
       } else {
         result += highlightFuzzy(char);
       }
       searchIndex++;
     } else {
-      result += char;
+      // For selected items, apply green background to non-matching characters too
+      if (isSelected) {
+        result += highlightSelected(char);
+      } else {
+        result += char;
+      }
     }
     normalizedIndex++;
   }

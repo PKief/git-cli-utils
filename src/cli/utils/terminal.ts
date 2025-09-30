@@ -22,3 +22,17 @@ export function writeLine(text: string = ''): void {
 export function clearScreen(): void {
   write('\u001b[2J\u001b[0;0H');
 }
+
+/**
+ * Utility function to write error text to stderr
+ */
+export function writeError(text: string): void {
+  process.stderr.write(text);
+}
+
+/**
+ * Utility function to write error text to stderr with a newline
+ */
+export function writeErrorLine(text: string = ''): void {
+  process.stderr.write(text + '\n');
+}
