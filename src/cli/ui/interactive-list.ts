@@ -189,20 +189,24 @@ export function interactiveList<T>(
     };
 
     const render = () => {
-      console.clear();
-      console.log(`${green('Search:')} ${searchTerm || '(type to search)'}`);
-      console.log(
-        'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit\n'
+      // Clear screen and move cursor to top-left
+      process.stdout.write('\u001b[2J\u001b[0;0H');
+
+      // Always show search line first - this should never scroll away
+      process.stdout.write(
+        `${green('Search:')} ${searchTerm || '(type to search)'}\n`
+      );
+      process.stdout.write(
+        'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit\n\n'
       );
 
       // Show optional header/description if provided
       if (header) {
-        console.log(header);
-        console.log(''); // Add blank line after header
+        process.stdout.write(header + '\n\n');
       }
 
       if (filteredItems.length === 0) {
-        console.log(yellow(`No items found matching "${searchTerm}"`));
+        process.stdout.write(yellow(`No items found matching "${searchTerm}"`));
         return;
       }
 
@@ -231,7 +235,7 @@ export function interactiveList<T>(
           const terminalWidth = process.stdout.columns || 80;
           const selectedLine = `=> ${highlightedText}`;
           const paddedLine = selectedLine.padEnd(terminalWidth - 1);
-          console.log(highlightSelected(paddedLine));
+          process.stdout.write(highlightSelected(paddedLine) + '\n');
         } else {
           // Non-selected items get search highlighting
           const highlightedText = highlightMatchesInDisplay(
@@ -239,7 +243,7 @@ export function interactiveList<T>(
             searchableText,
             searchTerm
           );
-          console.log(`   ${highlightedText}`);
+          process.stdout.write(`   ${highlightedText}\n`);
         }
       }
     };
