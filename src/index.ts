@@ -66,18 +66,28 @@ async function showCommandSelector(): Promise<void> {
   console.log(green('🚀 Git CLI Utils'));
   console.log('Select a command to run:\n');
 
-  const selectedCommand = await interactiveList<GitUtilsCommand>(
-    commands,
-    (cmd: GitUtilsCommand) => `${cmd.name.padEnd(12)} ${cmd.description}`,
-    (cmd: GitUtilsCommand) => `${cmd.name} ${cmd.description}` // Search both name and description
-  );
+  try {
+    const selectedCommand = await interactiveList<GitUtilsCommand>(
+      commands,
+      (cmd: GitUtilsCommand) => `${cmd.name.padEnd(12)} ${cmd.description}`,
+      (cmd: GitUtilsCommand) => `${cmd.name} ${cmd.description}` // Search both name and description
+    );
 
-  if (selectedCommand) {
-    console.log(yellow(`\nExecuting: ${selectedCommand.name}\n`));
-    await selectedCommand.action();
-  } else {
-    console.log(yellow('No command selected. Exiting.'));
-    process.exit(0);
+    if (selectedCommand) {
+      console.log(yellow(`\nExecuting: ${selectedCommand.name}\n`));
+      await selectedCommand.action();
+    } else {
+      console.log(yellow('No command selected. Exiting.'));
+      process.exit(0);
+    }
+  } catch (error) {
+    // Handle user cancellation gracefully
+    if (error instanceof Error && error.message === 'Selection cancelled') {
+      console.log(yellow('\nSelection cancelled. Exiting.'));
+      process.exit(0);
+    }
+    // Re-throw other errors
+    throw error;
   }
 }
 

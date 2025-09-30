@@ -12,32 +12,41 @@ export const searchBranches = async () => {
       process.exit(0);
     }
 
-    const selectedBranch = await interactiveList<GitBranch>(
-      branches,
-      (branch: GitBranch) => `${branch.date} - ${branch.name}`,
-      (branch: GitBranch) => branch.name // Only search branch names, not dates
-    );
+    try {
+      const selectedBranch = await interactiveList<GitBranch>(
+        branches,
+        (branch: GitBranch) => `${branch.date} - ${branch.name}`,
+        (branch: GitBranch) => branch.name // Only search branch names, not dates
+      );
 
-    if (selectedBranch) {
-      console.log(`\nSelected branch: ${selectedBranch.name}`);
+      if (selectedBranch) {
+        console.log(`\nSelected branch: ${selectedBranch.name}`);
 
-      try {
-        await GitOperations.checkoutBranch(selectedBranch.name);
-        console.log(
-          green(`Successfully checked out branch '${selectedBranch.name}'`)
-        );
+        try {
+          await GitOperations.checkoutBranch(selectedBranch.name);
+          console.log(
+            green(`Successfully checked out branch '${selectedBranch.name}'`)
+          );
+          process.exit(0);
+        } catch (error) {
+          console.error(
+            red(
+              `Error checking out branch: ${error instanceof Error ? error.message : String(error)}`
+            )
+          );
+          process.exit(1);
+        }
+      } else {
+        console.log(yellow('No branch selected.'));
         process.exit(0);
-      } catch (error) {
-        console.error(
-          red(
-            `Error checking out branch: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-        process.exit(1);
       }
-    } else {
-      console.log(yellow('No branch selected.'));
-      process.exit(0);
+    } catch (error) {
+      // Handle user cancellation gracefully
+      if (error instanceof Error && error.message === 'Selection cancelled') {
+        console.log(yellow('Selection cancelled.'));
+        process.exit(0);
+      }
+      throw error; // Re-throw other errors
     }
   } catch (error) {
     console.error(
