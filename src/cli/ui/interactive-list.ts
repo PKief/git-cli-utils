@@ -1,4 +1,5 @@
 import * as readline from 'readline';
+import { clearScreen, write, writeLine } from '../utils/terminal.js';
 import {
   green,
   highlightExact,
@@ -190,23 +191,23 @@ export function interactiveList<T>(
 
     const render = () => {
       // Clear screen and move cursor to top-left
-      process.stdout.write('\u001b[2J\u001b[0;0H');
+      clearScreen();
 
       // Always show search line first - this should never scroll away
-      process.stdout.write(
-        `${green('Search:')} ${searchTerm || '(type to search)'}\n`
+      writeLine(`${green('Search:')} ${searchTerm || '(type to search)'}`);
+      writeLine(
+        'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit'
       );
-      process.stdout.write(
-        'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit\n\n'
-      );
+      writeLine();
 
       // Show optional header/description if provided
       if (header) {
-        process.stdout.write(header + '\n\n');
+        writeLine(header);
+        writeLine();
       }
 
       if (filteredItems.length === 0) {
-        process.stdout.write(yellow(`No items found matching "${searchTerm}"`));
+        write(yellow(`No items found matching "${searchTerm}"`));
         return;
       }
 
@@ -235,7 +236,7 @@ export function interactiveList<T>(
           const terminalWidth = process.stdout.columns || 80;
           const selectedLine = `=> ${highlightedText}`;
           const paddedLine = selectedLine.padEnd(terminalWidth - 1);
-          process.stdout.write(highlightSelected(paddedLine) + '\n');
+          writeLine(highlightSelected(paddedLine));
         } else {
           // Non-selected items get search highlighting
           const highlightedText = highlightMatchesInDisplay(
@@ -243,7 +244,7 @@ export function interactiveList<T>(
             searchableText,
             searchTerm
           );
-          process.stdout.write(`   ${highlightedText}\n`);
+          writeLine(`   ${highlightedText}`);
         }
       }
     };
