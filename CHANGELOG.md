@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v1.8.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.5...v1.8.0)
+
+### 🚀 Enhancements
+
+- Add list-aliases command to display current git aliases ([19257fa](https://github.com/PKief/git-cli-utils/commit/19257fa))
+- Enhance list-aliases command to display aliases interactively ([5c8c1c8](https://github.com/PKief/git-cli-utils/commit/5c8c1c8))
+- Add terminal utility functions for consistent stdout handling ([252770d](https://github.com/PKief/git-cli-utils/commit/252770d))
+- Implement terminal utility functions for consistent error handling and output ([fedc8c5](https://github.com/PKief/git-cli-utils/commit/fedc8c5))
+
+### 💅 Refactors
+
+- Rename commands from 'search-branches', 'search-commits', and 'top-authors' to 'branches', 'commits', and 'authors' respectively ([a45f2fc](https://github.com/PKief/git-cli-utils/commit/a45f2fc))
+- Handle user cancellation gracefully in interactive commands ([e43f8d8](https://github.com/PKief/git-cli-utils/commit/e43f8d8))
+- Improve console output handling in interactive list ([67b5b6d](https://github.com/PKief/git-cli-utils/commit/67b5b6d))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.7.5
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.4...v1.7.5)
