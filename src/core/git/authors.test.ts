@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
-import { getFileAuthors, getLastAuthor } from './authors';
+import { getAuthorTimeline, getFileAuthors, getLastAuthor } from './authors';
 
 // Mock the GitExecutor
 const mockExecuteCommand = mock();
@@ -230,6 +230,149 @@ John Doe|john.doe@example.com|abc125|`;
         lastCommitHash: 'abc123', // First (most recent) commit has hash
         lastCommitDate: '25.09.2025 14:30', // First commit has date
       });
+    });
+  });
+
+  describe('getAuthorTimeline', () => {
+    test('should return timeline data for an author', async () => {
+      const authorEmail = 'john.doe@example.com';
+      const mockGitLogOutput = `2023
+2023
+2023
+2022
+2022
+2021`;
+      const mockRepoFirstCommit = '2020';
+
+      mockExecuteCommand
+        .mockResolvedValueOnce({
+          stdout: mockRepoFirstCommit,
+          stderr: '',
+        })
+        .mockResolvedValueOnce({
+          stdout: mockGitLogOutput,
+          stderr: '',
+        });
+
+      const result = await getAuthorTimeline(authorEmail);
+
+      expect(result.authorYears).toEqual([2021, 2022, 2023]);
+      expect(result.totalCommits).toBe(6);
+      expect(result.firstCommitYear).toBe(2021);
+      expect(result.lastCommitYear).toBe(2023);
+      expect(result.repositoryFirstYear).toBe(2020);
+      expect(result.repositoryLastYear).toBe(new Date().getFullYear());
+
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        'git log --reverse --pretty=format:"%cd" --date=format:"%Y" | head -1'
+      );
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        `git log --pretty=format:"%cd" --date=format:"%Y" --author="${authorEmail}"`
+      );
+    });
+
+    test('should return timeline data for an author on specific file', async () => {
+      const authorEmail = 'jane.smith@example.com';
+      const filePath = 'src/test.ts';
+      const mockGitLogOutput = `2024
+2024
+2023`;
+      const mockRepoFirstCommit = '2020';
+
+      mockExecuteCommand
+        .mockResolvedValueOnce({
+          stdout: mockRepoFirstCommit,
+          stderr: '',
+        })
+        .mockResolvedValueOnce({
+          stdout: mockGitLogOutput,
+          stderr: '',
+        });
+
+      const result = await getAuthorTimeline(authorEmail, filePath);
+
+      expect(result.authorYears).toEqual([2023, 2024]);
+      expect(result.totalCommits).toBe(3);
+      expect(result.firstCommitYear).toBe(2023);
+      expect(result.lastCommitYear).toBe(2024);
+      expect(result.repositoryFirstYear).toBe(2020);
+      expect(result.repositoryLastYear).toBe(new Date().getFullYear());
+
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        `git log --reverse --pretty=format:"%cd" --date=format:"%Y" -- "${filePath}" | head -1`
+      );
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        `git log --pretty=format:"%cd" --date=format:"%Y" --author="${authorEmail}" -- "${filePath}"`
+      );
+    });
+
+    test('should return empty timeline when no commits found', async () => {
+      const authorEmail = 'unknown@example.com';
+      const mockRepoFirstCommit = '2020';
+
+      mockExecuteCommand
+        .mockResolvedValueOnce({
+          stdout: mockRepoFirstCommit,
+          stderr: '',
+        })
+        .mockResolvedValueOnce({
+          stdout: '',
+          stderr: '',
+        });
+
+      const result = await getAuthorTimeline(authorEmail);
+
+      expect(result.authorYears).toEqual([]);
+      expect(result.totalCommits).toBe(0);
+      expect(result.firstCommitYear).toBe(0);
+      expect(result.lastCommitYear).toBe(0);
+      expect(result.repositoryFirstYear).toBe(2020);
+      expect(result.repositoryLastYear).toBe(new Date().getFullYear());
+    });
+
+    test('should handle git errors gracefully', async () => {
+      const authorEmail = 'error@example.com';
+
+      mockExecuteCommand.mockRejectedValue(new Error('Git command failed'));
+
+      const result = await getAuthorTimeline(authorEmail);
+
+      expect(result.authorYears).toEqual([]);
+      expect(result.totalCommits).toBe(0);
+      expect(result.firstCommitYear).toBe(0);
+      expect(result.lastCommitYear).toBe(0);
+      expect(result.repositoryFirstYear).toBe(new Date().getFullYear());
+      expect(result.repositoryLastYear).toBe(new Date().getFullYear());
+    });
+
+    test('should handle malformed year data', async () => {
+      const authorEmail = 'john.doe@example.com';
+      const mockGitLogOutput = `2023
+invalid
+2022
+
+2021
+not-a-year`;
+      const mockRepoFirstCommit = '2019';
+
+      mockExecuteCommand
+        .mockResolvedValueOnce({
+          stdout: mockRepoFirstCommit,
+          stderr: '',
+        })
+        .mockResolvedValueOnce({
+          stdout: mockGitLogOutput,
+          stderr: '',
+        });
+
+      const result = await getAuthorTimeline(authorEmail);
+
+      expect(result.authorYears).toEqual([2021, 2022, 2023]);
+      expect(result.totalCommits).toBe(3); // Only valid years counted
+      expect(result.firstCommitYear).toBe(2021);
+      expect(result.lastCommitYear).toBe(2023);
+      expect(result.repositoryFirstYear).toBe(2019);
+      expect(result.repositoryLastYear).toBe(new Date().getFullYear());
     });
   });
 });

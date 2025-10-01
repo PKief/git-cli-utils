@@ -15,6 +15,15 @@ export interface LastAuthor {
   date: string;
 }
 
+export interface AuthorTimeline {
+  authorYears: number[];
+  totalCommits: number;
+  firstCommitYear: number;
+  lastCommitYear: number;
+  repositoryFirstYear: number;
+  repositoryLastYear: number;
+}
+
 /**
  * Get the last author who worked on a specific file
  */
@@ -114,5 +123,100 @@ export const getFileAuthors = async (
     return authors;
   } catch (error) {
     throw error;
+  }
+};
+
+/**
+ * Get repository timeline bounds (first commit to today)
+ */
+const getRepositoryTimeline = async (
+  filePath?: string
+): Promise<{ firstYear: number; lastYear: number }> => {
+  try {
+    // Get the very first commit year in the repository (or file)
+    let firstCommitCommand =
+      'git log --reverse --pretty=format:"%cd" --date=format:"%Y" | head -1';
+    if (filePath) {
+      firstCommitCommand = `git log --reverse --pretty=format:"%cd" --date=format:"%Y" -- "${filePath}" | head -1`;
+    }
+
+    const firstResult = await gitExecutor.executeCommand(firstCommitCommand);
+    const firstYear =
+      Number.parseInt(firstResult.stdout.trim()) || new Date().getFullYear();
+
+    // Last year is always current year (today)
+    const currentYear = new Date().getFullYear();
+
+    return {
+      firstYear,
+      lastYear: currentYear,
+    };
+  } catch {
+    const currentYear = new Date().getFullYear();
+    return {
+      firstYear: currentYear,
+      lastYear: currentYear,
+    };
+  }
+};
+
+/**
+ * Get a timeline showing when an author was active within the full repository timeline
+ */
+export const getAuthorTimeline = async (
+  authorEmail: string,
+  filePath?: string
+): Promise<AuthorTimeline> => {
+  try {
+    // Get repository timeline bounds
+    const repoTimeline = await getRepositoryTimeline(filePath);
+
+    // Get all commits by this author with just the year
+    let command = `git log --pretty=format:"%cd" --date=format:"%Y" --author="${authorEmail}"`;
+
+    if (filePath) {
+      command += ` -- "${filePath}"`;
+    }
+
+    const result = await gitExecutor.executeCommand(command);
+    const years = result.stdout
+      .split('\n')
+      .filter((line) => line.trim())
+      .map((year) => Number.parseInt(year.trim()))
+      .filter((year) => !Number.isNaN(year));
+
+    if (years.length === 0) {
+      return {
+        authorYears: [],
+        totalCommits: 0,
+        firstCommitYear: 0,
+        lastCommitYear: 0,
+        repositoryFirstYear: repoTimeline.firstYear,
+        repositoryLastYear: repoTimeline.lastYear,
+      };
+    }
+
+    // Get unique years and sort them
+    const uniqueYears = [...new Set(years)].sort((a, b) => a - b);
+
+    return {
+      authorYears: uniqueYears,
+      totalCommits: years.length,
+      firstCommitYear: uniqueYears[0],
+      lastCommitYear: uniqueYears[uniqueYears.length - 1],
+      repositoryFirstYear: repoTimeline.firstYear,
+      repositoryLastYear: repoTimeline.lastYear,
+    };
+  } catch {
+    const currentYear = new Date().getFullYear();
+    // Return empty timeline on error
+    return {
+      authorYears: [],
+      totalCommits: 0,
+      firstCommitYear: 0,
+      lastCommitYear: 0,
+      repositoryFirstYear: currentYear,
+      repositoryLastYear: currentYear,
+    };
   }
 };

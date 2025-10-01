@@ -1,12 +1,68 @@
 import {
+  AuthorTimeline,
   FileAuthor,
+  getAuthorTimeline,
   getFileAuthors,
   getLastAuthor,
 } from '../../core/git/authors.js';
 import { GitOperations } from '../../core/git/operations.js';
-import { blue, green, red, yellow } from '../ui/ansi.js';
+import { blue, gray, green, red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 import { writeErrorLine, writeLine } from '../utils/terminal.js';
+
+/**
+ * Format and display a simple timeline showing years of activity
+ */
+const displayTimeline = (
+  timeline: AuthorTimeline,
+  authorName: string,
+  filePath?: string
+) => {
+  if (timeline.authorYears.length === 0) {
+    writeLine(yellow('No timeline data available.'));
+    return;
+  }
+
+  const yearsActive = timeline.authorYears.length;
+  const totalTimespan =
+    timeline.repositoryLastYear - timeline.repositoryFirstYear + 1;
+
+  writeLine();
+  writeLine(
+    gray(
+      `Repository timeline: ${timeline.repositoryFirstYear} - ${timeline.repositoryLastYear}`
+    )
+  );
+
+  // Create a timeline spanning the entire repository history
+  const minYear = timeline.repositoryFirstYear;
+  const maxYear = timeline.repositoryLastYear;
+  const yearRange = maxYear - minYear;
+
+  if (yearRange === 0) {
+    // Repository has only one year of activity
+    const hasActivity = timeline.authorYears.includes(minYear);
+    const symbol = hasActivity ? green('●') : gray('─');
+    writeLine(`${symbol} ${minYear}`);
+  } else {
+    // Multi-year repository timeline
+    let timelineStr = '';
+
+    for (let i = 0; i <= yearRange; i++) {
+      const currentYear = minYear + i;
+      if (timeline.authorYears.includes(currentYear)) {
+        timelineStr += green('●');
+      } else {
+        timelineStr += gray('─');
+      }
+    }
+
+    writeLine(`${minYear} ${timelineStr} ${maxYear}`);
+    writeLine(
+      `Active in ${green(yearsActive.toString())} of ${totalTimespan} years`
+    );
+  }
+};
 
 export const topAuthors = async (filePath?: string) => {
   try {
@@ -54,20 +110,25 @@ export const topAuthors = async (filePath?: string) => {
 
       if (selectedAuthor) {
         writeLine();
+        writeLine(`${selectedAuthor.name} <${selectedAuthor.email}>`);
         writeLine(
-          `Selected author: ${selectedAuthor.name} <${selectedAuthor.email}>`
+          `${selectedAuthor.commitCount} commits | Last: #${selectedAuthor.lastCommitHash} on ${selectedAuthor.lastCommitDate}`
         );
-        writeLine(`Total commits: ${selectedAuthor.commitCount}`);
 
-        if (selectedAuthor.lastCommitHash) {
-          writeLine(
-            `Last commit: #${selectedAuthor.lastCommitHash} on ${selectedAuthor.lastCommitDate}`
+        // Show the timeline
+        try {
+          const timeline = await getAuthorTimeline(
+            selectedAuthor.email,
+            filePath
           );
+          displayTimeline(timeline, selectedAuthor.name, filePath);
+        } catch {
+          // Don't fail the entire command if timeline fails
+          writeLine(yellow('Could not generate timeline data.'));
         }
 
         try {
           await GitOperations.copyToClipboard(selectedAuthor.name);
-          writeLine(green('Author name copied to clipboard!'));
           process.exit(0);
         } catch (error) {
           writeErrorLine(
