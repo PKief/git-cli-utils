@@ -90,39 +90,21 @@ describe('authors', () => {
 
   describe('getFileAuthors', () => {
     test('should return authors sorted by commit count for repository', async () => {
-      // Mock the raw git log output (what the new implementation expects)
-      const mockGitLogOutput = `John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-Jane Smith <jane.smith@example.com>
-Jane Smith <jane.smith@example.com>
-Jane Smith <jane.smith@example.com>
-Bob Wilson <bob.wilson@example.com>`;
+      // Mock the optimized git log output with all data in one call
+      // Format: "author_name|author_email|commit_hash|commit_date"
+      const mockGitLogOutput = `John Doe|john.doe@example.com|abc123|25.09.2025 14:30
+John Doe|john.doe@example.com|abc124|24.09.2025 13:20
+John Doe|john.doe@example.com|abc125|23.09.2025 12:10
+John Doe|john.doe@example.com|abc126|22.09.2025 11:00
+John Doe|john.doe@example.com|abc127|21.09.2025 10:30
+Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15
+Jane Smith|jane.smith@example.com|def457|23.09.2025 08:30
+Jane Smith|jane.smith@example.com|def458|22.09.2025 07:45
+Bob Wilson|bob.wilson@example.com|ghi789|23.09.2025 16:45`;
 
-      const mockLastCommitOutputs = [
-        'abc123|25.09.2025 14:30', // John Doe
-        'def456|24.09.2025 09:15', // Jane Smith
-        'ghi789|23.09.2025 16:45', // Bob Wilson
-      ];
-
-      let callCount = 0;
-      mockExecuteCommand.mockImplementation(() => {
-        if (callCount === 0) {
-          callCount++;
-          return Promise.resolve({
-            stdout: mockGitLogOutput,
-            stderr: '',
-          });
-        } else {
-          const output = mockLastCommitOutputs[callCount - 1];
-          callCount++;
-          return Promise.resolve({
-            stdout: output,
-            stderr: '',
-          });
-        }
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockGitLogOutput,
+        stderr: '',
       });
 
       const result = await getFileAuthors();
@@ -132,47 +114,52 @@ Bob Wilson <bob.wilson@example.com>`;
       // Should be sorted by commit count descending
       expect(result[0].name).toBe('John Doe');
       expect(result[0].commitCount).toBe(5);
+      expect(result[0].lastCommitHash).toBe('abc123'); // Most recent commit
+      expect(result[0].lastCommitDate).toBe('25.09.2025 14:30');
+
       expect(result[1].name).toBe('Jane Smith');
       expect(result[1].commitCount).toBe(3);
+      expect(result[1].lastCommitHash).toBe('def456');
+      expect(result[1].lastCommitDate).toBe('24.09.2025 09:15');
+
       expect(result[2].name).toBe('Bob Wilson');
       expect(result[2].commitCount).toBe(1);
+      expect(result[2].lastCommitHash).toBe('ghi789');
+      expect(result[2].lastCommitDate).toBe('23.09.2025 16:45');
+
+      // Verify only one git command was called (optimized!)
+      expect(mockExecuteCommand).toHaveBeenCalledTimes(1);
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        'git log --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M"'
+      );
     });
 
     test('should return authors for specific file', async () => {
       const filePath = 'src/test.ts';
-      // Mock the raw git log output for a specific file
-      const mockGitLogOutput = `John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-Jane Smith <jane.smith@example.com>`;
+      // Mock the optimized git log output for a specific file
+      const mockGitLogOutput = `John Doe|john.doe@example.com|abc123|25.09.2025 14:30
+John Doe|john.doe@example.com|abc124|24.09.2025 13:20
+Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15`;
 
-      const mockLastCommitOutputs = [
-        'abc123|25.09.2025 14:30',
-        'def456|24.09.2025 09:15',
-      ];
-
-      let callCount = 0;
-      mockExecuteCommand.mockImplementation(() => {
-        if (callCount === 0) {
-          callCount++;
-          return Promise.resolve({
-            stdout: mockGitLogOutput,
-            stderr: '',
-          });
-        } else {
-          const output = mockLastCommitOutputs[callCount - 1];
-          callCount++;
-          return Promise.resolve({
-            stdout: output,
-            stderr: '',
-          });
-        }
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockGitLogOutput,
+        stderr: '',
       });
 
       const result = await getFileAuthors(filePath);
 
       expect(result).toHaveLength(2);
       expect(result[0].commitCount).toBe(2); // John Doe should be first
+      expect(result[0].name).toBe('John Doe');
+      expect(result[0].lastCommitHash).toBe('abc123');
       expect(result[1].commitCount).toBe(1); // Jane Smith should be second
+      expect(result[1].name).toBe('Jane Smith');
+      expect(result[1].lastCommitHash).toBe('def456');
+
+      // Verify the correct command was called with file path
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        `git log --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M" -- "${filePath}"`
+      );
     });
 
     test('should return empty array when no authors found', async () => {
@@ -195,77 +182,53 @@ Jane Smith <jane.smith@example.com>`;
     });
 
     test('should handle malformed log output gracefully', async () => {
-      // Mock raw git log output with some malformed lines
+      // Mock git log output with some malformed lines (missing parts)
       const mockGitLogOutput = `invalid line without proper format
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-another invalid line
-Jane Smith <jane.smith@example.com>
-Jane Smith <jane.smith@example.com>`;
+John Doe|john.doe@example.com|abc123|25.09.2025 14:30
+John Doe|john.doe@example.com|abc124|24.09.2025 13:20
+John Doe|john.doe@example.com|abc125|23.09.2025 12:10
+John Doe|john.doe@example.com|abc126|22.09.2025 11:00
+John Doe|john.doe@example.com|abc127|21.09.2025 10:30
+another invalid line with|only|two parts
+Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15
+Jane Smith|jane.smith@example.com|def457|23.09.2025 08:30`;
 
-      const mockLastCommitOutputs = [
-        'abc123|25.09.2025 14:30',
-        'def456|24.09.2025 09:15',
-      ];
-
-      let callCount = 0;
-      mockExecuteCommand.mockImplementation(() => {
-        if (callCount === 0) {
-          callCount++;
-          return Promise.resolve({
-            stdout: mockGitLogOutput,
-            stderr: '',
-          });
-        } else {
-          const output = mockLastCommitOutputs[callCount - 1];
-          callCount++;
-          return Promise.resolve({
-            stdout: output,
-            stderr: '',
-          });
-        }
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockGitLogOutput,
+        stderr: '',
       });
 
       const result = await getFileAuthors();
 
-      // Should only include the valid entries
+      // Should only include the valid entries (lines with exactly 4 parts)
       expect(result).toHaveLength(2);
       expect(result[0].name).toBe('John Doe');
+      expect(result[0].commitCount).toBe(5);
       expect(result[1].name).toBe('Jane Smith');
+      expect(result[1].commitCount).toBe(2);
     });
 
-    test('should handle errors in getLastCommitByAuthor gracefully', async () => {
-      const mockGitLogOutput = `John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>
-John Doe <john.doe@example.com>`;
+    test('should handle empty commit info gracefully', async () => {
+      // Mock git log output where some commits have missing hash or date info
+      const mockGitLogOutput = `John Doe|john.doe@example.com|abc123|25.09.2025 14:30
+John Doe|john.doe@example.com||
+John Doe|john.doe@example.com|abc125|`;
 
-      let callCount = 0;
-      mockExecuteCommand.mockImplementation(() => {
-        if (callCount === 0) {
-          callCount++;
-          return Promise.resolve({
-            stdout: mockGitLogOutput,
-            stderr: '',
-          });
-        } else {
-          // Mock the getLastCommitByAuthor call to fail
-          return Promise.reject(new Error('Last commit query failed'));
-        }
+      mockExecuteCommand.mockResolvedValue({
+        stdout: mockGitLogOutput,
+        stderr: '',
       });
 
       const result = await getFileAuthors();
 
-      // Should still return the author but without last commit info
+      // Should still return the author with available info
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         name: 'John Doe',
         email: 'john.doe@example.com',
         commitCount: 3,
-        lastCommitHash: '',
-        lastCommitDate: '',
+        lastCommitHash: 'abc123', // First (most recent) commit has hash
+        lastCommitDate: '25.09.2025 14:30', // First commit has date
       });
     });
   });

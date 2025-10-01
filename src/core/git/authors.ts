@@ -43,106 +43,76 @@ export const getLastAuthor = async (
 
 /**
  * Get authors sorted by their commit count on a specific file
+ * Optimized version that uses a single git command to get all data at once
  */
 export const getFileAuthors = async (
   filePath?: string
 ): Promise<FileAuthor[]> => {
   try {
-    // Use pure git log without shell piping to ensure Windows compatibility
-    // Use double quotes instead of single quotes for Windows Command Prompt compatibility
-    let command = 'git log --pretty=format:"%an <%ae>"';
-
-    if (filePath) {
-      command = `git log --pretty=format:"%an <%ae>" -- "${filePath}"`;
-    }
-
-    const result = await gitExecutor.executeCommand(command);
-    const authors: Map<string, FileAuthor> = new Map();
-
-    // Process the output line by line and count manually (JavaScript equivalent of sort | uniq -c)
-    const lines = result.stdout.split('\n');
-    const authorCounts: Map<
-      string,
-      { name: string; email: string; count: number }
-    > = new Map();
-
-    lines.forEach((line: string) => {
-      if (!line.trim()) return;
-
-      // Parse format: "John Doe <john.doe@example.com>"
-      const match = line.match(/^(.+?)\s+<(.+?)>$/);
-      if (!match) return;
-
-      const [, name, email] = match;
-      const key = email; // Use email as unique key
-
-      if (authorCounts.has(key)) {
-        const existing = authorCounts.get(key)!;
-        existing.count++;
-      } else {
-        authorCounts.set(key, { name: name.trim(), email, count: 1 });
-      }
-    });
-
-    // Convert to FileAuthor format
-    authorCounts.forEach(({ name, email, count }) => {
-      authors.set(email, {
-        name,
-        email,
-        commitCount: count,
-        lastCommitHash: '',
-        lastCommitDate: '',
-      });
-    });
-
-    // Get last commit info for each author
-    const authorList = Array.from(authors.values());
-
-    // Get last commit details for each author
-    const promises = authorList.map(async (author) => {
-      try {
-        const lastCommit = await getLastCommitByAuthor(author.email, filePath);
-        return {
-          ...author,
-          lastCommitHash: lastCommit?.hash || '',
-          lastCommitDate: lastCommit?.date || '',
-        };
-      } catch {
-        return author;
-      }
-    });
-
-    const authorsWithLastCommit = await Promise.all(promises);
-    // Sort by commit count descending
-    authorsWithLastCommit.sort((a, b) => b.commitCount - a.commitCount);
-    return authorsWithLastCommit;
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
- * Get the last commit by a specific author for a file or repository
- */
-const getLastCommitByAuthor = async (
-  authorEmail: string,
-  filePath?: string
-): Promise<{ hash: string; date: string } | null> => {
-  try {
-    let command = `git log -1 --pretty=format:"%h|%cd" --date=format:"%d.%m.%Y %H:%M" --author="${authorEmail}"`;
+    // Use a single git command to get all commit data with author info, hash, and date
+    // Format: "author_name|author_email|commit_hash|commit_date"
+    let command =
+      'git log --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M"';
 
     if (filePath) {
       command += ` -- "${filePath}"`;
     }
+
     const result = await gitExecutor.executeCommand(command);
+    const lines = result.stdout.split('\n').filter((line) => line.trim());
 
-    if (!result.stdout.trim()) {
-      return null;
-    }
+    // Track authors and their commit info
+    const authorData: Map<
+      string,
+      {
+        name: string;
+        email: string;
+        commits: Array<{ hash: string; date: string }>;
+      }
+    > = new Map();
 
-    const [hash, date] = result.stdout.split('|');
-    return { hash, date };
-  } catch {
-    return null;
+    // Process all commits in a single pass
+    lines.forEach((line: string) => {
+      if (!line.trim()) return;
+
+      const parts = line.split('|');
+      if (parts.length !== 4) return;
+
+      const [name, email, hash, date] = parts;
+      const key = email.trim(); // Use email as unique key
+
+      if (authorData.has(key)) {
+        const existing = authorData.get(key)!;
+        existing.commits.push({ hash: hash.trim(), date: date.trim() });
+      } else {
+        authorData.set(key, {
+          name: name.trim(),
+          email: key,
+          commits: [{ hash: hash.trim(), date: date.trim() }],
+        });
+      }
+    });
+
+    // Convert to FileAuthor format with last commit info
+    const authors: FileAuthor[] = Array.from(authorData.values()).map(
+      ({ name, email, commits }) => {
+        // The first commit in the list is the most recent (git log is in reverse chronological order)
+        const lastCommit = commits[0];
+
+        return {
+          name,
+          email,
+          commitCount: commits.length,
+          lastCommitHash: lastCommit?.hash || '',
+          lastCommitDate: lastCommit?.date || '',
+        };
+      }
+    );
+
+    // Sort by commit count descending
+    authors.sort((a, b) => b.commitCount - a.commitCount);
+    return authors;
+  } catch (error) {
+    throw error;
   }
 };
