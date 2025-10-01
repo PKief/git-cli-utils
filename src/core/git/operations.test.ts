@@ -8,6 +8,7 @@ import {
   spyOn,
 } from 'bun:test';
 import clipboardy from 'clipboardy';
+import * as terminal from '../../cli/utils/terminal.js';
 import { GitOperations } from './operations';
 
 // Mock the GitExecutor
@@ -21,24 +22,24 @@ mock.module('./executor.js', () => ({
 
 // Mock dependencies
 let mockClipboardy: ReturnType<typeof spyOn>;
-let consoleSpy: ReturnType<typeof spyOn>;
+let mockWriteLine: ReturnType<typeof spyOn>;
 
 beforeEach(() => {
   // Reset GitExecutor mock
   mockExecuteCommand.mockClear();
 
+  // Spy on terminal writeLine instead of globally mocking the module
+  mockWriteLine = spyOn(terminal, 'writeLine').mockImplementation(() => {});
+
   // Mock clipboardy
   mockClipboardy = spyOn(clipboardy, 'write').mockResolvedValue();
-
-  // Mock console.log to avoid output during tests
-  consoleSpy = spyOn(console, 'log').mockImplementation(() => {});
 });
 
 afterEach(() => {
   // Restore all mocks
   mockExecuteCommand.mockReset();
+  mockWriteLine.mockRestore();
   mockClipboardy.mockRestore();
-  consoleSpy.mockRestore();
 });
 
 describe('GitOperations', () => {
@@ -59,10 +60,7 @@ describe('GitOperations', () => {
       expect(mockExecuteCommand).toHaveBeenCalledWith(
         'git checkout "feature/test"'
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "Switched to branch 'feature/test'"
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(mockStdout);
+      expect(mockWriteLine).toHaveBeenCalledWith(mockStdout.trim());
     });
 
     it('should handle already on branch message', async () => {
@@ -78,7 +76,7 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith('git checkout "main"');
-      expect(consoleSpy).toHaveBeenCalledWith("Switched to branch 'main'");
+      expect(mockWriteLine).toHaveBeenCalledWith("Already on 'main'");
     });
 
     it('should throw error when git checkout fails', async () => {
@@ -98,7 +96,6 @@ describe('GitOperations', () => {
     it('should not throw error for stderr when git command succeeds', async () => {
       // Arrange
       const branchName = 'test';
-      const consoleSpy = spyOn(console, 'log').mockImplementation(() => {});
       mockExecuteCommand.mockResolvedValue({
         stdout: '',
         stderr: 'Informational message or hint',
@@ -109,12 +106,9 @@ describe('GitOperations', () => {
         GitOperations.checkoutBranch(branchName)
       ).resolves.toBeUndefined();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Informational message or hint');
-      expect(consoleSpy).toHaveBeenCalledWith(
-        `Switched to branch '${branchName}'`
+      expect(mockWriteLine).toHaveBeenCalledWith(
+        'Informational message or hint'
       );
-
-      consoleSpy.mockRestore();
     });
 
     it('should handle branch names with special characters', async () => {
@@ -132,7 +126,10 @@ describe('GitOperations', () => {
       expect(mockExecuteCommand).toHaveBeenCalledWith(
         'git checkout "feature/user-123"'
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(mockWriteLine).toHaveBeenCalledWith(
+        "Switched to a new branch 'feature/user-123'"
+      );
+      expect(mockWriteLine).toHaveBeenCalledWith(
         "Switched to branch 'feature/user-123'"
       );
     });
@@ -149,7 +146,9 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
-      expect(consoleSpy).toHaveBeenCalledWith(`Copied to clipboard: ${text}`);
+      expect(mockWriteLine).toHaveBeenCalledWith(
+        `Copied to clipboard: ${text}`
+      );
     });
 
     it('should throw error when clipboard operation fails', async () => {
@@ -185,7 +184,7 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith('');
-      expect(consoleSpy).toHaveBeenCalledWith('Copied to clipboard: ');
+      expect(mockWriteLine).toHaveBeenCalledWith('Copied to clipboard: ');
     });
 
     it('should handle special characters', async () => {
@@ -198,7 +197,9 @@ describe('GitOperations', () => {
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
-      expect(consoleSpy).toHaveBeenCalledWith(`Copied to clipboard: ${text}`);
+      expect(mockWriteLine).toHaveBeenCalledWith(
+        `Copied to clipboard: ${text}`
+      );
     });
   });
 });
