@@ -6,7 +6,10 @@ import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import {
   applyStash,
   copyStashReference,
+  createBranchFromStash,
+  createNewStash,
   deleteStash,
+  showStashDetails,
 } from './actions/index.js';
 
 /**
@@ -15,16 +18,34 @@ import {
 function createStashActions() {
   return createActions([
     {
-      key: 'copy',
-      label: 'Copy',
-      description: 'Copy to clipboard',
-      handler: copyStashReference,
+      key: 'show',
+      label: 'Show',
+      description: 'View stash diff',
+      handler: showStashDetails,
     },
     {
       key: 'apply',
       label: 'Apply',
       description: 'Apply to working directory',
       handler: applyStash,
+    },
+    {
+      key: 'branch',
+      label: 'Create Branch',
+      description: 'Create branch from stash',
+      handler: createBranchFromStash,
+    },
+    {
+      key: 'copy',
+      label: 'Copy',
+      description: 'Copy to clipboard',
+      handler: copyStashReference,
+    },
+    {
+      key: 'create',
+      label: 'Create New',
+      description: 'Create new stash',
+      handler: createNewStash,
     },
     {
       key: 'delete',
