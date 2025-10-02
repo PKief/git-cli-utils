@@ -9,6 +9,7 @@ import { init } from './cli/commands/init/index.js';
 import { listAliases } from './cli/commands/list-aliases/index.js';
 import { saveChanges } from './cli/commands/save/index.js';
 import { searchStashes } from './cli/commands/stashes/index.js';
+import { searchTags } from './cli/commands/tags/index.js';
 import { topAuthors } from './cli/commands/top-authors/index.js';
 import {
   type GitUtilsCommand,
@@ -33,6 +34,11 @@ const commands: GitUtilsCommand[] = [
     name: 'commits',
     description: 'Interactive commit selection with fuzzy search',
     action: searchCommits,
+  },
+  {
+    name: 'tags',
+    description: 'Interactive tag selection with fuzzy search',
+    action: searchTags,
   },
   {
     name: 'stashes',

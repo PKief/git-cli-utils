@@ -4,6 +4,7 @@ import { searchCommits } from './commands/commits/index.js';
 import { init } from './commands/init/index.js';
 import { saveChanges } from './commands/save/index.js';
 import { searchStashes } from './commands/stashes/index.js';
+import { searchTags } from './commands/tags/index.js';
 import { topAuthors } from './commands/top-authors/index.js';
 
 const program = new Command();
@@ -22,6 +23,11 @@ program
   .command('commits')
   .description('Search for commits in the git repository')
   .action(searchCommits);
+
+program
+  .command('tags')
+  .description('Search for tags in the git repository')
+  .action(searchTags);
 
 program
   .command('stashes')

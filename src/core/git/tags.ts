@@ -1,50 +1,36 @@
 import { gitExecutor } from './executor.js';
 
-export interface GitCommit {
-  hash: string;
+export interface GitTag {
+  name: string;
   date: string;
-  branch: string;
+  hash: string;
   subject: string;
-  tags: string[];
+  tagger: string;
 }
 
-export const getGitCommits = async (): Promise<GitCommit[]> => {
+export const getGitTags = async (): Promise<GitTag[]> => {
   try {
+    // Get tags with their commit info
     const command =
-      'git log --all --date=relative --pretty=format:%h|%cd|%D|%s';
+      'git tag --sort=-version:refname --format=%(refname:short)|%(creatordate:relative)|%(*objectname:short)|%(*subject)|%(taggername)';
     const result = await gitExecutor.executeStreamingCommand(command);
 
-    const commits: GitCommit[] = [];
+    const tags: GitTag[] = [];
 
     result.data.forEach((line) => {
       if (!line.trim()) return;
-      const [hash, date, refs, subject] = line.split('|');
+      const [name, date, hash, subject, tagger] = line.split('|');
 
-      const refList = refs
-        ? refs
-            .split(',')
-            .map((r) => r.trim())
-            .filter((r) => r)
-        : [];
-
-      const branches = refList.filter(
-        (r) => !r.startsWith('tag:') && !r.startsWith('HEAD')
-      );
-
-      const tags = refList
-        .filter((r) => r.startsWith('tag:'))
-        .map((r) => r.replace(/^tag:\s*/, ''));
-
-      commits.push({
-        hash,
-        date,
-        branch: branches.join(', '),
-        subject,
-        tags,
+      tags.push({
+        name,
+        date: date || 'Unknown',
+        hash: hash || '',
+        subject: subject || '',
+        tagger: tagger || 'Unknown',
       });
     });
 
-    return commits;
+    return tags;
   } catch (error) {
     throw new Error(
       `Error executing git command: ${error instanceof Error ? error.message : String(error)}`
@@ -52,17 +38,14 @@ export const getGitCommits = async (): Promise<GitCommit[]> => {
   }
 };
 
-export const filterCommits = (
-  commits: GitCommit[],
-  searchTerm: string
-): GitCommit[] => {
-  if (!searchTerm) return commits;
+export const filterTags = (tags: GitTag[], searchTerm: string): GitTag[] => {
+  if (!searchTerm) return tags;
 
   const normalizedSearchTerm = searchTerm.toLowerCase();
 
-  return commits.filter((c) => {
+  return tags.filter((tag) => {
     const searchableText =
-      `${c.hash} ${c.date} ${c.branch} ${c.subject} ${c.tags.join(' ')}`.toLowerCase();
+      `${tag.name} ${tag.date} ${tag.hash} ${tag.subject} ${tag.tagger}`.toLowerCase();
 
     if (searchableText.includes(normalizedSearchTerm)) {
       return true;
