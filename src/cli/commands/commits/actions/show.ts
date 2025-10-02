@@ -6,7 +6,8 @@ import {
   actionFailure,
   actionSuccess,
 } from '../../../utils/action-helpers.js';
-import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
+import { showInPager } from '../../../utils/pager.js';
+import { writeErrorLine } from '../../../utils/terminal.js';
 
 /**
  * Show commit details action
@@ -16,8 +17,15 @@ export async function showCommitDetails(
 ): Promise<ActionResult<GitCommit>> {
   try {
     const executor = GitExecutor.getInstance();
-    const result = await executor.executeCommand(`git show ${commit.hash}`);
-    writeLine(result.stdout);
+
+    // Use git show with color output and better formatting
+    const result = await executor.executeCommand(
+      `git show --color=always --stat --patch --pretty=fuller ${commit.hash}`
+    );
+
+    // Display the colorized diff in a pager
+    await showInPager(result.stdout);
+
     return actionSuccess(`Showed commit details`);
   } catch (error) {
     const errorMessage = `Show failed: ${error instanceof Error ? error.message : String(error)}`;
