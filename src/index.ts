@@ -7,6 +7,7 @@ import init from './cli/commands/init.js';
 import { listAliases } from './cli/commands/list-aliases.js';
 import { searchBranches } from './cli/commands/search-branches.js';
 import { searchCommits } from './cli/commands/search-commits.js';
+import { searchStashes } from './cli/commands/search-stashes.js';
 import { topAuthors } from './cli/commands/top-authors.js';
 import {
   type GitUtilsCommand,
@@ -31,6 +32,11 @@ const commands: GitUtilsCommand[] = [
     name: 'commits',
     description: 'Interactive commit selection with fuzzy search',
     action: searchCommits,
+  },
+  {
+    name: 'stashes',
+    description: 'Interactive stash selection with fuzzy search',
+    action: searchStashes,
   },
   {
     name: 'authors',
