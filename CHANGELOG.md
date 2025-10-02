@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v1.10.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.9.0...v1.10.0)
+
+### 🚀 Enhancements
+
+- Implement pager utility for paged content display and enhance commit detail viewing ([447e7ec](https://github.com/PKief/git-cli-utils/commit/447e7ec))
+- Add stash management actions for creating and showing stashes ([6932e7f](https://github.com/PKief/git-cli-utils/commit/6932e7f))
+- Implement save command to stash current working directory changes ([d2095a5](https://github.com/PKief/git-cli-utils/commit/d2095a5))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.9.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.8.0...v1.9.0)
