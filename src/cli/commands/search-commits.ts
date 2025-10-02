@@ -1,6 +1,6 @@
 import { GitCommit, getGitCommits } from '../../core/git/commits.js';
 import { GitOperations } from '../../core/git/operations.js';
-import { green, red, yellow } from '../ui/ansi.js';
+import { red, yellow } from '../ui/ansi.js';
 import { interactiveList } from '../ui/interactive-list.js';
 import { writeErrorLine, writeLine } from '../utils/terminal.js';
 
@@ -28,7 +28,6 @@ export const searchCommits = async () => {
 
         try {
           await GitOperations.copyToClipboard(selectedCommit.hash);
-          writeLine(green('Commit SHA copied to clipboard!'));
           process.exit(0);
         } catch (error) {
           writeErrorLine(
