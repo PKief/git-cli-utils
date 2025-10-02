@@ -1,6 +1,49 @@
 # Changelog
 
 
+## v1.9.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.8.0...v1.9.0)
+
+### 🚀 Enhancements
+
+- Enhance README with interactive command selector and usage examples ([76e2e96](https://github.com/PKief/git-cli-utils/commit/76e2e96))
+- Add author timeline functionality to display activity years and commit statistics ([98457da](https://github.com/PKief/git-cli-utils/commit/98457da))
+- Add interactive stash selection command with fuzzy search ([831eba1](https://github.com/PKief/git-cli-utils/commit/831eba1))
+- Add help command to display information for all commands ([5d51084](https://github.com/PKief/git-cli-utils/commit/5d51084))
+- Add commit and stash management commands ([82c417c](https://github.com/PKief/git-cli-utils/commit/82c417c))
+
+### 🩹 Fixes
+
+- Remove duplicate branch checkout messages and improve test reliability by replacing global module mocks with spies ([b6d9139](https://github.com/PKief/git-cli-utils/commit/b6d9139))
+- Optimize getFileAuthors to use a single git command for improved performance and data retrieval ([5d34ca8](https://github.com/PKief/git-cli-utils/commit/5d34ca8))
+- Remove duplicated clipboard success message in searchCommits ([3b13c9e](https://github.com/PKief/git-cli-utils/commit/3b13c9e))
+- Add noUnusedFunctionParameters rule to linter correctness settings ([100d8f1](https://github.com/PKief/git-cli-utils/commit/100d8f1))
+- Improve highlighting logic in display text for better search term matching ([b419eaa](https://github.com/PKief/git-cli-utils/commit/b419eaa))
+- Refine stash filtering logic by removing date search and updating search criteria ([d90036e](https://github.com/PKief/git-cli-utils/commit/d90036e))
+- Restructure stash display format for improved searchability and highlight selected separators ([4c0ccd3](https://github.com/PKief/git-cli-utils/commit/4c0ccd3))
+- Enhance highlighting for selected items in display text ([69001be](https://github.com/PKief/git-cli-utils/commit/69001be))
+- Improve text highlighting logic and ANSI escape code handling in interactive list ([35705a7](https://github.com/PKief/git-cli-utils/commit/35705a7))
+
+### 💅 Refactors
+
+- Simplify success and error messages across branch and commit actions ([219861d](https://github.com/PKief/git-cli-utils/commit/219861d))
+
+### 📖 Documentation
+
+- Update CONTRIBUTING.md to clarify local testing commands ([40ff9b7](https://github.com/PKief/git-cli-utils/commit/40ff9b7))
+
+### 🏡 Chore
+
+- **deps-dev:** Bump lint-staged from 16.2.1 to 16.2.3 ([#7](https://github.com/PKief/git-cli-utils/pull/7))
+- **deps-dev:** Bump typescript from 5.9.2 to 5.9.3 ([#8](https://github.com/PKief/git-cli-utils/pull/8))
+- **deps-dev:** Bump @types/node from 24.5.2 to 24.6.1 ([#9](https://github.com/PKief/git-cli-utils/pull/9))
+- **deps-dev:** Bump @types/bun from 1.2.22 to 1.2.23 ([#10](https://github.com/PKief/git-cli-utils/pull/10))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.8.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.7.5...v1.8.0)
