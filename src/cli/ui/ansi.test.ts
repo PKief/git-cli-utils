@@ -78,7 +78,7 @@ describe('ANSI', () => {
 
   it('should have consistent ESC sequence format', () => {
     // All ANSI codes should start with ESC[ and end with m
-    Object.entries(ANSI).forEach(([key, value]) => {
+    Object.values(ANSI).forEach((value) => {
       expect(value).toMatch(/^\x1b\[\d+m$/);
     });
   });

@@ -22,30 +22,31 @@ function highlightMatchesInDisplay(
     return displayText;
   }
 
-  // Find where the searchable text appears in the display text
+  // Try to find exact searchable text in display text first
   const searchableInDisplay = displayText.indexOf(searchableText);
-  if (searchableInDisplay === -1) {
-    // If searchable text is not found in display, fall back to no highlighting
-    return displayText;
+  if (searchableInDisplay !== -1) {
+    const beforeSearchable = displayText.substring(0, searchableInDisplay);
+    const searchablePart = displayText.substring(
+      searchableInDisplay,
+      searchableInDisplay + searchableText.length
+    );
+    const afterSearchable = displayText.substring(
+      searchableInDisplay + searchableText.length
+    );
+
+    // Apply highlighting only to the searchable portion
+    const highlightedSearchable = highlightText(
+      searchablePart,
+      searchTerm,
+      isSelected
+    );
+
+    return beforeSearchable + highlightedSearchable + afterSearchable;
   }
 
-  const beforeSearchable = displayText.substring(0, searchableInDisplay);
-  const searchablePart = displayText.substring(
-    searchableInDisplay,
-    searchableInDisplay + searchableText.length
-  );
-  const afterSearchable = displayText.substring(
-    searchableInDisplay + searchableText.length
-  );
-
-  // Apply highlighting only to the searchable portion
-  const highlightedSearchable = highlightText(
-    searchablePart,
-    searchTerm,
-    isSelected
-  );
-
-  return beforeSearchable + highlightedSearchable + afterSearchable;
+  // If exact match not found, apply highlighting to the whole display text
+  // This handles cases where display text has formatting (padding, etc.) that searchable text doesn't
+  return highlightText(displayText, searchTerm, isSelected);
 }
 
 /**
@@ -254,7 +255,7 @@ export function interactiveList<T>(
       }
     };
 
-    const handleKeypress = (chunk: Buffer, key: readline.Key) => {
+    const handleKeypress = (_chunk: Buffer, key: readline.Key) => {
       if (key) {
         if (key.ctrl && key.name === 'c') {
           if (typeof process.stdin.setRawMode === 'function') {

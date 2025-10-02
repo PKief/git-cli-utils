@@ -13,11 +13,7 @@ import { writeErrorLine, writeLine } from '../utils/terminal.js';
 /**
  * Format and display a simple timeline showing years of activity
  */
-const displayTimeline = (
-  timeline: AuthorTimeline,
-  authorName: string,
-  filePath?: string
-) => {
+const displayTimeline = (timeline: AuthorTimeline) => {
   if (timeline.authorYears.length === 0) {
     writeLine(yellow('No timeline data available.'));
     return;
@@ -121,7 +117,7 @@ export const topAuthors = async (filePath?: string) => {
             selectedAuthor.email,
             filePath
           );
-          displayTimeline(timeline, selectedAuthor.name, filePath);
+          displayTimeline(timeline);
         } catch {
           // Don't fail the entire command if timeline fails
           writeLine(yellow('Could not generate timeline data.'));
