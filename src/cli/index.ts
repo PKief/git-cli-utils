@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { searchBranches } from './commands/branches/index.js';
 import { searchCommits } from './commands/commits/index.js';
 import { init } from './commands/init/index.js';
+import { saveChanges } from './commands/save/index.js';
 import { searchStashes } from './commands/stashes/index.js';
 import { topAuthors } from './commands/top-authors/index.js';
 
@@ -26,6 +27,11 @@ program
   .command('stashes')
   .description('Search for stashes in the git repository')
   .action(searchStashes);
+
+program
+  .command('save')
+  .description('Save current working directory changes as a new stash')
+  .action(saveChanges);
 
 program
   .command('authors')

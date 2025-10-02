@@ -7,6 +7,7 @@ import { searchBranches } from './cli/commands/branches/index.js';
 import { searchCommits } from './cli/commands/commits/index.js';
 import { init } from './cli/commands/init/index.js';
 import { listAliases } from './cli/commands/list-aliases/index.js';
+import { saveChanges } from './cli/commands/save/index.js';
 import { searchStashes } from './cli/commands/stashes/index.js';
 import { topAuthors } from './cli/commands/top-authors/index.js';
 import {
@@ -37,6 +38,11 @@ const commands: GitUtilsCommand[] = [
     name: 'stashes',
     description: 'Interactive stash selection with fuzzy search',
     action: searchStashes,
+  },
+  {
+    name: 'save',
+    description: 'Save current working directory changes as a new stash',
+    action: saveChanges,
   },
   {
     name: 'authors',

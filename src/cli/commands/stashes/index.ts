@@ -7,7 +7,6 @@ import {
   applyStash,
   copyStashReference,
   createBranchFromStash,
-  createNewStash,
   deleteStash,
   showStashDetails,
 } from './actions/index.js';
@@ -40,12 +39,6 @@ function createStashActions() {
       label: 'Copy',
       description: 'Copy to clipboard',
       handler: copyStashReference,
-    },
-    {
-      key: 'create',
-      label: 'Create New',
-      description: 'Create new stash',
-      handler: createNewStash,
     },
     {
       key: 'delete',
