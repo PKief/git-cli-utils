@@ -19,11 +19,12 @@ export const searchStashes = async () => {
       const selectedStash = await interactiveList<GitStash>(
         stashes,
         (stash: GitStash) => {
-          return `stash@{${stash.index}} ${stash.branch} | ${stash.hash} ${stash.date} | ${stash.message}`;
+          // Restructure: put searchable content first, date last (separated)
+          return `stash@{${stash.index}} ${stash.branch} | ${stash.hash} | ${stash.message} | ${stash.date}`;
         },
         (stash: GitStash) => {
-          // Search in message, branch, and hash
-          return `${stash.message} ${stash.branch} ${stash.hash}`;
+          // Search function matches the first part of display (everything except date)
+          return `stash@{${stash.index}} ${stash.branch} | ${stash.hash} | ${stash.message}`;
         },
         yellow('Available stashes') // Header
       );

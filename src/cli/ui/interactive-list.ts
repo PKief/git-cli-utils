@@ -97,7 +97,12 @@ function highlightText(
 
     // Skip separators in the normalized comparison
     if (/[-_\/\.\s]/.test(normalizedChar)) {
-      result += char;
+      // For selected items, apply green background to separators too
+      if (isSelected) {
+        result += highlightSelected(char);
+      } else {
+        result += char;
+      }
       continue;
     }
 
