@@ -58,6 +58,13 @@ const commands: GitUtilsCommand[] = [
     description: 'Show current git aliases',
     action: listAliases,
   },
+  {
+    name: 'help',
+    description: 'Show help information for all commands',
+    action: async () => {
+      program.help();
+    },
+  },
 ];
 
 // Command selector is now handled by the UI module
