@@ -18,9 +18,9 @@ export async function showCommitDetails(
     const executor = GitExecutor.getInstance();
     const result = await executor.executeCommand(`git show ${commit.hash}`);
     writeLine(result.stdout);
-    return actionSuccess(`Showed details for commit ${commit.hash}`);
+    return actionSuccess(`Showed commit details`);
   } catch (error) {
-    const errorMessage = `Error showing commit: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Show failed: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }

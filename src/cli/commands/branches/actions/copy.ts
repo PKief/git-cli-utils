@@ -16,10 +16,10 @@ export async function copyBranchName(
 ): Promise<ActionResult<GitBranch>> {
   try {
     await GitOperations.copyToClipboard(branch.name);
-    writeLine(green(`✓ Branch name '${branch.name}' copied to clipboard`));
-    return actionSuccess(`Branch name copied to clipboard`);
+    writeLine(green(`✓ Copied '${branch.name}'`));
+    return actionSuccess(`Branch name copied`);
   } catch (error) {
-    const errorMessage = `Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }

@@ -16,10 +16,10 @@ export async function checkoutBranch(
 ): Promise<ActionResult<GitBranch>> {
   try {
     await GitOperations.checkoutBranch(branch.name);
-    writeLine(green(`✓ Successfully checked out branch '${branch.name}'`));
-    return actionSuccess(`Successfully checked out branch '${branch.name}'`);
+    writeLine(green(`✓ Switched to '${branch.name}'`));
+    return actionSuccess(`Switched to '${branch.name}'`);
   } catch (error) {
-    const errorMessage = `Error checking out branch: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Failed to switch branch: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }

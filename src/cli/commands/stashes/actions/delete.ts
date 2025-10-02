@@ -21,16 +21,16 @@ export async function deleteStash(
     const confirmed = await confirmDeletion('stash', `stash@{${stash.index}}`);
 
     if (!confirmed) {
-      writeLine(yellow(`Stash deletion cancelled.`));
-      return actionCancelled('Stash deletion cancelled');
+      writeLine(yellow(`Deletion cancelled.`));
+      return actionCancelled('Deletion cancelled');
     }
 
     const executor = GitExecutor.getInstance();
     await executor.executeCommand(`git stash drop stash@{${stash.index}}`);
-    writeLine(green(`✓ Stash@{${stash.index}} has been successfully deleted`));
-    return actionSuccess(`Stash@{${stash.index}} deleted successfully`);
+    writeLine(green(`✓ Deleted stash@{${stash.index}}`));
+    return actionSuccess(`Stash deleted`);
   } catch (error) {
-    const errorMessage = `Error deleting stash: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Delete failed: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }

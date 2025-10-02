@@ -17,6 +17,8 @@ const ANSI = {
   bgMagenta: '\x1b[45m',
   bgGreen: '\x1b[42m',
   bgRed: '\x1b[41m',
+  bgBlack: '\x1b[40m',
+  bgGray: '\x1b[100m', // Bright black background (subtle gray)
 };
 
 // Helper functions for colored text
@@ -50,5 +52,8 @@ export const highlightFuzzy = (text: string): string =>
 
 export const highlightSelected = (text: string): string =>
   multiColor(text, 'bgGreen', 'brightWhite', 'bold');
+
+export const highlightAction = (text: string): string =>
+  multiColor(text, 'bgYellow', 'black');
 
 export default ANSI;

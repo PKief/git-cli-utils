@@ -16,20 +16,20 @@ function createStashActions() {
   return createActions([
     {
       key: 'copy',
-      label: 'Copy to clipboard',
-      description: 'Copy stash reference to clipboard',
+      label: 'Copy',
+      description: 'Copy to clipboard',
       handler: copyStashReference,
     },
     {
       key: 'apply',
-      label: 'Apply stash',
-      description: 'Apply stash changes to working directory',
+      label: 'Apply',
+      description: 'Apply to working directory',
       handler: applyStash,
     },
     {
       key: 'delete',
-      label: 'Delete stash',
-      description: 'Permanently delete this stash',
+      label: 'Delete',
+      description: 'Delete stash permanently',
       handler: deleteStash,
     },
   ]);

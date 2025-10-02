@@ -16,10 +16,10 @@ export async function copyCommitHash(
 ): Promise<ActionResult<GitCommit>> {
   try {
     await GitOperations.copyToClipboard(commit.hash);
-    writeLine(green(`✓ Commit hash '${commit.hash}' copied to clipboard`));
-    return actionSuccess(`Commit hash copied to clipboard`);
+    writeLine(green(`✓ Copied '${commit.hash}'`));
+    return actionSuccess(`Hash copied`);
   } catch (error) {
-    const errorMessage = `Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }

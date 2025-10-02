@@ -16,20 +16,20 @@ function createCommitActions() {
   return createActions([
     {
       key: 'copy',
-      label: 'Copy hash',
-      description: 'Copy commit hash to clipboard',
+      label: 'Copy',
+      description: 'Copy hash to clipboard',
       handler: copyCommitHash,
     },
     {
       key: 'show',
-      label: 'Show details',
-      description: 'Show full commit details and diff',
+      label: 'Details',
+      description: 'Show details and diff',
       handler: showCommitDetails,
     },
     {
       key: 'checkout',
-      label: 'Checkout commit',
-      description: 'Checkout this specific commit (detached HEAD)',
+      label: 'Checkout',
+      description: 'Checkout (detached HEAD)',
       handler: checkoutCommit,
     },
   ]);

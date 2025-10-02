@@ -22,17 +22,17 @@ export async function deleteBranch(
     const confirmed = await confirmDeletion('branch', branch.name);
 
     if (!confirmed) {
-      writeLine(yellow(`Branch deletion cancelled.`));
-      return actionCancelled('Branch deletion cancelled');
+      writeLine(yellow(`Deletion cancelled.`));
+      return actionCancelled('Deletion cancelled');
     }
 
     const executor = GitExecutor.getInstance();
     await executor.executeCommand(`git branch -d ${branch.name}`);
-    writeLine(green(`✓ Branch '${branch.name}' has been successfully deleted`));
-    return actionSuccess(`Branch '${branch.name}' deleted successfully`);
+    writeLine(green(`✓ Deleted '${branch.name}'`));
+    return actionSuccess(`Branch deleted`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    writeErrorLine(red(`✗ Error deleting branch: ${errorMessage}`));
+    writeErrorLine(red(`✗ Delete failed: ${errorMessage}`));
 
     // Check if this is a "not fully merged" error that could be force deleted
     if (
@@ -42,18 +42,18 @@ export async function deleteBranch(
       // Create a follow-up force delete action
       const forceDeleteAction = createAction({
         key: 'force-delete',
-        label: 'Force delete branch',
-        description: 'Force delete this branch (WARNING: will lose changes)',
+        label: 'Force delete',
+        description: 'Force delete (WARNING: loses changes)',
         handler: (item: GitBranch) => forceDeleteBranch(item),
       });
 
       return actionFailure(
-        `Cannot delete branch '${branch.name}' - it's not fully merged`,
+        `Cannot delete '${branch.name}' - not fully merged`,
         forceDeleteAction
       );
     }
 
-    return actionFailure(`Error deleting branch: ${errorMessage}`);
+    return actionFailure(`Delete failed: ${errorMessage}`);
   }
 }
 
@@ -77,10 +77,10 @@ export async function forceDeleteBranch(
 
     const executor = GitExecutor.getInstance();
     await executor.executeCommand(`git branch -D ${branch.name}`);
-    writeLine(green(`✓ Branch '${branch.name}' has been force deleted`));
-    return actionSuccess(`Branch '${branch.name}' force deleted`);
+    writeLine(green(`✓ Force deleted '${branch.name}'`));
+    return actionSuccess(`Branch force deleted`);
   } catch (error) {
-    const errorMessage = `Error force deleting branch: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Force delete failed: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }

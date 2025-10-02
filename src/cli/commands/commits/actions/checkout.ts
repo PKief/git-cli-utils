@@ -17,10 +17,10 @@ export async function checkoutCommit(
   try {
     const executor = GitExecutor.getInstance();
     await executor.executeCommand(`git checkout ${commit.hash}`);
-    writeLine(green(`✓ Successfully checked out commit '${commit.hash}'`));
-    return actionSuccess(`Successfully checked out commit '${commit.hash}'`);
+    writeLine(green(`✓ Checked out '${commit.hash}'`));
+    return actionSuccess(`Checked out commit`);
   } catch (error) {
-    const errorMessage = `Error checking out commit: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Checkout failed: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }

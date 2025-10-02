@@ -16,20 +16,20 @@ function createBranchActions() {
   return createActions([
     {
       key: 'checkout',
-      label: 'Checkout branch',
-      description: 'Switch to this branch',
+      label: 'Switch',
+      description: 'Switch to branch',
       handler: checkoutBranch,
     },
     {
       key: 'copy',
-      label: 'Copy name',
-      description: 'Copy branch name to clipboard',
+      label: 'Copy',
+      description: 'Copy to clipboard',
       handler: copyBranchName,
     },
     {
       key: 'delete',
-      label: 'Delete branch',
-      description: 'Delete this branch (local only)',
+      label: 'Delete',
+      description: 'Delete branch',
       handler: deleteBranch,
     },
   ]);

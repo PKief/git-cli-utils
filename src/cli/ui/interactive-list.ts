@@ -2,6 +2,7 @@ import * as readline from 'readline';
 import { clearScreen, write, writeLine } from '../utils/terminal.js';
 import {
   green,
+  highlightAction,
   highlightExact,
   highlightFuzzy,
   highlightSelected,
@@ -204,19 +205,19 @@ function renderActionBar<T>(config: ActionBarConfig<T>): void {
 
   const actionStrings = config.actions.map((action, index) => {
     const isSelected = index === config.selectedActionIndex;
-    const indicator = isSelected ? '[x]' : '[ ]';
+    const indicator = isSelected ? '◆' : '◇';
     const actionText = `${indicator} ${action.label}`;
 
-    return isSelected ? highlightSelected(actionText) : actionText;
+    return isSelected ? highlightAction(actionText) : actionText;
   });
 
-  const actionBar = actionStrings.join(' ');
+  const actionBar = actionStrings.join('  ');
   writeLine(actionBar);
 
-  // Show description of selected action if available
+  // Show description of selected action if available (more compact)
   const selectedAction = config.actions[config.selectedActionIndex];
   if (selectedAction?.description) {
-    writeLine(yellow(`${selectedAction.description}`));
+    writeLine(yellow(`  ${selectedAction.description}`));
   }
 }
 

@@ -17,10 +17,10 @@ export async function applyStash(
   try {
     const executor = GitExecutor.getInstance();
     await executor.executeCommand(`git stash apply stash@{${stash.index}}`);
-    writeLine(green(`✓ Stash@{${stash.index}} has been successfully applied`));
-    return actionSuccess(`Stash@{${stash.index}} applied successfully`);
+    writeLine(green(`✓ Applied stash@{${stash.index}}`));
+    return actionSuccess(`Stash applied`);
   } catch (error) {
-    const errorMessage = `Error applying stash: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Apply failed: ${error instanceof Error ? error.message : String(error)}`;
     writeErrorLine(red(`✗ ${errorMessage}`));
     return actionFailure(errorMessage);
   }
