@@ -9,7 +9,8 @@ export interface GitCommit {
 
 export const getGitCommits = async (): Promise<GitCommit[]> => {
   try {
-    const command = 'git log --all --date=short --pretty=format:%h|%cd|%D|%s';
+    const command =
+      'git log --all --date=relative --pretty=format:%h|%cd|%D|%s';
     const result = await gitExecutor.executeStreamingCommand(command);
 
     const commits: GitCommit[] = [];
