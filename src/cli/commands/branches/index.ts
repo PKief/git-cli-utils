@@ -54,7 +54,8 @@ export const searchBranches = async () => {
     try {
       const selectedBranch = await interactiveList<GitBranch>(
         branches,
-        (branch: GitBranch) => `${branch.date} - ${branch.name}`,
+        (branch: GitBranch) =>
+          `${branch.date} - ${branch.name}${branch.current ? ' (current)' : ''}`,
         (branch: GitBranch) => branch.name, // Only search branch names, not dates
         undefined, // No header
         createBranchActions() // Actions
