@@ -30,6 +30,8 @@ bun run format        # Format code
 **Option 1: Build and test locally**
 ```bash
 bun run build
+bun start         # Run the CLI locally
+# or test specific commands
 bun start -- branches    # Test branches command
 bun start -- commits     # Test commits command
 bun start -- authors        # Test authors command
