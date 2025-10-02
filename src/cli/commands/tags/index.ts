@@ -46,7 +46,7 @@ export const searchTags = async () => {
         (tag: GitTag) => {
           const hashInfo = tag.hash ? ` (${tag.hash})` : '';
           const subjectInfo = tag.subject ? ` - ${tag.subject}` : '';
-          return `${tag.name} - ${tag.date}${subjectInfo}${hashInfo}`;
+          return `${tag.date} - ${tag.name}${subjectInfo}${hashInfo}`;
         },
         (tag: GitTag) => `${tag.name} ${tag.subject} ${tag.tagger}`, // Search name, subject, and tagger
         undefined, // No header

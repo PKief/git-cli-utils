@@ -70,8 +70,9 @@ describe('terminal utilities', () => {
     it('should write ANSI escape codes to clear screen and move cursor', () => {
       stdoutSpy.mockClear();
       clearScreen();
-      expect(stdoutSpy).toHaveBeenCalledTimes(1);
-      expect(stdoutSpy).toHaveBeenCalledWith('\u001b[2J\u001b[0;0H');
+      expect(stdoutSpy).toHaveBeenCalledTimes(2);
+      expect(stdoutSpy).toHaveBeenCalledWith('\u001b[1;1H', undefined); // cursorTo call
+      expect(stdoutSpy).toHaveBeenCalledWith('\u001b[0J', undefined); // clearScreenDown call
     });
   });
 

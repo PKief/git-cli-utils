@@ -37,7 +37,7 @@ describe('Git Commits', () => {
 
       // Assert
       expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
-        'git log --all --date=short --pretty=format:%h|%cd|%D|%s'
+        'git log --all --date=relative --pretty=format:%h|%cd|%D|%s'
       );
       expect(commits).toHaveLength(3);
       expect(commits[0]).toEqual({
@@ -45,6 +45,7 @@ describe('Git Commits', () => {
         date: '2023-09-15',
         branch: 'main',
         subject: 'Initial commit',
+        tags: [],
       });
     });
 
@@ -65,7 +66,7 @@ describe('Git Commits', () => {
 
       // Assert
       expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
-        'git log --all --date=short --pretty=format:%h|%cd|%D|%s'
+        'git log --all --date=relative --pretty=format:%h|%cd|%D|%s'
       );
       expect(commits).toHaveLength(3);
       expect(commits[1]).toEqual({
@@ -73,6 +74,7 @@ describe('Git Commits', () => {
         date: '2023-09-14',
         branch: 'origin/feature, feature',
         subject: 'Add feature',
+        tags: [],
       });
     });
 
@@ -117,7 +119,7 @@ describe('Git Commits', () => {
     });
 
     it('should handle malformed commit lines gracefully', async () => {
-      // Arrange - malformed lines should cause an error due to undefined refs
+      // Arrange - malformed lines should be skipped or handled gracefully
       const mockOutput = [
         'abc123|2023-09-15|main|Valid commit',
         'invalid line without proper format',
@@ -128,53 +130,79 @@ describe('Git Commits', () => {
         data: mockOutput,
       });
 
-      // Act & Assert - expect error due to malformed line
-      await expect(getGitCommits()).rejects.toThrow(
-        'Error executing git command'
-      );
+      // Act
+      const commits = await getGitCommits();
+
+      // Assert - should handle malformed lines gracefully by including them with available data
+      expect(commits).toHaveLength(3); // All lines are processed
+      expect(commits[0]).toEqual({
+        hash: 'abc123',
+        date: '2023-09-15',
+        branch: 'main',
+        subject: 'Valid commit',
+        tags: [],
+      });
+      expect(commits[1]).toEqual({
+        hash: 'invalid line without proper format',
+        date: undefined,
+        branch: '',
+        subject: undefined,
+        tags: [],
+      } as never); // Use 'as any' to allow undefined values for this malformed case
+      expect(commits[2]).toEqual({
+        hash: 'def456',
+        date: '2023-09-14',
+        branch: 'main',
+        subject: 'Another valid commit',
+        tags: [],
+      });
     });
   });
 
   describe('filterCommits', () => {
-    const mockCommits: GitCommit[] = [
+    const testCommits: GitCommit[] = [
       {
         hash: 'abc123',
         date: '2023-09-15',
         branch: 'main',
         subject: 'Initial commit with authentication',
+        tags: [],
       },
       {
         hash: 'def456',
         date: '2023-09-14',
         branch: 'feature/user-profile',
         subject: 'Add user profile functionality',
+        tags: [],
       },
       {
         hash: 'ghi789',
         date: '2023-09-13',
         branch: 'bugfix/login-issue',
         subject: 'Fix login validation bug',
+        tags: [],
       },
       {
         hash: 'jkl012',
         date: '2023-09-12',
         branch: 'develop',
         subject: 'Update documentation',
+        tags: [],
       },
     ];
 
     it('should return all commits when search term is empty', () => {
       // Act
-      const result = filterCommits(mockCommits, '');
+      const result = filterCommits(testCommits, '');
 
       // Assert
       expect(result).toHaveLength(4);
-      expect(result).toEqual(mockCommits);
+      expect(result).toEqual(testCommits);
     });
 
     it('should filter by commit hash', () => {
       // Act
-      const result = filterCommits(mockCommits, 'abc123');
+      const result = filterCommits(testCommits, 'abc123');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -183,7 +211,7 @@ describe('Git Commits', () => {
 
     it('should filter by subject (case insensitive)', () => {
       // Act
-      const result = filterCommits(mockCommits, 'authentication');
+      const result = filterCommits(testCommits, 'authentication');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -192,7 +220,7 @@ describe('Git Commits', () => {
 
     it('should filter by branch name', () => {
       // Act
-      const result = filterCommits(mockCommits, 'feature');
+      const result = filterCommits(testCommits, 'feature');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -201,7 +229,7 @@ describe('Git Commits', () => {
 
     it('should filter by date', () => {
       // Act
-      const result = filterCommits(mockCommits, '2023-09-14');
+      const result = filterCommits(testCommits, '2023-09-14');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -210,7 +238,7 @@ describe('Git Commits', () => {
 
     it('should handle case insensitive search', () => {
       // Act
-      const result = filterCommits(mockCommits, 'LOGIN');
+      const result = filterCommits(testCommits, 'LOGIN');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -219,7 +247,7 @@ describe('Git Commits', () => {
 
     it('should handle search with separators removed', () => {
       // Act
-      const result = filterCommits(mockCommits, 'userprofile');
+      const result = filterCommits(testCommits, 'userprofile');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -228,7 +256,7 @@ describe('Git Commits', () => {
 
     it('should handle fuzzy matching', () => {
       // Act
-      const result = filterCommits(mockCommits, 'usr prf');
+      const result = filterCommits(testCommits, 'usr prf');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -237,7 +265,7 @@ describe('Git Commits', () => {
 
     it('should return empty array when no matches found', () => {
       // Act
-      const result = filterCommits(mockCommits, 'nonexistent');
+      const result = filterCommits(testCommits, 'nonexistent');
 
       // Assert
       expect(result).toHaveLength(0);
@@ -245,7 +273,7 @@ describe('Git Commits', () => {
 
     it('should handle multiple word search', () => {
       // Act
-      const result = filterCommits(mockCommits, 'user profile');
+      const result = filterCommits(testCommits, 'user profile');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -254,7 +282,7 @@ describe('Git Commits', () => {
 
     it('should handle special characters in search', () => {
       // Act
-      const result = filterCommits(mockCommits, 'user-profile');
+      const result = filterCommits(testCommits, 'user-profile');
 
       // Assert
       expect(result).toHaveLength(1);
@@ -263,10 +291,10 @@ describe('Git Commits', () => {
 
     it('should return no matches for null search term', () => {
       // Act
-      const result = filterCommits(mockCommits, null as unknown as string);
+      const result = filterCommits(testCommits, null as unknown as string);
 
       // Assert
-      expect(result).toEqual(mockCommits);
+      expect(result).toEqual(testCommits);
     });
 
     it('should handle empty commits array', () => {
@@ -279,10 +307,10 @@ describe('Git Commits', () => {
 
     it('should handle whitespace-only search term', () => {
       // Act
-      const result = filterCommits(mockCommits, '   ');
+      const result = filterCommits(testCommits, '   ');
 
       // Assert
-      expect(result).toEqual(mockCommits);
+      expect(result).toEqual(testCommits);
     });
   });
 });

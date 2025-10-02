@@ -37,9 +37,24 @@ describe('Git Branches', () => {
         'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list'
       );
       expect(branches).toHaveLength(3);
-      expect(branches[0]).toEqual({ name: 'main', date: '2 hours ago' });
-      expect(branches[1]).toEqual({ name: 'feature/test', date: '1 day ago' });
-      expect(branches[2]).toEqual({ name: 'develop', date: '3 days ago' });
+      expect(branches[0]).toEqual({
+        name: 'main',
+        date: '2 hours ago',
+        current: false,
+        current: false,
+      });
+      expect(branches[1]).toEqual({
+        name: 'feature/test',
+        date: '1 day ago',
+        current: false,
+        current: false,
+      });
+      expect(branches[2]).toEqual({
+        name: 'develop',
+        date: '3 days ago',
+        current: false,
+        current: false,
+      });
     });
 
     it('should handle empty git branch output', async () => {
@@ -69,8 +84,16 @@ describe('Git Branches', () => {
 
       // Assert
       expect(branches).toHaveLength(2);
-      expect(branches[0]).toEqual({ name: 'main', date: '2 hours ago' });
-      expect(branches[1]).toEqual({ name: 'feature/test', date: '1 day ago' });
+      expect(branches[0]).toEqual({
+        name: 'main',
+        date: '2 hours ago',
+        current: false,
+      });
+      expect(branches[1]).toEqual({
+        name: 'feature/test',
+        date: '1 day ago',
+        current: false,
+      });
     });
 
     it('should reject on git command error', async () => {
@@ -99,10 +122,12 @@ describe('Git Branches', () => {
       expect(branches[0]).toEqual({
         name: 'feature/user-123',
         date: '1 hour ago',
+        current: false,
       });
       expect(branches[1]).toEqual({
         name: 'bugfix/fix-login-issue',
         date: 'yesterday',
+        current: false,
       });
     });
 
@@ -119,19 +144,31 @@ describe('Git Branches', () => {
 
       // Assert
       expect(branches).toHaveLength(3);
-      expect(branches[0]).toEqual({ name: 'main', date: undefined });
-      expect(branches[1]).toEqual({ name: 'feature/test', date: '1 day ago' });
-      expect(branches[2]).toEqual({ name: 'bugfix', date: 'today' });
+      expect(branches[0]).toEqual({
+        name: 'main',
+        date: undefined,
+        current: false,
+      });
+      expect(branches[1]).toEqual({
+        name: 'feature/test',
+        date: '1 day ago',
+        current: false,
+      });
+      expect(branches[2]).toEqual({
+        name: 'bugfix',
+        date: 'today',
+        current: false,
+      });
     });
   });
 
   describe('filterBranches', () => {
     const mockBranches: GitBranch[] = [
-      { name: 'main', date: '2 hours ago' },
-      { name: 'feature/authentication', date: '1 day ago' },
-      { name: 'feature/user-profile', date: '2 days ago' },
-      { name: 'bugfix/login-issue', date: '3 days ago' },
-      { name: 'develop', date: '1 week ago' },
+      { name: 'main', date: '2 hours ago', current: false },
+      { name: 'feature/authentication', date: '1 day ago', current: false },
+      { name: 'feature/user-profile', date: '2 days ago', current: false },
+      { name: 'bugfix/login-issue', date: '3 days ago', current: false },
+      { name: 'develop', date: '1 week ago', current: false },
     ];
 
     it('should filter branches by name (case insensitive)', () => {
