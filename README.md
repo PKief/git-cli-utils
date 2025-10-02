@@ -169,14 +169,18 @@ git-utils init
 
 **Interactive setup:**
 ```
-✓ Search Branches → git sb
-✓ Search Commits → git sc
-✓ Top Authors → git ta
+✓ Search Branches → git branches
+✓ Search Commits → git commits
+✓ Search Stashes → git stashes
+✓ Save Changes → git save
+✓ Top Authors → git authors
 
 Now use:
-  git sb  - Search and checkout branches
-  git sc  - Search commits (copies SHA)
-  git ta  - View top contributors
+  git branches  - Search and checkout branches
+  git commits   - Search commits (copies SHA)
+  git stashes   - Browse and manage stashes
+  git save      - Quick stash current changes
+  git authors   - View top contributors
 ```
 
 ## All Commands
@@ -190,9 +194,11 @@ npx git-cli-utils  # Shows command selector with search
 
 | Command | Description | Usage | Git Alias |
 |---------|-------------|-------|-----------|
-| `branches` | Interactive branch finder with checkout | `npx git-cli-utils branches` | `git sb` |
-| `commits` | Interactive commit explorer with SHA copy | `npx git-cli-utils commits` | `git sc` |
-| `authors` | Show top contributors by commits | `npx git-cli-utils authors [file]` | `git ta` |
+| `branches` | Interactive branch finder with checkout | `npx git-cli-utils branches` | `git branches` |
+| `commits` | Interactive commit explorer with enhanced diff view | `npx git-cli-utils commits` | `git commits` |
+| `stashes` | Interactive stash manager with actions | `npx git-cli-utils stashes` | `git stashes` |
+| `save` | Save working directory changes as stash | `npx git-cli-utils save` | `git save` |
+| `authors` | Show top contributors by commits | `npx git-cli-utils authors [file]` | `git authors` |
 | `init` | Setup git aliases interactively | `npx git-cli-utils init` | - |
 | `aliases` | Browse and execute git aliases | `npx git-cli-utils aliases` | - |
 

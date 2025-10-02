@@ -21,25 +21,31 @@ const availableCommands: Command[] = [
   {
     name: 'Search Branches',
     command: 'branches',
-    defaultAlias: 'sb',
+    defaultAlias: 'branches',
     description: 'Interactive branch selection with fuzzy search',
   },
   {
     name: 'Search Commits',
     command: 'commits',
-    defaultAlias: 'sc',
+    defaultAlias: 'commits',
     description: 'Interactive commit selection with fuzzy search',
   },
   {
     name: 'Search Stashes',
     command: 'stashes',
-    defaultAlias: 'ss',
+    defaultAlias: 'stashes',
     description: 'Interactive stash selection with fuzzy search',
+  },
+  {
+    name: 'Save Changes',
+    command: 'save',
+    defaultAlias: 'save',
+    description: 'Save current working directory changes as a new stash',
   },
   {
     name: 'Top Authors',
     command: 'authors',
-    defaultAlias: 'ta',
+    defaultAlias: 'authors',
     description:
       'Show top contributors by commit count for files or repository',
   },
@@ -104,7 +110,7 @@ export const init = async () => {
     message: 'Which commands would you like to create git aliases for?',
     options: availableCommands.map((cmd) => ({
       value: cmd.command,
-      label: `${cmd.name} (${cmd.defaultAlias})`,
+      label: `${cmd.name} (git ${cmd.defaultAlias})`,
       hint: cmd.description,
     })),
     required: false,
