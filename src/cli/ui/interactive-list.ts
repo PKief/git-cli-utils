@@ -10,58 +10,75 @@ import {
 import { rankSearchResults } from './search-scoring.js';
 
 /**
- * Highlights matching characters in display text based on search term matching against searchable text
+ * Removes ANSI escape codes from text to calculate actual display length
  */
-function highlightMatchesInDisplay(
+function getTextLengthWithoutColors(text: string): number {
+  return text.replace(/\x1b\[[0-9;]*m/g, '').length;
+}
+
+/**
+ * Applies appropriate highlighting to text based on search term and selection state
+ *
+ * @param displayText - The full text to display (may include formatting)
+ * @param searchableText - The portion of text that should be searched
+ * @param searchTerm - Current search query
+ * @param isSelected - Whether this item is currently selected
+ */
+function applyTextHighlighting(
   displayText: string,
   searchableText: string,
   searchTerm: string,
   isSelected = false
 ): string {
+  // No search term: apply green background if selected, otherwise return as-is
   if (!searchTerm) {
-    return displayText;
+    return isSelected ? highlightSelected(displayText) : displayText;
   }
 
-  // Try to find exact searchable text in display text first
-  const searchableInDisplay = displayText.indexOf(searchableText);
-  if (searchableInDisplay !== -1) {
-    const beforeSearchable = displayText.substring(0, searchableInDisplay);
-    const searchablePart = displayText.substring(
-      searchableInDisplay,
-      searchableInDisplay + searchableText.length
+  // Find where the searchable content appears in the display text
+  const searchableStartIndex = displayText.indexOf(searchableText);
+
+  if (searchableStartIndex !== -1) {
+    // Split display text into: [prefix] [searchable content] [suffix]
+    const prefix = displayText.substring(0, searchableStartIndex);
+    const searchableContent = displayText.substring(
+      searchableStartIndex,
+      searchableStartIndex + searchableText.length
     );
-    const afterSearchable = displayText.substring(
-      searchableInDisplay + searchableText.length
+    const suffix = displayText.substring(
+      searchableStartIndex + searchableText.length
     );
 
-    // Apply highlighting only to the searchable portion
-    const highlightedSearchable = highlightText(
-      searchablePart,
+    // Apply search highlighting to the searchable portion
+    const highlightedContent = highlightSearchMatches(
+      searchableContent,
       searchTerm,
       isSelected
     );
 
-    // For selected items, apply green background to the entire line
+    // For selected items, apply green background to non-searchable parts too
     if (isSelected) {
       return (
-        highlightSelected(beforeSearchable) +
-        highlightedSearchable +
-        highlightSelected(afterSearchable)
+        highlightSelected(prefix) +
+        highlightedContent +
+        highlightSelected(suffix)
       );
-    } else {
-      return beforeSearchable + highlightedSearchable + afterSearchable;
     }
+    return prefix + highlightedContent + suffix;
   }
 
-  // If exact match not found, apply highlighting to the whole display text
-  // This handles cases where display text has formatting (padding, etc.) that searchable text doesn't
-  return highlightText(displayText, searchTerm, isSelected);
+  // Fallback: apply highlighting to entire display text
+  return highlightSearchMatches(displayText, searchTerm, isSelected);
 }
 
 /**
- * Highlights matching characters in text based on search term
+ * Highlights search term matches within text using exact or fuzzy matching
+ *
+ * @param text - Text to search and highlight within
+ * @param searchTerm - Search query to highlight
+ * @param isSelected - Whether this text belongs to a selected item
  */
-function highlightText(
+function highlightSearchMatches(
   text: string,
   searchTerm: string,
   isSelected = false
@@ -70,71 +87,82 @@ function highlightText(
     return text;
   }
 
-  const normalizedSearchTerm = searchTerm.toLowerCase();
-  const normalizedText = text.toLowerCase();
+  const searchQuery = searchTerm.toLowerCase();
+  const textToSearch = text.toLowerCase();
 
-  // Try exact substring match first with different colors for selected items
-  const exactIndex = normalizedText.indexOf(normalizedSearchTerm);
-  if (exactIndex !== -1) {
-    const before = text.substring(0, exactIndex);
-    const match = text.substring(exactIndex, exactIndex + searchTerm.length);
-    const after = text.substring(exactIndex + searchTerm.length);
+  // Try exact substring match first - simpler and more performant
+  const exactMatchIndex = textToSearch.indexOf(searchQuery);
+  if (exactMatchIndex !== -1) {
+    const beforeMatch = text.substring(0, exactMatchIndex);
+    const matchedText = text.substring(
+      exactMatchIndex,
+      exactMatchIndex + searchTerm.length
+    );
+    const afterMatch = text.substring(exactMatchIndex + searchTerm.length);
 
     if (isSelected) {
-      // For selected items, apply green background to all parts, with magenta highlight for search matches
-      return `${highlightSelected(before)}${highlightExact(match)}${highlightSelected(after)}`;
+      // Selected items: green background for all text, magenta highlight for matches
+      return (
+        highlightSelected(beforeMatch) +
+        highlightExact(matchedText) +
+        highlightSelected(afterMatch)
+      );
     } else {
-      // Use cyan background with bright white text for better visibility
-      return `${before}${highlightFuzzy(match)}${after}`;
+      // Non-selected items: cyan highlight for matches only
+      return beforeMatch + highlightFuzzy(matchedText) + afterMatch;
     }
   }
 
-  // Fuzzy highlighting: highlight individual matching characters
-  const searchChars = normalizedSearchTerm.replace(/[-_\/\.\s]/g, '').split('');
+  // Fallback to fuzzy character-by-character matching
+  return applyFuzzyHighlighting(text, searchTerm, isSelected);
+}
+
+/**
+ * Applies fuzzy highlighting by matching individual characters
+ */
+function applyFuzzyHighlighting(
+  text: string,
+  searchTerm: string,
+  isSelected: boolean
+): string {
+  const searchChars = searchTerm
+    .toLowerCase()
+    .replace(/[-_\/\.\s]/g, '')
+    .split('');
   const textChars = text.split('');
-  const normalizedTextChars = normalizedText
+  const normalizedTextChars = text
+    .toLowerCase()
     .replace(/[-_\/\.\s]/g, '')
     .split('');
 
-  let searchIndex = 0;
+  let searchCharIndex = 0;
+  let normalizedTextIndex = 0;
   let result = '';
-  let normalizedIndex = 0;
 
   for (let i = 0; i < textChars.length; i++) {
     const char = textChars[i];
-    const normalizedChar = normalizedText[i];
+    const isSeperatorChar = /[-_\/\.\s]/.test(text[i].toLowerCase());
 
-    // Skip separators in the normalized comparison
-    if (/[-_\/\.\s]/.test(normalizedChar)) {
-      // For selected items, apply green background to separators too
-      if (isSelected) {
-        result += highlightSelected(char);
-      } else {
-        result += char;
-      }
+    if (isSeperatorChar) {
+      // Apply background to separators for selected items
+      result += isSelected ? highlightSelected(char) : char;
       continue;
     }
 
-    if (
-      searchIndex < searchChars.length &&
-      normalizedTextChars[normalizedIndex] === searchChars[searchIndex]
-    ) {
-      // Highlight matching character with different colors for selected vs unselected items
-      if (isSelected) {
-        result += `${highlightExact(char)}`;
-      } else {
-        result += highlightFuzzy(char);
-      }
-      searchIndex++;
+    const isMatchingChar =
+      searchCharIndex < searchChars.length &&
+      normalizedTextChars[normalizedTextIndex] === searchChars[searchCharIndex];
+
+    if (isMatchingChar) {
+      // Highlight matching characters
+      result += isSelected ? highlightExact(char) : highlightFuzzy(char);
+      searchCharIndex++;
     } else {
-      // For selected items, apply green background to non-matching characters too
-      if (isSelected) {
-        result += highlightSelected(char);
-      } else {
-        result += char;
-      }
+      // Apply background to non-matching chars for selected items
+      result += isSelected ? highlightSelected(char) : char;
     }
-    normalizedIndex++;
+
+    normalizedTextIndex++;
   }
 
   return result;
@@ -240,26 +268,33 @@ export function interactiveList<T>(
         startIndex + maxDisplayItems
       );
 
+      // Render each visible item with appropriate highlighting
       for (let i = startIndex; i < endIndex; i++) {
         const item = filteredItems[i];
         const itemText = itemRenderer(item);
         const searchableText = getSearchableText(item);
 
         if (i === currentIndex) {
-          // Selected item with green background and search highlighting
-          const highlightedText = highlightMatchesInDisplay(
+          // Selected item: highlight text + extend green background to full terminal width
+          const terminalWidth = process.stdout.columns || 80;
+          const highlightedText = applyTextHighlighting(
             itemText,
             searchableText,
             searchTerm,
-            true
+            true // isSelected = true
           );
-          const terminalWidth = process.stdout.columns || 80;
           const selectedLine = `=> ${highlightedText}`;
-          const paddedLine = selectedLine.padEnd(terminalWidth - 1);
-          writeLine(highlightSelected(paddedLine));
+
+          // Calculate padding needed to fill remaining terminal width
+          const textLength = getTextLengthWithoutColors(selectedLine);
+          const paddingNeeded = Math.max(0, terminalWidth - 1 - textLength);
+          const fullWidthLine =
+            selectedLine + highlightSelected(' '.repeat(paddingNeeded));
+
+          writeLine(fullWidthLine);
         } else {
-          // Non-selected items get search highlighting
-          const highlightedText = highlightMatchesInDisplay(
+          // Non-selected items: apply search highlighting only
+          const highlightedText = applyTextHighlighting(
             itemText,
             searchableText,
             searchTerm
