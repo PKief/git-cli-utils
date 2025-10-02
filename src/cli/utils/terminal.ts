@@ -1,3 +1,5 @@
+import * as readline from 'readline';
+
 /**
  * Terminal output utilities for consistent stdout handling
  */
@@ -17,10 +19,11 @@ export function writeLine(text: string = ''): void {
 }
 
 /**
- * Clear the entire screen and move cursor to top-left corner
+ * Clear the screen from current cursor position down (preserves command prompt)
  */
 export function clearScreen(): void {
-  write('\u001b[2J\u001b[0;0H');
+  readline.cursorTo(process.stdout, 0, 0);
+  readline.clearScreenDown(process.stdout);
 }
 
 /**
