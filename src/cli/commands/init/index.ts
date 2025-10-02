@@ -37,6 +37,12 @@ const availableCommands: Command[] = [
     description: 'Interactive stash selection with fuzzy search',
   },
   {
+    name: 'Search Tags',
+    command: 'tags',
+    defaultAlias: 'tags',
+    description: 'Interactive tag selection with fuzzy search',
+  },
+  {
     name: 'Save Changes',
     command: 'save',
     defaultAlias: 'save',
