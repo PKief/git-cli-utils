@@ -27,7 +27,8 @@
       "correctness": {
         "noUnsafeFinally": "error",
         "noUnusedVariables": "error",
-        "noUnusedImports": "error"
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "error"
       },
       "security": { "noGlobalEval": "error" },
       "style": {
