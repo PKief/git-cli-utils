@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v1.11.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.10.0...v1.11.0)
+
+### 🚀 Enhancements
+
+- Update command aliases and add new stash management commands ([9e7cf63](https://github.com/PKief/git-cli-utils/commit/9e7cf63))
+- Add create branch from selected branch functionality ([449e79d](https://github.com/PKief/git-cli-utils/commit/449e79d))
+- Add current branch indicator to branch listing ([3bc2b57](https://github.com/PKief/git-cli-utils/commit/3bc2b57))
+- Update clearScreen function to preserve command prompt ([bd7ed8a](https://github.com/PKief/git-cli-utils/commit/bd7ed8a))
+- Update git log command to use relative date format ([a408e07](https://github.com/PKief/git-cli-utils/commit/a408e07))
+- Add tag information display in commits list ([c8c6e04](https://github.com/PKief/git-cli-utils/commit/c8c6e04))
+- Implement tag management features including search, checkout, copy, and display details ([eb729f9](https://github.com/PKief/git-cli-utils/commit/eb729f9))
+- Update tag display format and enhance branch tests with current status ([8033e92](https://github.com/PKief/git-cli-utils/commit/8033e92))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.10.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.9.0...v1.10.0)
