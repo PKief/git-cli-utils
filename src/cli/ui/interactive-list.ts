@@ -41,7 +41,16 @@ function highlightMatchesInDisplay(
       isSelected
     );
 
-    return beforeSearchable + highlightedSearchable + afterSearchable;
+    // For selected items, apply green background to the entire line
+    if (isSelected) {
+      return (
+        highlightSelected(beforeSearchable) +
+        highlightedSearchable +
+        highlightSelected(afterSearchable)
+      );
+    } else {
+      return beforeSearchable + highlightedSearchable + afterSearchable;
+    }
   }
 
   // If exact match not found, apply highlighting to the whole display text
