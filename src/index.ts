@@ -3,12 +3,12 @@ import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import init from './cli/commands/init.js';
-import { listAliases } from './cli/commands/list-aliases.js';
-import { searchBranches } from './cli/commands/search-branches.js';
-import { searchCommits } from './cli/commands/search-commits.js';
-import { searchStashes } from './cli/commands/search-stashes.js';
-import { topAuthors } from './cli/commands/top-authors.js';
+import { searchBranches } from './cli/commands/branches/index.js';
+import { searchCommits } from './cli/commands/commits/index.js';
+import { init } from './cli/commands/init/index.js';
+import { listAliases } from './cli/commands/list-aliases/index.js';
+import { searchStashes } from './cli/commands/stashes/index.js';
+import { topAuthors } from './cli/commands/top-authors/index.js';
 import {
   type GitUtilsCommand,
   showCommandSelector,

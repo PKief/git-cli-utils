@@ -5,8 +5,8 @@ import {
   getOptimalCommand,
   getPerformanceStatus,
   isGitUtilsAvailable,
-} from '../utils/binary-detection.js';
-import { writeErrorLine, writeLine } from '../utils/terminal.js';
+} from '../../utils/binary-detection.js';
+import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 
 const execAsync = promisify(exec);
 
@@ -29,6 +29,12 @@ const availableCommands: Command[] = [
     command: 'commits',
     defaultAlias: 'sc',
     description: 'Interactive commit selection with fuzzy search',
+  },
+  {
+    name: 'Search Stashes',
+    command: 'stashes',
+    defaultAlias: 'ss',
+    description: 'Interactive stash selection with fuzzy search',
   },
   {
     name: 'Top Authors',
@@ -59,7 +65,7 @@ async function setGitAlias(alias: string, command: string): Promise<boolean> {
   }
 }
 
-async function init() {
+export const init = async () => {
   writeLine('Welcome to Git CLI Utilities Setup!');
   writeLine();
 
@@ -194,6 +200,4 @@ async function init() {
     '  git config --global --get-regexp alias  - View all your aliases'
   );
   writeLine();
-}
-
-export default init;
+};

@@ -10,6 +10,30 @@ import {
 import { rankSearchResults } from './search-scoring.js';
 
 /**
+ * Represents an action that can be performed on selected items
+ */
+export interface Action<T> {
+  /** Display name for the action */
+  label: string;
+  /** Unique identifier for the action */
+  key: string;
+  /** Function to execute when action is selected. Returns true if action completed successfully, false if cancelled */
+  handler: (item: T) => Promise<boolean> | boolean | Promise<void> | void;
+  /** Optional description for the action */
+  description?: string;
+}
+
+/**
+ * Configuration for the action bar display
+ */
+interface ActionBarConfig<T> {
+  /** Currently selected action index */
+  selectedActionIndex: number;
+  /** All available actions */
+  actions: Action<T>[];
+}
+
+/**
  * Removes ANSI escape codes from text to calculate actual display length
  */
 function getTextLengthWithoutColors(text: string): number {
@@ -168,11 +192,40 @@ function applyFuzzyHighlighting(
   return result;
 }
 
+/**
+ * Renders the action bar showing available actions with selection indicator
+ */
+function renderActionBar<T>(config: ActionBarConfig<T>): void {
+  if (config.actions.length === 0) {
+    return;
+  }
+
+  writeLine(); // Empty line before action bar
+
+  const actionStrings = config.actions.map((action, index) => {
+    const isSelected = index === config.selectedActionIndex;
+    const indicator = isSelected ? '[x]' : '[ ]';
+    const actionText = `${indicator} ${action.label}`;
+
+    return isSelected ? highlightSelected(actionText) : actionText;
+  });
+
+  const actionBar = actionStrings.join(' ');
+  writeLine(actionBar);
+
+  // Show description of selected action if available
+  const selectedAction = config.actions[config.selectedActionIndex];
+  if (selectedAction?.description) {
+    writeLine(yellow(`${selectedAction.description}`));
+  }
+}
+
 export function interactiveList<T>(
   items: T[],
   itemRenderer: (item: T) => string,
   searchFunction?: (item: T) => string,
-  header?: string
+  header?: string,
+  actions?: Action<T>[]
 ): Promise<T | null> {
   return new Promise((resolve, reject) => {
     if (items.length === 0) {
@@ -217,9 +270,11 @@ export function interactiveList<T>(
     }
 
     let currentIndex = 0;
+    let selectedActionIndex = 0;
     const maxDisplayItems = 7;
     let searchTerm = '';
     let filteredItems = items;
+    const availableActions = actions || [];
 
     const filterItems = () => {
       if (!searchTerm) {
@@ -302,6 +357,14 @@ export function interactiveList<T>(
           writeLine(`   ${highlightedText}`);
         }
       }
+
+      // Render action bar if actions are available
+      if (availableActions.length > 0) {
+        renderActionBar({
+          selectedActionIndex,
+          actions: availableActions,
+        });
+      }
     };
 
     const handleKeypress = (_chunk: Buffer, key: readline.Key) => {
@@ -327,7 +390,45 @@ export function interactiveList<T>(
             process.stdin.setRawMode(false);
           }
           process.stdin.removeAllListeners('keypress');
-          // Only resolve with an item if there are filtered items available
+
+          // If actions are available and an item is selected, execute the selected action
+          if (
+            availableActions.length > 0 &&
+            filteredItems.length > 0 &&
+            currentIndex >= 0
+          ) {
+            const selectedItem = filteredItems[currentIndex];
+            const selectedAction = availableActions[selectedActionIndex];
+
+            try {
+              const result = selectedAction.handler(selectedItem);
+              if (result instanceof Promise) {
+                // Wait for the promise and check the result
+                result
+                  .then((actionSucceeded) => {
+                    // Only resolve with selected item if action succeeded (or returned undefined/void)
+                    const shouldResolveWithItem = actionSucceeded !== false;
+                    resolve(shouldResolveWithItem ? selectedItem : null);
+                  })
+                  .catch((error) => {
+                    console.error('Action failed:', error);
+                    resolve(null); // Resolve with null on error
+                  });
+                return; // Don't continue to the resolve below
+              } else {
+                // Synchronous result - check if it returned false (cancelled)
+                const actionSucceeded = result !== false;
+                resolve(actionSucceeded ? selectedItem : null);
+                return;
+              }
+            } catch (error) {
+              console.error('Action failed:', error);
+              resolve(null);
+              return;
+            }
+          }
+
+          // No actions available - resolve with the selected item (or null)
           resolve(
             filteredItems.length > 0
               ? filteredItems[currentIndex] || null
@@ -349,6 +450,27 @@ export function interactiveList<T>(
           // Only navigate if there are items to navigate
           if (filteredItems.length > 0) {
             currentIndex = Math.min(filteredItems.length - 1, currentIndex + 1);
+            render();
+          }
+          return;
+        }
+
+        if (key.name === 'left') {
+          // Navigate actions if available
+          if (availableActions.length > 0) {
+            selectedActionIndex = Math.max(0, selectedActionIndex - 1);
+            render();
+          }
+          return;
+        }
+
+        if (key.name === 'right') {
+          // Navigate actions if available
+          if (availableActions.length > 0) {
+            selectedActionIndex = Math.min(
+              availableActions.length - 1,
+              selectedActionIndex + 1
+            );
             render();
           }
           return;

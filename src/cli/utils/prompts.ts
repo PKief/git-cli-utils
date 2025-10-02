@@ -22,3 +22,11 @@ export const chooseFromList = async (options: string[]) => {
   });
   return response;
 };
+
+export const confirmDeletion = async (itemType: string, itemName: string) => {
+  const response = await p.confirm({
+    message: `Are you sure you want to delete ${itemType} "${itemName}"? This action cannot be undone.`,
+    initialValue: false, // Default to "No" for safety
+  });
+  return response;
+};

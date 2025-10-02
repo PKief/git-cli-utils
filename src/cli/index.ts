@@ -1,8 +1,9 @@
 import { Command } from 'commander';
-import init from './commands/init.js';
-import { searchBranches } from './commands/search-branches.js';
-import { searchCommits } from './commands/search-commits.js';
-import { topAuthors } from './commands/top-authors.js';
+import { searchBranches } from './commands/branches/index.js';
+import { searchCommits } from './commands/commits/index.js';
+import { init } from './commands/init/index.js';
+import { searchStashes } from './commands/stashes/index.js';
+import { topAuthors } from './commands/top-authors/index.js';
 
 const program = new Command();
 
@@ -20,6 +21,11 @@ program
   .command('commits')
   .description('Search for commits in the git repository')
   .action(searchCommits);
+
+program
+  .command('stashes')
+  .description('Search for stashes in the git repository')
+  .action(searchStashes);
 
 program
   .command('authors')

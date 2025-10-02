@@ -4,11 +4,11 @@ import {
   getAuthorTimeline,
   getFileAuthors,
   getLastAuthor,
-} from '../../core/git/authors.js';
-import { GitOperations } from '../../core/git/operations.js';
-import { blue, gray, green, red, yellow } from '../ui/ansi.js';
-import { interactiveList } from '../ui/interactive-list.js';
-import { writeErrorLine, writeLine } from '../utils/terminal.js';
+} from '../../../core/git/authors.js';
+import { GitOperations } from '../../../core/git/operations.js';
+import { blue, gray, green, red, yellow } from '../../ui/ansi.js';
+import { interactiveList } from '../../ui/interactive-list.js';
+import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 
 /**
  * Format and display a simple timeline showing years of activity

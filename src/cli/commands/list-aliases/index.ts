@@ -1,8 +1,8 @@
-import { type GitAlias, getGitAliases } from '../../core/git/aliases.js';
-import { gitExecutor } from '../../core/git/executor.js';
-import { green, red, yellow } from '../ui/ansi.js';
-import { interactiveList } from '../ui/interactive-list.js';
-import { writeErrorLine, writeLine } from '../utils/terminal.js';
+import { type GitAlias, getGitAliases } from '../../../core/git/aliases.js';
+import { gitExecutor } from '../../../core/git/executor.js';
+import { green, red, yellow } from '../../ui/ansi.js';
+import { interactiveList } from '../../ui/interactive-list.js';
+import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 
 export const listAliases = async (): Promise<void> => {
   try {
