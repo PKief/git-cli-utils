@@ -6,6 +6,7 @@ import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import {
   checkoutBranch,
   copyBranchName,
+  createBranchFrom,
   deleteBranch,
 } from './actions/index.js';
 
@@ -25,6 +26,12 @@ function createBranchActions() {
       label: 'Copy',
       description: 'Copy to clipboard',
       handler: copyBranchName,
+    },
+    {
+      key: 'create',
+      label: 'Create new branch from',
+      description: 'Create new branch based on selected',
+      handler: createBranchFrom,
     },
     {
       key: 'delete',
@@ -54,9 +61,8 @@ export const searchBranches = async () => {
       );
 
       if (selectedBranch) {
-        writeLine();
-        writeLine(`Selected branch: ${selectedBranch.name}`);
         // Action has already been executed by the interactive list
+        // and provided its own success message
         process.exit(0);
       } else {
         writeLine(yellow('No branch selected.'));
