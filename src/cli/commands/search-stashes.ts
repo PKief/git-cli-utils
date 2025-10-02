@@ -22,8 +22,8 @@ export const searchStashes = async () => {
           return `stash@{${stash.index}} ${stash.branch} | ${stash.hash} ${stash.date} | ${stash.message}`;
         },
         (stash: GitStash) => {
-          // Search in message, branch, hash, and date
-          return `${stash.message} ${stash.branch} ${stash.hash} ${stash.date}`;
+          // Search in message, branch, and hash
+          return `${stash.message} ${stash.branch} ${stash.hash}`;
         },
         yellow('Available stashes') // Header
       );

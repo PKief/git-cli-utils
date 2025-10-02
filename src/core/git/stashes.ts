@@ -78,8 +78,7 @@ export const filterStashes = (
     return (
       stash.message.toLowerCase().includes(lowerSearchTerm) ||
       stash.branch.toLowerCase().includes(lowerSearchTerm) ||
-      stash.hash.toLowerCase().includes(lowerSearchTerm) ||
-      stash.date.toLowerCase().includes(lowerSearchTerm)
+      stash.hash.toLowerCase().includes(lowerSearchTerm)
     );
   });
 };

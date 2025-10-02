@@ -185,13 +185,6 @@ stash@{1}|WIP on feature/test: abc1234 Test commit|abc1234567890|1 hour ago|Comp
       expect(result[0].hash).toBe('def5678');
     });
 
-    test('should filter stashes by date', async () => {
-      const result = filterStashes(mockStashes, 'day');
-
-      expect(result).toHaveLength(2);
-      expect(result.some((stash) => stash.date.includes('day'))).toBe(true);
-    });
-
     test('should be case insensitive', async () => {
       const result = filterStashes(mockStashes, 'MAIN');
 
