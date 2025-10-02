@@ -47,9 +47,11 @@ export const searchCommits = async () => {
     try {
       const selectedCommit = await interactiveList<GitCommit>(
         commits,
-        (commit: GitCommit) =>
-          `${commit.date} - ${commit.subject} (${commit.hash})`,
-        (commit: GitCommit) => `${commit.subject} ${commit.hash}`, // Search both subject and hash
+        (commit: GitCommit) => {
+          const tagInfo = commit.tags.length > 0 ? ` [${commit.tags.join(', ')}]` : '';
+          return `${commit.date} - ${commit.subject}${tagInfo} (${commit.hash})`;
+        },
+        (commit: GitCommit) => `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`, // Search subject, hash, and tags
         undefined, // No header
         createCommitActions() // Actions
       );

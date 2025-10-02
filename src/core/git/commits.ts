@@ -5,6 +5,7 @@ export interface GitCommit {
   date: string;
   branch: string;
   subject: string;
+  tags: string[];
 }
 
 export const getGitCommits = async (): Promise<GitCommit[]> => {
@@ -18,16 +19,22 @@ export const getGitCommits = async (): Promise<GitCommit[]> => {
     result.data.forEach((line) => {
       if (!line.trim()) return;
       const [hash, date, refs, subject] = line.split('|');
-      const branches = refs
-        .split(',')
-        .map((r) => r.trim())
-        .filter((r) => r && !r.startsWith('tag:') && !r.startsWith('HEAD'));
+      
+      const refList = refs ? refs.split(',').map((r) => r.trim()).filter((r) => r) : [];
+      
+      const branches = refList
+        .filter((r) => !r.startsWith('tag:') && !r.startsWith('HEAD'));
+      
+      const tags = refList
+        .filter((r) => r.startsWith('tag:'))
+        .map((r) => r.replace(/^tag:\s*/, ''));
 
       commits.push({
         hash,
         date,
         branch: branches.join(', '),
         subject,
+        tags,
       });
     });
 
@@ -49,7 +56,7 @@ export const filterCommits = (
 
   return commits.filter((c) => {
     const searchableText =
-      `${c.hash} ${c.date} ${c.branch} ${c.subject}`.toLowerCase();
+      `${c.hash} ${c.date} ${c.branch} ${c.subject} ${c.tags.join(' ')}`.toLowerCase();
 
     if (searchableText.includes(normalizedSearchTerm)) {
       return true;
