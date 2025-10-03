@@ -2,7 +2,7 @@ import * as readline from 'readline';
 import { clearScreen, write, writeLine } from '../utils/terminal.js';
 import {
   blue,
-  highlightAction,
+  gray,
   highlightExact,
   highlightFuzzy,
   highlightSelected,
@@ -205,19 +205,22 @@ function renderActionBar<T>(config: ActionBarConfig<T>): void {
 
   const actionStrings = config.actions.map((action, index) => {
     const isSelected = index === config.selectedActionIndex;
-    const indicator = isSelected ? '◆' : '◇';
-    const actionText = `${indicator} ${action.label}`;
+    const label = action.label.toLowerCase(); // Make actions lowercase for subtlety
 
-    return isSelected ? highlightAction(actionText) : actionText;
+    // Always use same width with consistent spacing, just change the character and color
+    // '•' for selected, ' ' for non-selected, keeping the same width
+    return isSelected
+      ? blue(`• ${label}`)
+      : gray(`• `).replace('•', ' ') + gray(label);
   });
 
   const actionBar = actionStrings.join('  ');
   writeLine(actionBar);
 
-  // Show description of selected action if available (more compact)
+  // Show description of selected action if subtly in gray
   const selectedAction = config.actions[config.selectedActionIndex];
   if (selectedAction?.description) {
-    writeLine(yellow(`  ${selectedAction.description}`));
+    writeLine(gray(`  ${selectedAction.description}`));
   }
 }
 
