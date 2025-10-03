@@ -133,7 +133,7 @@ describe('ANSI', () => {
 
     it('should create selected highlight with highlightSelected helper', () => {
       const result = highlightSelected('selected');
-      expect(result).toBe('\x1b[42m\x1b[97m\x1b[1mselected\x1b[0m');
+      expect(result).toBe('\x1b[44m\x1b[97m\x1b[1mselected\x1b[0m');
     });
 
     it('should create action highlight with highlightAction helper', () => {
