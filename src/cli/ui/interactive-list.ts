@@ -331,7 +331,7 @@ export function interactiveList<T>(
         const searchableText = getSearchableText(item);
 
         if (i === currentIndex) {
-          // Selected item: highlight text + extend green background to full terminal width
+          // Selected item: highlight text + extend blue background to full terminal width
           const terminalWidth = process.stdout.columns || 80;
           const highlightedText = applyTextHighlighting(
             itemText,
@@ -339,7 +339,7 @@ export function interactiveList<T>(
             searchTerm,
             true // isSelected = true
           );
-          const selectedLine = `=> ${highlightedText}`;
+          const selectedLine = highlightSelected(`=> `) + highlightedText;
 
           // Calculate padding needed to fill remaining terminal width
           const textLength = getTextLengthWithoutColors(selectedLine);
