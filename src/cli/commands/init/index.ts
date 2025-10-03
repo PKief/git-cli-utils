@@ -159,6 +159,8 @@ export const init = async () => {
         const newAlias = await p.text({
           message: `Enter alternative alias for ${command.name}:`,
           placeholder: command.defaultAlias,
+          initialValue: command.defaultAlias,
+          defaultValue: command.defaultAlias,
           validate: (value) => {
             if (!value) return 'Alias cannot be empty';
             if (!/^[a-zA-Z0-9-_]+$/.test(value))
@@ -179,6 +181,7 @@ export const init = async () => {
       const confirmAlias = await p.text({
         message: `Alias for ${command.name}:`,
         placeholder: command.defaultAlias,
+        initialValue: command.defaultAlias,
         defaultValue: command.defaultAlias,
         validate: (value) => {
           if (!value) return 'Alias cannot be empty';
