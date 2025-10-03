@@ -25,19 +25,9 @@ Fast CLI tools for Git with **real-time search**, **fuzzy matching**, and **keyb
 npx git-cli-utils
 ```
 
-**Live terminal output:**
-```
-Select a command to run:
+**Fuzzy search:**
+![demo](images/demo-git-utils.gif)
 
-Search: (type to search)
-Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit
-
-=> branches     Interactive branch selection with fuzzy search
-   commits      Interactive commit selection with fuzzy search
-   authors      Show top contributors by commit count, optionally for a specific file
-   init         Setup git aliases for git-utils commands
-   aliases      Show current git aliases
-```
 
 **What you can do:**
 - **Browse all commands** with descriptions
