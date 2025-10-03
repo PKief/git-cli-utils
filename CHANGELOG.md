@@ -1,6 +1,28 @@
 # Changelog
 
 
+## v1.12.1
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.12.0...v1.12.1)
+
+### 🩹 Fixes
+
+- Add initial and default values for alias input prompts ([6773b83](https://github.com/PKief/git-cli-utils/commit/6773b83))
+- Update highlight colors for selected and search text ([9d56c62](https://github.com/PKief/git-cli-utils/commit/9d56c62))
+- Change selected item background color to blue in interactive list ([9788273](https://github.com/PKief/git-cli-utils/commit/9788273))
+- Update action bar to use subtle colors for selected and non-selected actions ([7d5daae](https://github.com/PKief/git-cli-utils/commit/7d5daae))
+- Update README to include demo GIF and remove outdated terminal output ([72450dc](https://github.com/PKief/git-cli-utils/commit/72450dc))
+- Update highlight color for selected item in ANSI tests ([7226a6b](https://github.com/PKief/git-cli-utils/commit/7226a6b))
+- Update demo gif ([97fd229](https://github.com/PKief/git-cli-utils/commit/97fd229))
+
+### 🏡 Chore
+
+- Update logo ([adc1d8c](https://github.com/PKief/git-cli-utils/commit/adc1d8c))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.12.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.11.0...v1.12.0)
