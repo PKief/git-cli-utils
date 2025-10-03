@@ -1,7 +1,7 @@
 import * as readline from 'readline';
 import { clearScreen, write, writeLine } from '../utils/terminal.js';
 import {
-  green,
+  blue,
   highlightAction,
   highlightExact,
   highlightFuzzy,
@@ -298,7 +298,7 @@ export function interactiveList<T>(
       clearScreen();
 
       // Always show search line first - this should never scroll away
-      writeLine(`${green('Search:')} ${searchTerm || '(type to search)'}`);
+      writeLine(`${blue('Search:')} ${searchTerm || '(type to search)'}`);
       writeLine(
         'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit'
       );

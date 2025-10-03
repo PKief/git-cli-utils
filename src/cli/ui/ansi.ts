@@ -51,7 +51,7 @@ export const highlightFuzzy = (text: string): string =>
   multiColor(text, 'bgCyan', 'brightWhite', 'bold');
 
 export const highlightSelected = (text: string): string =>
-  multiColor(text, 'bgGreen', 'brightWhite', 'bold');
+  multiColor(text, 'bgBlue', 'brightWhite', 'bold');
 
 export const highlightAction = (text: string): string =>
   multiColor(text, 'bgYellow', 'black');
