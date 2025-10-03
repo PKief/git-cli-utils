@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.12.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.11.0...v1.12.0)
+
+### 🚀 Enhancements
+
+- Add interactive tag selection command to available commands list ([eb39668](https://github.com/PKief/git-cli-utils/commit/eb39668))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.11.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.10.0...v1.11.0)
