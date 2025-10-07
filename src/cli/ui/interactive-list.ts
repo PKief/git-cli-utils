@@ -35,13 +35,6 @@ interface ActionBarConfig<T> {
 }
 
 /**
- * Removes ANSI escape codes from text to calculate actual display length
- */
-function getTextLengthWithoutColors(text: string): number {
-  return text.replace(/\x1b\[[0-9;]*m/g, '').length;
-}
-
-/**
  * Applies appropriate highlighting to text based on search term and selection state
  *
  * @param displayText - The full text to display (may include formatting)
@@ -334,23 +327,16 @@ export function interactiveList<T>(
         const searchableText = getSearchableText(item);
 
         if (i === currentIndex) {
-          // Selected item: highlight text + extend blue background to full terminal width
-          const terminalWidth = process.stdout.columns || 80;
+          // Selected item: highlight text only (no full-width background)
           const highlightedText = applyTextHighlighting(
             itemText,
             searchableText,
             searchTerm,
             true // isSelected = true
           );
-          const selectedLine = highlightSelected(`=> `) + highlightedText;
+          const selectedLine = highlightSelected(`> `) + highlightedText;
 
-          // Calculate padding needed to fill remaining terminal width
-          const textLength = getTextLengthWithoutColors(selectedLine);
-          const paddingNeeded = Math.max(0, terminalWidth - 1 - textLength);
-          const fullWidthLine =
-            selectedLine + highlightSelected(' '.repeat(paddingNeeded));
-
-          writeLine(fullWidthLine);
+          writeLine(selectedLine);
         } else {
           // Non-selected items: apply search highlighting only
           const highlightedText = applyTextHighlighting(
@@ -358,7 +344,7 @@ export function interactiveList<T>(
             searchableText,
             searchTerm
           );
-          writeLine(`   ${highlightedText}`);
+          writeLine(`  ${highlightedText}`);
         }
       }
 
@@ -444,7 +430,8 @@ export function interactiveList<T>(
         if (key.name === 'up') {
           // Only navigate if there are items to navigate
           if (filteredItems.length > 0) {
-            currentIndex = Math.max(0, currentIndex - 1);
+            currentIndex =
+              currentIndex <= 0 ? filteredItems.length - 1 : currentIndex - 1;
             render();
           }
           return;
@@ -453,7 +440,8 @@ export function interactiveList<T>(
         if (key.name === 'down') {
           // Only navigate if there are items to navigate
           if (filteredItems.length > 0) {
-            currentIndex = Math.min(filteredItems.length - 1, currentIndex + 1);
+            currentIndex =
+              currentIndex >= filteredItems.length - 1 ? 0 : currentIndex + 1;
             render();
           }
           return;
