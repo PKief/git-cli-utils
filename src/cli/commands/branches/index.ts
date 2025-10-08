@@ -23,12 +23,6 @@ function createBranchActions() {
       handler: checkoutBranch,
     },
     {
-      key: 'worktree',
-      label: 'Open in editor',
-      description: 'Open branch in worktree (create if needed)',
-      handler: checkoutBranchInWorktree,
-    },
-    {
       key: 'copy',
       label: 'Copy',
       description: 'Copy to clipboard',
@@ -39,6 +33,12 @@ function createBranchActions() {
       label: 'Create new branch from',
       description: 'Create new branch based on selected',
       handler: createBranchFrom,
+    },
+    {
+      key: 'worktree',
+      label: 'Open in editor',
+      description: 'Open branch in worktree (create if needed)',
+      handler: checkoutBranchInWorktree,
     },
     {
       key: 'delete',

@@ -232,23 +232,6 @@ Examples:
 | Sublime Text | `git-utils config editor set /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl --args "-n"` |
 | Windows VS Code | `git-utils config editor set "C:/Program Files/Microsoft VS Code/Code.exe" --args "--new-window"` |
 
-When you create a worktree (from branches, commits, or remotes):
-
-```
-✓ Worktree created: /path/to/repo-feature-login
-  Branch: feature/login
-
-Next steps:
-  1. Open in editor: code /path/to/repo-feature-login
-  2. Change directory: cd /path/to/repo-feature-login
-  3. Status: git status
-  4. Remove later: git worktree remove /path/to/repo-feature-login
-
-(Path copied to clipboard)
-```
-
-If an editor is configured it attempts to open the folder automatically (non-blocking). No editor configured? You'll see a hint to set one.
-
 ## Worktrees Workflow
 
 Create parallel environments without switching branches:
