@@ -1,6 +1,29 @@
 # Changelog
 
 
+## v1.13.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.12.1...v1.13.0)
+
+### 🚀 Enhancements
+
+- Add sync command to interactively sync from a remote branch ([b775bbc](https://github.com/PKief/git-cli-utils/commit/b775bbc))
+- Add interactive remote management commands and associated actions ([e3c0b1d](https://github.com/PKief/git-cli-utils/commit/e3c0b1d))
+- Add 'Sync from Remote' and 'Manage Remotes' commands with descriptions ([eee8cc4](https://github.com/PKief/git-cli-utils/commit/eee8cc4))
+- Add 'Set as default' action to set upstream for current branch ([c0756c9](https://github.com/PKief/git-cli-utils/commit/c0756c9))
+- Implement 'Add remote' action to allow users to add a new remote repository ([8cdcecc](https://github.com/PKief/git-cli-utils/commit/8cdcecc))
+- Add 'Set as upstream' action to set a remote branch as upstream for the current branch ([61b7b8a](https://github.com/PKief/git-cli-utils/commit/61b7b8a))
+- Add worktree management and editor configuration ([814b8d0](https://github.com/PKief/git-cli-utils/commit/814b8d0))
+
+### 💅 Refactors
+
+- Simplify interactive list selection highlighting and navigation logic ([64904af](https://github.com/PKief/git-cli-utils/commit/64904af))
+- Update getRemoteBranches to use ls-remote for fetching branch info ([ef148ba](https://github.com/PKief/git-cli-utils/commit/ef148ba))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.12.1
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.12.0...v1.12.1)
