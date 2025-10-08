@@ -67,9 +67,9 @@ export async function getRemoteBranches(
     // First, fetch the latest refs from the remote
     await gitExecutor.executeCommand(`git fetch ${remoteName}`);
 
-    // Get remote branches with their commit info
+    // Get branches that actually exist on the remote server
     const result = await gitExecutor.executeCommand(
-      `git for-each-ref --format='%(refname:short)|%(objectname:short)|%(committerdate:iso)' refs/remotes/${remoteName}`
+      `git ls-remote --heads ${remoteName}`
     );
 
     if (!result.stdout) {
@@ -80,20 +80,27 @@ export async function getRemoteBranches(
     const branches: GitRemoteBranch[] = [];
 
     for (const line of lines) {
-      const parts = line.split('|');
-      if (parts.length === 3) {
-        const [fullName, commitHash, commitDate] = parts;
-        const name = fullName.replace(`${remoteName}/`, '');
+      const parts = line.split('\t');
+      if (parts.length === 2) {
+        const [commitHash, refName] = parts;
+        const name = refName.replace('refs/heads/', '');
 
-        // Skip HEAD reference
-        if (name === 'HEAD') {
-          continue;
+        // Get commit date for this branch
+        let commitDate = '';
+        try {
+          const dateResult = await gitExecutor.executeCommand(
+            `git log -1 --format='%ci' ${commitHash}`
+          );
+          commitDate = dateResult.stdout.trim();
+        } catch {
+          // If we can't get the date, use empty string
+          commitDate = '';
         }
 
         branches.push({
           name,
-          fullName,
-          lastCommit: commitHash,
+          fullName: `${remoteName}/${name}`,
+          lastCommit: commitHash.substring(0, 7), // Short hash
           lastCommitDate: commitDate,
         });
       }
