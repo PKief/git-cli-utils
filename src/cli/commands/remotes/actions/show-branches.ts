@@ -8,6 +8,7 @@ import { interactiveList } from '../../../ui/interactive-list.js';
 import { createActions } from '../../../utils/action-helpers.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 import { checkoutRemoteBranch } from './checkout-branch.js';
+import { setAsUpstream } from './set-as-upstream.js';
 
 /**
  * Creates actions available for branch items from a remote
@@ -19,6 +20,12 @@ function createBranchActions() {
       label: 'Checkout',
       description: 'Checkout this branch',
       handler: checkoutRemoteBranch,
+    },
+    {
+      key: 'set-upstream',
+      label: 'Set as upstream',
+      description: 'Set this branch as upstream for current branch',
+      handler: setAsUpstream,
     },
   ]);
 }
