@@ -7,6 +7,7 @@ import {
   copyRemoteName,
   deleteRemote,
   renameRemote,
+  setAsDefault,
   setRemoteUrl,
   showRemoteBranches,
 } from './actions/index.js';
@@ -27,6 +28,12 @@ function createRemoteActions() {
       label: 'Copy',
       description: 'Copy remote name to clipboard',
       handler: copyRemoteName,
+    },
+    {
+      key: 'set-default',
+      label: 'Set as default',
+      description: 'Set as upstream for current branch',
+      handler: setAsDefault,
     },
     {
       key: 'rename',
