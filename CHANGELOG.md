@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.13.1
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.13.0...v1.13.1)
+
+### 🩹 Fixes
+
+- Enhance editor path configuration by normalizing input path ([8d9c71c](https://github.com/PKief/git-cli-utils/commit/8d9c71c))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.13.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.12.1...v1.13.0)
