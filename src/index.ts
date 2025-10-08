@@ -9,6 +9,7 @@ import { init } from './cli/commands/init/index.js';
 import { listAliases } from './cli/commands/list-aliases/index.js';
 import { saveChanges } from './cli/commands/save/index.js';
 import { searchStashes } from './cli/commands/stashes/index.js';
+import { syncCommand } from './cli/commands/sync/index.js';
 import { searchTags } from './cli/commands/tags/index.js';
 import { topAuthors } from './cli/commands/top-authors/index.js';
 import {
@@ -49,6 +50,12 @@ const commands: GitUtilsCommand[] = [
     name: 'save',
     description: 'Save current working directory changes as a new stash',
     action: saveChanges,
+  },
+  {
+    name: 'sync',
+    description:
+      'Sync from a remote branch by selecting remote and branch interactively',
+    action: syncCommand,
   },
   {
     name: 'authors',

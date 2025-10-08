@@ -4,6 +4,7 @@ import { searchCommits } from './commands/commits/index.js';
 import { init } from './commands/init/index.js';
 import { saveChanges } from './commands/save/index.js';
 import { searchStashes } from './commands/stashes/index.js';
+import { syncCommand } from './commands/sync/index.js';
 import { searchTags } from './commands/tags/index.js';
 import { topAuthors } from './commands/top-authors/index.js';
 
@@ -46,6 +47,13 @@ program
   )
   .argument('[file]', 'file path to analyze (optional)')
   .action(topAuthors);
+
+program
+  .command('sync')
+  .description(
+    'Sync from a remote branch by selecting remote and branch interactively'
+  )
+  .action(syncCommand);
 
 program
   .command('init')
