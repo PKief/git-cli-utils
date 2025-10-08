@@ -1,0 +1,96 @@
+import { GitRemote, getGitRemotes } from '../../../core/git/index.js';
+import { yellow } from '../../ui/ansi.js';
+import { interactiveList } from '../../ui/interactive-list.js';
+import { createActions } from '../../utils/action-helpers.js';
+import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import {
+  copyRemoteName,
+  deleteRemote,
+  renameRemote,
+  setRemoteUrl,
+  showRemoteBranches,
+} from './actions/index.js';
+
+/**
+ * Creates actions available for remote items
+ */
+function createRemoteActions() {
+  return createActions([
+    {
+      key: 'branches',
+      label: 'Show branches',
+      description: 'Show branches from this remote',
+      handler: showRemoteBranches,
+    },
+    {
+      key: 'copy',
+      label: 'Copy',
+      description: 'Copy remote name to clipboard',
+      handler: copyRemoteName,
+    },
+    {
+      key: 'rename',
+      label: 'Rename',
+      description: 'Rename this remote',
+      handler: renameRemote,
+    },
+    {
+      key: 'set-url',
+      label: 'Set URL',
+      description: 'Change the URL of this remote',
+      handler: setRemoteUrl,
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      description: 'Delete this remote',
+      handler: deleteRemote,
+    },
+  ]);
+}
+
+export const searchRemotes = async () => {
+  try {
+    const remotes = await getGitRemotes();
+
+    if (remotes.length === 0) {
+      writeLine(
+        yellow(
+          'No remotes found! Add a remote first with: git remote add <name> <url>'
+        )
+      );
+      process.exit(0);
+    }
+
+    try {
+      const selectedRemote = await interactiveList<GitRemote>(
+        remotes,
+        (remote: GitRemote) => `${remote.name} - ${remote.url}`,
+        (remote: GitRemote) => remote.name,
+        undefined, // No header
+        createRemoteActions() // Actions
+      );
+
+      if (selectedRemote) {
+        // Action has already been executed by the interactive list
+        // and provided its own success message
+        process.exit(0);
+      } else {
+        writeLine(yellow('No remote selected.'));
+        process.exit(0);
+      }
+    } catch (error) {
+      // Handle user cancellation gracefully
+      if (error instanceof Error && error.message === 'Selection cancelled') {
+        writeLine(yellow('Selection cancelled.'));
+        process.exit(0);
+      }
+      throw error; // Re-throw other errors
+    }
+  } catch (error) {
+    writeErrorLine(
+      `Error fetching remotes: ${error instanceof Error ? error.message : String(error)}`
+    );
+    process.exit(1);
+  }
+};

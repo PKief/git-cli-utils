@@ -7,6 +7,7 @@ import { searchBranches } from './cli/commands/branches/index.js';
 import { searchCommits } from './cli/commands/commits/index.js';
 import { init } from './cli/commands/init/index.js';
 import { listAliases } from './cli/commands/list-aliases/index.js';
+import { searchRemotes } from './cli/commands/remotes/index.js';
 import { saveChanges } from './cli/commands/save/index.js';
 import { searchStashes } from './cli/commands/stashes/index.js';
 import { syncCommand } from './cli/commands/sync/index.js';
@@ -56,6 +57,11 @@ const commands: GitUtilsCommand[] = [
     description:
       'Sync from a remote branch by selecting remote and branch interactively',
     action: syncCommand,
+  },
+  {
+    name: 'remotes',
+    description: 'Interactive remote management with actions',
+    action: searchRemotes,
   },
   {
     name: 'authors',

@@ -30,3 +30,11 @@ export const confirmDeletion = async (itemType: string, itemName: string) => {
   });
   return response;
 };
+
+export const confirm = async (message: string, defaultValue = true) => {
+  const response = await p.confirm({
+    message,
+    initialValue: defaultValue,
+  });
+  return response;
+};

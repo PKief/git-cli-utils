@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { searchBranches } from './commands/branches/index.js';
 import { searchCommits } from './commands/commits/index.js';
 import { init } from './commands/init/index.js';
+import { searchRemotes } from './commands/remotes/index.js';
 import { saveChanges } from './commands/save/index.js';
 import { searchStashes } from './commands/stashes/index.js';
 import { syncCommand } from './commands/sync/index.js';
@@ -54,6 +55,11 @@ program
     'Sync from a remote branch by selecting remote and branch interactively'
   )
   .action(syncCommand);
+
+program
+  .command('remotes')
+  .description('Interactive remote management with actions')
+  .action(searchRemotes);
 
 program
   .command('init')
