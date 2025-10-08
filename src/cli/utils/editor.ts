@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { existsSync, lstatSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { normalize, resolve } from 'node:path';
 import {
   type EditorConfig,
   getEditorConfig,
@@ -9,7 +9,13 @@ import {
 import { writeErrorLine, writeLine } from './terminal.js';
 
 export function configureEditor(path: string, args?: string[]): EditorConfig {
-  const abs = resolve(path);
+  // Remove quotes if they were included in the path
+  const cleanPath = path.replace(/^["']|["']$/g, '');
+
+  // Normalize and resolve the path in an OS-native way
+  const normalizedPath = normalize(cleanPath);
+  const abs = resolve(normalizedPath);
+
   try {
     const st = statSync(abs);
     if (!st.isFile() && !st.isSymbolicLink()) {
@@ -18,6 +24,7 @@ export function configureEditor(path: string, args?: string[]): EditorConfig {
   } catch {
     writeErrorLine(`Warning: editor path does not exist yet: ${abs}`);
   }
+
   const cfg = setEditorConfig({ path: abs, args });
   writeLine(
     `Editor configured: ${abs}${args?.length ? ' ' + args.join(' ') : ''}`
