@@ -49,6 +49,19 @@ const availableCommands: Command[] = [
     description: 'Save current working directory changes as a new stash',
   },
   {
+    name: 'Sync from Remote',
+    command: 'sync',
+    defaultAlias: 'sync',
+    description:
+      'Sync from a remote branch by selecting remote and branch interactively',
+  },
+  {
+    name: 'Manage Remotes',
+    command: 'remotes',
+    defaultAlias: 'remotes',
+    description: 'Interactive remote management with actions',
+  },
+  {
     name: 'Top Authors',
     command: 'authors',
     defaultAlias: 'authors',
