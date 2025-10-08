@@ -6,3 +6,4 @@ export * from './executor.js';
 export * from './operations.js';
 export * from './remotes.js';
 export * from './tags.js';
+export * from './worktrees.js';

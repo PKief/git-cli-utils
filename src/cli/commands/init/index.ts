@@ -62,6 +62,12 @@ const availableCommands: Command[] = [
     description: 'Interactive remote management with actions',
   },
   {
+    name: 'Manage Worktrees',
+    command: 'worktrees',
+    defaultAlias: 'worktrees',
+    description: 'Interactive worktree management with actions',
+  },
+  {
     name: 'Top Authors',
     command: 'authors',
     defaultAlias: 'authors',

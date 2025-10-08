@@ -7,6 +7,7 @@ import { yellow } from '../../../ui/ansi.js';
 import { interactiveList } from '../../../ui/interactive-list.js';
 import { createActions } from '../../../utils/action-helpers.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
+import { checkoutRemoteBranchInWorktree } from '../../../utils/worktree-actions.js';
 import { checkoutRemoteBranch } from './checkout-branch.js';
 import { setAsUpstream } from './set-as-upstream.js';
 
@@ -20,6 +21,12 @@ function createBranchActions() {
       label: 'Checkout',
       description: 'Checkout this branch',
       handler: checkoutRemoteBranch,
+    },
+    {
+      key: 'worktree',
+      label: 'Open in editor',
+      description: 'Open branch in worktree (create if needed)',
+      handler: checkoutRemoteBranchInWorktree,
     },
     {
       key: 'set-upstream',

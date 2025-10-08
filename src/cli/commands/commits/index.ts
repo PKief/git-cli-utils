@@ -3,6 +3,7 @@ import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { checkoutCommitInWorktree } from '../../utils/worktree-actions.js';
 import {
   checkoutCommit,
   copyCommitHash,
@@ -31,6 +32,12 @@ function createCommitActions() {
       label: 'Checkout',
       description: 'Checkout (detached HEAD)',
       handler: checkoutCommit,
+    },
+    {
+      key: 'worktree',
+      label: 'Open in editor',
+      description: 'Open commit in worktree (create if needed)',
+      handler: checkoutCommitInWorktree,
     },
   ]);
 }

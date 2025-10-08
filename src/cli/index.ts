@@ -8,6 +8,7 @@ import { searchStashes } from './commands/stashes/index.js';
 import { syncCommand } from './commands/sync/index.js';
 import { searchTags } from './commands/tags/index.js';
 import { topAuthors } from './commands/top-authors/index.js';
+import { manageWorktrees } from './commands/worktrees/index.js';
 
 const program = new Command();
 
@@ -60,6 +61,11 @@ program
   .command('remotes')
   .description('Interactive remote management with actions')
   .action(searchRemotes);
+
+program
+  .command('worktrees')
+  .description('Interactive worktree management with actions')
+  .action(manageWorktrees);
 
 program
   .command('init')

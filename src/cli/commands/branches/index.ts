@@ -3,6 +3,7 @@ import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { checkoutBranchInWorktree } from '../../utils/worktree-actions.js';
 import {
   checkoutBranch,
   copyBranchName,
@@ -20,6 +21,12 @@ function createBranchActions() {
       label: 'Switch',
       description: 'Switch to branch',
       handler: checkoutBranch,
+    },
+    {
+      key: 'worktree',
+      label: 'Open in editor',
+      description: 'Open branch in worktree (create if needed)',
+      handler: checkoutBranchInWorktree,
     },
     {
       key: 'copy',

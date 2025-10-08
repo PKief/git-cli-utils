@@ -5,6 +5,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { searchBranches } from './cli/commands/branches/index.js';
 import { searchCommits } from './cli/commands/commits/index.js';
+import { configCommand } from './cli/commands/config/index.js';
 import { init } from './cli/commands/init/index.js';
 import { listAliases } from './cli/commands/list-aliases/index.js';
 import { searchRemotes } from './cli/commands/remotes/index.js';
@@ -13,6 +14,7 @@ import { searchStashes } from './cli/commands/stashes/index.js';
 import { syncCommand } from './cli/commands/sync/index.js';
 import { searchTags } from './cli/commands/tags/index.js';
 import { topAuthors } from './cli/commands/top-authors/index.js';
+import { manageWorktrees } from './cli/commands/worktrees/index.js';
 import {
   type GitUtilsCommand,
   showCommandSelector,
@@ -62,6 +64,16 @@ const commands: GitUtilsCommand[] = [
     name: 'remotes',
     description: 'Interactive remote management with actions',
     action: searchRemotes,
+  },
+  {
+    name: 'worktrees',
+    description: 'Interactive worktree management with actions',
+    action: manageWorktrees,
+  },
+  {
+    name: 'config',
+    description: 'Manage git-cli-utils configuration (editor, etc.)',
+    action: configCommand,
   },
   {
     name: 'authors',

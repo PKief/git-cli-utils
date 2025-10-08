@@ -44,6 +44,8 @@ npx git-cli-utils
 - ⚡ **Git Aliases** – Setup shortcuts for faster workflows
 - ✨ **Smart Highlighting** – Visual feedback for exact and fuzzy matches
 - 🎯 **Command Discovery** – Interactive menu to explore all features
+- 🛠 **Configurable Editor Integration** – Configure a preferred editor and auto-open new worktrees
+- 🌳 **Worktree Management** – Create parallel environments from branches, commits, or remotes
 
 ## Quick Start
 
@@ -58,6 +60,9 @@ npx git-cli-utils commits
 # Install globally for better performance
 npm install -g git-cli-utils
 git-utils init  # Setup git aliases
+
+# (Optional) Configure your preferred editor for auto-opening worktrees
+git-utils config editor set /usr/local/bin/code --args "--new-window"
 ```
 
 > **Performance Tip**: Global installation eliminates npm resolution overhead for faster git aliases.
@@ -191,6 +196,77 @@ npx git-cli-utils  # Shows command selector with search
 | `authors` | Show top contributors by commits | `npx git-cli-utils authors [file]` | `git authors` |
 | `init` | Setup git aliases interactively | `npx git-cli-utils init` | - |
 | `aliases` | Browse and execute git aliases | `npx git-cli-utils aliases` | - |
+| `worktrees` | Manage existing git worktrees | `npx git-cli-utils worktrees` | - |
+| `config` | Manage git-cli-utils configuration (editor, etc.) | `npx git-cli-utils config` | - |
+
+## Editor Integration
+
+You can now use an **interactive config menu**:
+
+```bash
+git-utils config
+```
+
+Flow:
+1. Select scope (currently only `editor`)
+2. Choose action: `Show current editor` or `Set / change editor`
+3. (If setting) enter binary path and optional args
+
+Direct (non-interactive) usage still works:
+
+You can configure a preferred editor binary so that newly created worktrees are automatically opened:
+
+```bash
+git-utils config editor set /usr/local/bin/code --args "--new-window"
+git-utils config editor show
+```
+
+This stores configuration in `~/.git-cli-utils/config.json`.
+
+Examples:
+
+| Editor | Command |
+|--------|---------|
+| VS Code | `git-utils config editor set $(which code) --args "--new-window"` |
+| JetBrains (WebStorm) | `git-utils config editor set /Applications/WebStorm.app/Contents/MacOS/webstorm` |
+| Sublime Text | `git-utils config editor set /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl --args "-n"` |
+| Windows VS Code | `git-utils config editor set "C:/Program Files/Microsoft VS Code/Code.exe" --args "--new-window"` |
+
+When you create a worktree (from branches, commits, or remotes):
+
+```
+✓ Worktree created: /path/to/repo-feature-login
+  Branch: feature/login
+
+Next steps:
+  1. Open in editor: code /path/to/repo-feature-login
+  2. Change directory: cd /path/to/repo-feature-login
+  3. Status: git status
+  4. Remove later: git worktree remove /path/to/repo-feature-login
+
+(Path copied to clipboard)
+```
+
+If an editor is configured it attempts to open the folder automatically (non-blocking). No editor configured? You'll see a hint to set one.
+
+## Worktrees Workflow
+
+Create parallel environments without switching branches:
+
+| Action | Source Command |
+|--------|----------------|
+| Create from branch | `git-utils branches` → select → "Checkout in worktree" |
+| Create from commit | `git-utils commits` → select → "Checkout in worktree" |
+| Create from remote branch | `git-utils remotes` → show branches → select → "Checkout in worktree" |
+| Manage existing | `git-utils worktrees` |
+
+**Automatic Path Generation:**
+- Branch worktrees: `../project-name-branch-name` (sanitized)
+- Commit worktrees: `../project-name-abc12345` (8-char hash)
+- Remote branch worktrees: `../project-name-origin-feature-branch`
+
+Removing a worktree only deletes its directory – branches and commits remain.
+
 
 ## Contributing
 
