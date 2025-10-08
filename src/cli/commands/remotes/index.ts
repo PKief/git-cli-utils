@@ -4,6 +4,7 @@ import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import {
+  addRemote,
   copyRemoteName,
   deleteRemote,
   renameRemote,
@@ -48,6 +49,14 @@ function createRemoteActions() {
       handler: setRemoteUrl,
     },
     {
+      key: 'add',
+      label: 'Add remote',
+      description: 'Add a new remote repository',
+      handler: async () => {
+        return await addRemote();
+      },
+    },
+    {
       key: 'delete',
       label: 'Delete',
       description: 'Delete this remote',
@@ -56,17 +65,40 @@ function createRemoteActions() {
   ]);
 }
 
+/**
+ * Creates actions available when no remotes exist
+ */
+function createAddOnlyActions() {
+  return createActions([
+    {
+      key: 'add',
+      label: 'Add remote',
+      description: 'Add a new remote repository',
+      handler: async () => {
+        return await addRemote();
+      },
+    },
+  ]);
+}
+
 export const searchRemotes = async () => {
   try {
     const remotes = await getGitRemotes();
+    const hasRemotes = remotes.length > 0;
 
-    if (remotes.length === 0) {
+    if (!hasRemotes) {
       writeLine(
         yellow(
-          'No remotes found! Add a remote first with: git remote add <name> <url>'
+          'No remotes found! Use the "Add remote" action to add your first remote.'
         )
       );
-      process.exit(0);
+      // Create a dummy remote for the add action
+      const dummyRemote: GitRemote = {
+        name: 'No remotes available',
+        url: 'Use "Add remote" action to create one',
+        type: 'fetch',
+      };
+      remotes.push(dummyRemote);
     }
 
     try {
@@ -75,7 +107,7 @@ export const searchRemotes = async () => {
         (remote: GitRemote) => `${remote.name} - ${remote.url}`,
         (remote: GitRemote) => remote.name,
         undefined, // No header
-        createRemoteActions() // Actions
+        hasRemotes ? createRemoteActions() : createAddOnlyActions() // Show only "Add remote" when no remotes exist
       );
 
       if (selectedRemote) {
