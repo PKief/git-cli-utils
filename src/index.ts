@@ -33,7 +33,6 @@ program
 
 const commands: GitUtilsCommand[] = [
   registerBranches(program),
-  registerConfig(program),
   registerCommits(program),
   registerTags(program),
   registerStashes(program),
@@ -41,9 +40,10 @@ const commands: GitUtilsCommand[] = [
   registerSync(program),
   registerRemotes(program),
   registerWorktrees(program),
+  registerAliases(program),
   registerAuthors(program),
   registerInit(program),
-  registerAliases(program),
+  registerConfig(program),
   {
     name: 'help',
     description: 'Show help information for all commands',
