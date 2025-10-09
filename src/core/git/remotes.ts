@@ -67,9 +67,10 @@ export async function getRemoteBranches(
     // First, fetch the latest refs from the remote
     await gitExecutor.executeCommand(`git fetch ${remoteName}`);
 
-    // Get branches that actually exist on the remote server
+    // Get all remote branches with commit info in a single command
+    // Format: refname:short|objectname:short|committerdate:relative
     const result = await gitExecutor.executeCommand(
-      `git ls-remote --heads ${remoteName}`
+      `git for-each-ref --sort=-committerdate --format='%(refname:short)|%(objectname:short)|%(committerdate:relative)' refs/remotes/${remoteName}`
     );
 
     if (!result.stdout) {
@@ -80,28 +81,21 @@ export async function getRemoteBranches(
     const branches: GitRemoteBranch[] = [];
 
     for (const line of lines) {
-      const parts = line.split('\t');
-      if (parts.length === 2) {
-        const [commitHash, refName] = parts;
-        const name = refName.replace('refs/heads/', '');
+      const parts = line.split('|');
+      if (parts.length === 3) {
+        const [fullRefName, commitHash, relativeDate] = parts;
 
-        // Get relative commit date for this branch
-        let commitDate = '';
-        try {
-          const dateResult = await gitExecutor.executeCommand(
-            `git log -1 --format='%cr' ${commitHash}`
-          );
-          commitDate = dateResult.stdout.trim();
-        } catch {
-          // If we can't get the date, use empty string
-          commitDate = '';
-        }
+        // Extract branch name from refs/remotes/origin/branch-name
+        const name = fullRefName.replace(`${remoteName}/`, '');
+
+        // Skip HEAD pointer and the remote itself (when it appears without a branch name)
+        if (name === 'HEAD' || name === remoteName) continue;
 
         branches.push({
           name,
-          fullName: `${remoteName}/${name}`,
-          lastCommit: commitHash.substring(0, 7), // Short hash
-          lastCommitDate: commitDate,
+          fullName: fullRefName,
+          lastCommit: commitHash,
+          lastCommitDate: relativeDate,
         });
       }
     }
