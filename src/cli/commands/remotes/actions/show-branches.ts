@@ -54,7 +54,10 @@ export async function showRemoteBranches(remote: GitRemote): Promise<boolean> {
     try {
       const selectedBranch = await interactiveList<GitRemoteBranch>(
         branches,
-        (branch: GitRemoteBranch) => `${branch.name} (${branch.lastCommit})`,
+        (branch: GitRemoteBranch) => {
+          const relativeDate = branch.lastCommitDate || 'unknown';
+          return `${relativeDate} - ${branch.name} (${branch.lastCommit})`;
+        },
         (branch: GitRemoteBranch) => branch.name,
         yellow(`Select a branch from '${remote.name}':`),
         createBranchActions()

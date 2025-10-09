@@ -16,7 +16,7 @@ export interface GitRemoteBranch {
   name: string;
   fullName: string; // e.g., "origin/main"
   lastCommit: string;
-  lastCommitDate: string;
+  lastCommitDate: string; // Relative date format (e.g., "2 days ago")
 }
 
 /**
@@ -85,11 +85,11 @@ export async function getRemoteBranches(
         const [commitHash, refName] = parts;
         const name = refName.replace('refs/heads/', '');
 
-        // Get commit date for this branch
+        // Get relative commit date for this branch
         let commitDate = '';
         try {
           const dateResult = await gitExecutor.executeCommand(
-            `git log -1 --format='%ci' ${commitHash}`
+            `git log -1 --format='%cr' ${commitHash}`
           );
           commitDate = dateResult.stdout.trim();
         } catch {
