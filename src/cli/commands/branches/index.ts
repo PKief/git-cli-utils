@@ -1,7 +1,10 @@
+import { Command } from 'commander';
 import { GitBranch, getGitBranches } from '../../../core/git/branches.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { checkoutBranchInWorktree } from '../../utils/worktree-actions.js';
 import {
@@ -91,3 +94,15 @@ export const searchBranches = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Plugin/Module Pattern Registration
+ * Command with subcommands - fully self-contained
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'branches',
+    description: 'Interactive branch selection with fuzzy search',
+    action: searchBranches,
+  });
+}

@@ -1,3 +1,4 @@
+import { Command } from 'commander';
 import { writeLine } from '../utils/terminal.js';
 import { yellow } from './ansi.js';
 import { interactiveList } from './interactive-list.js';
@@ -11,6 +12,8 @@ export interface GitUtilsCommand {
     name: string;
     description: string;
   };
+  // Optional function to register subcommands after main command registration
+  registerSubcommands?: (program: Command, command: Command) => void;
 }
 
 /**

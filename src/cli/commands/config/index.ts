@@ -1,5 +1,6 @@
 import * as p from '@clack/prompts';
 import { Command } from 'commander';
+import type { CommandRegistration } from '../../utils/command-registration.js';
 import { configureEditor, showEditorConfig } from '../../utils/editor.js';
 
 interface ConfigSection {
@@ -108,14 +109,20 @@ export async function configCommand(): Promise<void> {
   }
 }
 
-export function registerConfigSubcommand(cmd: Command) {
-  const configCmd = cmd
+/**
+ * Plugin/Module Pattern Registration
+ * Self-contained command registration that handles both main command and subcommands
+ */
+export const registerCommand: CommandRegistration = (program: Command) => {
+  // Register the main config command
+  const configCmd = program
     .command('config')
     .description('Manage git-cli-utils configuration')
     .action(configCommand);
 
-  // Register subcommands for each config section
+  // Register all subcommands (this logic is self-contained in this module)
   CONFIG_SECTIONS.forEach((section) => {
+    // Create section command (e.g., "editor")
     const sectionCmd = configCmd
       .command(section.name)
       .description(`Configure ${section.name} settings`)
@@ -130,12 +137,13 @@ export function registerConfigSubcommand(cmd: Command) {
         }
       });
 
+    // Add "show" subcommand (e.g., "editor show")
     sectionCmd
       .command('show')
       .description(`Show current ${section.name} configuration`)
       .action(section.showAction);
 
-    // Generic set command - for editor this takes <path> and --args
+    // Add "set" subcommand (e.g., "editor set")
     if (section.name === 'editor') {
       sectionCmd
         .command('set <path>')
@@ -145,7 +153,6 @@ export function registerConfigSubcommand(cmd: Command) {
           section.setAction(path, options);
         });
     } else {
-      // For future sections, add a generic set command
       sectionCmd
         .command('set <value>')
         .description(`Set ${section.name} value`)
@@ -154,4 +161,11 @@ export function registerConfigSubcommand(cmd: Command) {
         });
     }
   });
-}
+
+  // Return command metadata for interactive selector
+  return {
+    name: 'config',
+    description: 'Manage git-cli-utils configuration (editor, etc.)',
+    action: configCommand,
+  };
+};

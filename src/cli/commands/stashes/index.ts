@@ -1,7 +1,10 @@
+import { Command } from 'commander';
 import { GitStash, getGitStashes } from '../../../core/git/stashes.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import {
   applyStash,
@@ -49,7 +52,7 @@ function createStashActions() {
   ]);
 }
 
-export const searchStashes = async () => {
+const searchStashes = async () => {
   try {
     const stashes = await getGitStashes();
 
@@ -92,3 +95,14 @@ export const searchStashes = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Register stashes command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'stashes',
+    description: 'Interactive stash selection with fuzzy search',
+    action: searchStashes,
+  });
+}

@@ -1,3 +1,4 @@
+import { Command } from 'commander';
 import {
   AuthorTimeline,
   FileAuthor,
@@ -8,6 +9,8 @@ import {
 import { GitOperations } from '../../../core/git/operations.js';
 import { blue, gray, green, red, yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 
 /**
@@ -60,7 +63,7 @@ const displayTimeline = (timeline: AuthorTimeline) => {
   }
 };
 
-export const topAuthors = async (filePath?: string) => {
+const topAuthors = async (filePath?: string) => {
   try {
     // Get authors sorted by commit count
     const authors = await getFileAuthors(filePath);
@@ -158,3 +161,24 @@ export const topAuthors = async (filePath?: string) => {
     process.exit(1);
   }
 };
+
+/**
+ * Register authors command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  const authorsCommand = async (...args: unknown[]) => {
+    const file = args[0] as string | undefined;
+    await topAuthors(file);
+  };
+
+  return createCommand(program, {
+    name: 'authors',
+    description:
+      'Show top contributors by commit count, optionally for a specific file',
+    action: authorsCommand,
+    argument: {
+      name: '[file]',
+      description: 'file path to analyze (optional)',
+    },
+  });
+}

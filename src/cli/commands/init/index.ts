@@ -1,23 +1,26 @@
 import * as p from '@clack/prompts';
 import { exec } from 'child_process';
+import { Command } from 'commander';
 import { promisify } from 'util';
 import {
   getOptimalCommand,
   getPerformanceStatus,
   isGitUtilsAvailable,
 } from '../../utils/binary-detection.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 
 const execAsync = promisify(exec);
 
-interface Command {
+interface InitCommand {
   name: string;
   command: string;
   defaultAlias: string;
   description: string;
 }
 
-const availableCommands: Command[] = [
+const availableCommands: InitCommand[] = [
   {
     name: 'Search Branches',
     command: 'branches',
@@ -96,7 +99,7 @@ async function setGitAlias(alias: string, command: string): Promise<boolean> {
   }
 }
 
-export const init = async () => {
+const init = async () => {
   writeLine('Welcome to Git CLI Utilities Setup!');
   writeLine();
 
@@ -235,3 +238,14 @@ export const init = async () => {
   );
   writeLine();
 };
+
+/**
+ * Register init command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'init',
+    description: 'Setup git aliases for git-utils commands',
+    action: init,
+  });
+}

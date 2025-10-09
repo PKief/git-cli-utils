@@ -1,7 +1,10 @@
+import { Command } from 'commander';
 import { GitWorktree, getGitWorktrees } from '../../../core/git/worktrees.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import {
   openWorktreeInEditor,
@@ -47,7 +50,7 @@ function formatWorktreeDisplay(worktree: GitWorktree): string {
 /**
  * Main worktrees management command
  */
-export const manageWorktrees = async () => {
+const manageWorktrees = async () => {
   try {
     const worktrees = await getGitWorktrees();
 
@@ -113,3 +116,14 @@ export const manageWorktrees = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Register worktrees command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'worktrees',
+    description: 'Interactive worktree management with actions',
+    action: manageWorktrees,
+  });
+}

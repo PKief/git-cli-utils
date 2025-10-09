@@ -1,3 +1,4 @@
+import { Command } from 'commander';
 import {
   GitRemote,
   GitRemoteBranch,
@@ -6,13 +7,15 @@ import {
 } from '../../../core/git/index.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { syncFromRemoteBranch } from './actions/sync.js';
 
 /**
  * Main sync command that allows users to select a remote and branch to sync from
  */
-export const syncCommand = async () => {
+const syncCommand = async () => {
   try {
     // Step 1: Get list of available remotes
     const remotes = await getGitRemotes();
@@ -81,3 +84,15 @@ export const syncCommand = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Register sync command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'sync',
+    description:
+      'Sync from a remote branch by selecting remote and branch interactively',
+    action: syncCommand,
+  });
+}

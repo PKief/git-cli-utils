@@ -17,7 +17,7 @@
 
 Fast CLI tools for Git with **real-time search**, **fuzzy matching**, and **keyboard navigation**.
 
-## 🚀 Interactive Command Selector
+## Getting Started
 
 **Run without installing** – get an instant overview of all available commands:
 
@@ -25,29 +25,28 @@ Fast CLI tools for Git with **real-time search**, **fuzzy matching**, and **keyb
 npx git-cli-utils
 ```
 
-**Fuzzy search:**
+**Interactive command selector:**
 ![demo](images/demo-git-utils.gif)
 
-
 **What you can do:**
-- **Browse all commands** with descriptions
-- **Search commands** by typing (e.g., type "branch" to filter)
-- **Navigate** with arrow keys and **execute** with Enter
-- **No installation required** – works instantly with `npx`
-- **Perfect for discovery** – explore features without memorizing commands
+- Browse all commands with descriptions
+- Search commands by typing (e.g., type "branch" to filter)
+- Navigate with arrow keys and execute with Enter
+- No installation required – works instantly with `npx`
+- Perfect for discovery – explore features without memorizing commands
 
-## Features
+## Core Features
 
-- 🌿 **Interactive Branch Search** – Find and checkout branches with fuzzy matching
-- 🔍 **Commit Explorer** – Search commit history with SHA copying to clipboard
-- 👤 **Author Analytics** – Analyze top contributors by file or repository
-- ⚡ **Git Aliases** – Setup shortcuts for faster workflows
-- ✨ **Smart Highlighting** – Visual feedback for exact and fuzzy matches
-- 🎯 **Command Discovery** – Interactive menu to explore all features
-- 🛠 **Configurable Editor Integration** – Configure a preferred editor and auto-open new worktrees
-- 🌳 **Worktree Management** – Create parallel environments from branches, commits, or remotes
+- **Interactive Branch Search** – Find and checkout branches with fuzzy matching
+- **Commit Explorer** – Search commit history with SHA copying to clipboard
+- **Author Analytics** – Analyze top contributors by file or repository
+- **Git Aliases** – Setup shortcuts for faster workflows
+- **Smart Highlighting** – Visual feedback for exact and fuzzy matches
+- **Command Discovery** – Interactive menu to explore all features
+- **Configurable Editor Integration** – Configure a preferred editor and auto-open new worktrees
+- **Worktree Management** – Create parallel environments from branches, commits, or remotes
 
-## Quick Start
+## Installation and Setup
 
 ```bash
 # Interactive command selector (recommended)
@@ -61,11 +60,11 @@ npx git-cli-utils commits
 npm install -g git-cli-utils
 git-utils init  # Setup git aliases
 
-# (Optional) Configure your preferred editor for auto-opening worktrees
+# Configure your preferred editor for auto-opening worktrees
 git-utils config editor set /usr/local/bin/code --args "--new-window"
 ```
 
-> **Performance Tip**: Global installation eliminates npm resolution overhead for faster git aliases.
+**Performance Tip**: Global installation eliminates npm resolution overhead for faster git aliases.
 
 ## Interactive Search in Action
 
@@ -164,11 +163,11 @@ git-utils init
 
 **Interactive setup:**
 ```
-✓ Search Branches → git branches
-✓ Search Commits → git commits
-✓ Search Stashes → git stashes
-✓ Save Changes → git save
-✓ Top Authors → git authors
+Search Branches → git branches
+Search Commits → git commits
+Search Stashes → git stashes
+Save Changes → git save
+Top Authors → git authors
 
 Now use:
   git branches  - Search and checkout branches
@@ -178,14 +177,14 @@ Now use:
   git authors   - View top contributors
 ```
 
-## All Commands
+## Available Commands
 
 ### Interactive Mode (Recommended)
 ```bash
 npx git-cli-utils  # Shows command selector with search
 ```
 
-### Direct Commands
+### Command Reference
 
 | Command | Description | Usage | Git Alias |
 |---------|-------------|-------|-----------|
@@ -201,29 +200,27 @@ npx git-cli-utils  # Shows command selector with search
 
 ## Editor Integration
 
-You can now use an **interactive config menu**:
+Configure your preferred editor for automatic worktree opening:
 
 ```bash
 git-utils config
 ```
 
-Flow:
+**Interactive configuration:**
 1. Select scope (currently only `editor`)
 2. Choose action: `Show current editor` or `Set / change editor`
-3. (If setting) enter binary path and optional args
+3. Enter binary path and optional arguments
 
-Direct (non-interactive) usage still works:
-
-You can configure a preferred editor binary so that newly created worktrees are automatically opened:
+**Direct configuration:**
 
 ```bash
 git-utils config editor set /usr/local/bin/code --args "--new-window"
 git-utils config editor show
 ```
 
-This stores configuration in `~/.git-cli-utils/config.json`.
+Configuration is stored in `~/.git-cli-utils/config.json`.
 
-Examples:
+**Editor Examples:**
 
 | Editor | Command |
 |--------|---------|
@@ -234,13 +231,13 @@ Examples:
 
 ## Worktrees Workflow
 
-Create parallel environments without switching branches:
+Create parallel working environments without switching branches:
 
 | Action | Source Command |
 |--------|----------------|
-| Create from branch | `git-utils branches` → select → "Checkout in worktree" |
-| Create from commit | `git-utils commits` → select → "Checkout in worktree" |
-| Create from remote branch | `git-utils remotes` → show branches → select → "Checkout in worktree" |
+| Create from branch | `git-utils branches` → select → "Open in editor" |
+| Create from commit | `git-utils commits` → select → "Open in editor" |
+| Create from remote branch | `git-utils remotes` → show branches → select → "Open in editor" |
 | Manage existing | `git-utils worktrees` |
 
 **Automatic Path Generation:**
@@ -248,7 +245,7 @@ Create parallel environments without switching branches:
 - Commit worktrees: `../project-name-abc12345` (8-char hash)
 - Remote branch worktrees: `../project-name-origin-feature-branch`
 
-Removing a worktree only deletes its directory – branches and commits remain.
+**Note:** Removing a worktree only deletes its directory. Branches and commits remain intact.
 
 
 ## Contributing

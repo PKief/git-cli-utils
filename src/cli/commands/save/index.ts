@@ -1,12 +1,15 @@
 import * as p from '@clack/prompts';
+import { Command } from 'commander';
 import { GitExecutor } from '../../../core/git/executor.js';
 import { green, red, yellow } from '../../ui/ansi.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 
 /**
  * Save current working directory changes as a new stash
  */
-export const saveChanges = async () => {
+const saveChanges = async () => {
   try {
     const executor = GitExecutor.getInstance();
 
@@ -51,3 +54,14 @@ export const saveChanges = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Register save command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'save',
+    description: 'Save current working directory changes as a new stash',
+    action: saveChanges,
+  });
+}

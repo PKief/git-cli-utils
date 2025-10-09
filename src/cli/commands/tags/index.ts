@@ -1,7 +1,10 @@
+import { Command } from 'commander';
 import { GitTag, getGitTags } from '../../../core/git/tags.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { checkoutTag, copyTagName, showTagDetails } from './actions/index.js';
 
@@ -31,7 +34,7 @@ function createTagActions() {
   ]);
 }
 
-export const searchTags = async () => {
+const searchTags = async () => {
   try {
     const tags = await getGitTags();
 
@@ -77,3 +80,14 @@ export const searchTags = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Register tags command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'tags',
+    description: 'Interactive tag selection with fuzzy search',
+    action: searchTags,
+  });
+}

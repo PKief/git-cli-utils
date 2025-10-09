@@ -3,98 +3,47 @@ import { Command } from 'commander';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { searchBranches } from './cli/commands/branches/index.js';
-import { searchCommits } from './cli/commands/commits/index.js';
-import { configCommand } from './cli/commands/config/index.js';
-import { init } from './cli/commands/init/index.js';
-import { listAliases } from './cli/commands/list-aliases/index.js';
-import { searchRemotes } from './cli/commands/remotes/index.js';
-import { saveChanges } from './cli/commands/save/index.js';
-import { searchStashes } from './cli/commands/stashes/index.js';
-import { syncCommand } from './cli/commands/sync/index.js';
-import { searchTags } from './cli/commands/tags/index.js';
-import { topAuthors } from './cli/commands/top-authors/index.js';
-import { manageWorktrees } from './cli/commands/worktrees/index.js';
+import { registerCommand as registerBranches } from './cli/commands/branches/index.js';
+import { registerCommand as registerCommits } from './cli/commands/commits/index.js';
+import { registerCommand as registerConfig } from './cli/commands/config/index.js';
+import { registerCommand as registerInit } from './cli/commands/init/index.js';
+import { registerCommand as registerAliases } from './cli/commands/list-aliases/index.js';
+import { registerCommand as registerRemotes } from './cli/commands/remotes/index.js';
+import { registerCommand as registerSave } from './cli/commands/save/index.js';
+import { registerCommand as registerStashes } from './cli/commands/stashes/index.js';
+import { registerCommand as registerSync } from './cli/commands/sync/index.js';
+import { registerCommand as registerTags } from './cli/commands/tags/index.js';
+import { registerCommand as registerAuthors } from './cli/commands/top-authors/index.js';
+import { registerCommand as registerWorktrees } from './cli/commands/worktrees/index.js';
 import {
   type GitUtilsCommand,
   showCommandSelector,
 } from './cli/ui/command-selector.js';
 
-// Get version from package.json
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packagePath = join(__dirname, '..', 'package.json');
 const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'));
 
-// Commands are now defined with the imported GitUtilsCommand interface
+const program = new Command();
 
-// Centralized command definitions
+program
+  .name('git-utils')
+  .description('CLI utilities for managing Git repositories')
+  .version(packageJson.version);
+
 const commands: GitUtilsCommand[] = [
-  {
-    name: 'branches',
-    description: 'Interactive branch selection with fuzzy search',
-    action: searchBranches,
-  },
-  {
-    name: 'commits',
-    description: 'Interactive commit selection with fuzzy search',
-    action: searchCommits,
-  },
-  {
-    name: 'tags',
-    description: 'Interactive tag selection with fuzzy search',
-    action: searchTags,
-  },
-  {
-    name: 'stashes',
-    description: 'Interactive stash selection with fuzzy search',
-    action: searchStashes,
-  },
-  {
-    name: 'save',
-    description: 'Save current working directory changes as a new stash',
-    action: saveChanges,
-  },
-  {
-    name: 'sync',
-    description:
-      'Sync from a remote branch by selecting remote and branch interactively',
-    action: syncCommand,
-  },
-  {
-    name: 'remotes',
-    description: 'Interactive remote management with actions',
-    action: searchRemotes,
-  },
-  {
-    name: 'worktrees',
-    description: 'Interactive worktree management with actions',
-    action: manageWorktrees,
-  },
-  {
-    name: 'config',
-    description: 'Manage git-cli-utils configuration (editor, etc.)',
-    action: configCommand,
-  },
-  {
-    name: 'authors',
-    description:
-      'Show top contributors by commit count, optionally for a specific file',
-    action: topAuthors,
-    argument: {
-      name: '[file]',
-      description: 'file path to analyze (optional)',
-    },
-  },
-  {
-    name: 'init',
-    description: 'Setup git aliases for git-utils commands',
-    action: init,
-  },
-  {
-    name: 'aliases',
-    description: 'Show current git aliases',
-    action: listAliases,
-  },
+  registerBranches(program),
+  registerConfig(program),
+  registerCommits(program),
+  registerTags(program),
+  registerStashes(program),
+  registerSave(program),
+  registerSync(program),
+  registerRemotes(program),
+  registerWorktrees(program),
+  registerAuthors(program),
+  registerInit(program),
+  registerAliases(program),
   {
     name: 'help',
     description: 'Show help information for all commands',
@@ -104,33 +53,6 @@ const commands: GitUtilsCommand[] = [
   },
 ];
 
-// Command selector is now handled by the UI module
-
-// Register commands with the CLI program
-function registerCommands(program: Command): void {
-  commands.forEach((cmd) => {
-    const command = program.command(cmd.name).description(cmd.description);
-
-    // Add argument if specified
-    if (cmd.argument) {
-      command.argument(cmd.argument.name, cmd.argument.description);
-    }
-
-    command.action(cmd.action);
-  });
-}
-
-const program = new Command();
-
-program
-  .name('git-utils')
-  .description('CLI utilities for managing Git repositories')
-  .version(packageJson.version);
-
-// Register all commands dynamically
-registerCommands(program);
-
-// Main execution function
 async function main() {
   // Check if no arguments were provided (only 'node' and script name)
   const args = process.argv.slice(2);
@@ -143,7 +65,6 @@ async function main() {
   }
 }
 
-// Run the main function
 main().catch((error) => {
   console.error('Error:', error);
   process.exit(1);

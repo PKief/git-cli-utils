@@ -1,7 +1,10 @@
+import { Command } from 'commander';
 import { GitRemote, getGitRemotes } from '../../../core/git/index.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import {
   addRemote,
@@ -81,7 +84,7 @@ function createAddOnlyActions() {
   ]);
 }
 
-export const searchRemotes = async () => {
+const searchRemotes = async () => {
   try {
     const remotes = await getGitRemotes();
     const hasRemotes = remotes.length > 0;
@@ -133,3 +136,14 @@ export const searchRemotes = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Register remotes command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'remotes',
+    description: 'Interactive remote management with actions',
+    action: searchRemotes,
+  });
+}

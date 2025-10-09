@@ -1,7 +1,10 @@
+import { Command } from 'commander';
 import { GitCommit, getGitCommits } from '../../../core/git/commits.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { checkoutCommitInWorktree } from '../../utils/worktree-actions.js';
 import {
@@ -42,7 +45,7 @@ function createCommitActions() {
   ]);
 }
 
-export const searchCommits = async () => {
+const searchCommits = async () => {
   try {
     const commits = await getGitCommits();
 
@@ -89,3 +92,14 @@ export const searchCommits = async () => {
     process.exit(1);
   }
 };
+
+/**
+ * Register commits command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'commits',
+    description: 'Interactive commit selection with fuzzy search',
+    action: searchCommits,
+  });
+}

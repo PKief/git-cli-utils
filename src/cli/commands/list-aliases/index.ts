@@ -1,10 +1,13 @@
+import { Command } from 'commander';
 import { type GitAlias, getGitAliases } from '../../../core/git/aliases.js';
 import { gitExecutor } from '../../../core/git/executor.js';
 import { green, red, yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
+import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 
-export const listAliases = async (): Promise<void> => {
+const listAliases = async (): Promise<void> => {
   try {
     const aliases = await getGitAliases();
 
@@ -78,3 +81,14 @@ export const listAliases = async (): Promise<void> => {
     process.exit(1);
   }
 };
+
+/**
+ * Register aliases command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'aliases',
+    description: 'Show current git aliases',
+    action: listAliases,
+  });
+}

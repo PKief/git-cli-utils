@@ -143,18 +143,110 @@ Force delete this branch (WARNING: will lose changes)
 
 ## Adding New Commands
 
+All commands now use the **Plugin/Module Pattern** for consistent architecture:
+
 ### For Interactive Commands (with actions):
 1. Create a new folder: `src/cli/commands/my-command/`
 2. Create actions folder: `src/cli/commands/my-command/actions/`
 3. Implement individual action files in the actions folder
 4. Create `actions/index.ts` to export all actions
 5. Create main command file: `src/cli/commands/my-command/index.ts`
-6. Register the command in `src/cli/index.ts` and `src/index.ts`
+6. Export a `registerCommand(program: Command): CommandModule` function
+7. Add the command import and registration call in `src/index.ts`
 
 ### For Utility Commands (simple):
 1. Create a new folder: `src/cli/commands/my-command/`
 2. Create main command file: `src/cli/commands/my-command/index.ts`
-3. Register the command in `src/cli/index.ts` and `src/index.ts`
+3. Export a `registerCommand(program: Command): CommandModule` function
+4. Add the command import and registration call in `src/index.ts`
+
+### Plugin/Module Pattern Template:
+
+```typescript
+import { Command } from 'commander';
+import type { CommandModule } from '../../utils/command-registration.js';
+
+const myCommand = async () => {
+  // Command implementation
+};
+
+/**
+ * Register my-command with the CLI program
+ */
+export function registerCommand(program: Command): CommandModule {
+  program
+    .command('my-command')
+    .description('Description of my command')
+    .action(myCommand);
+
+  return {
+    name: 'my-command',
+    description: 'Description of my command',
+    action: myCommand,
+  };
+}
+```
+
+### For Commands with Arguments:
+
+```typescript
+/**
+ * Register command with arguments
+ */
+export function registerCommand(program: Command): CommandModule {
+  const commandWithArgs = async (...args: unknown[]) => {
+    const arg1 = args[0] as string | undefined;
+    await myCommand(arg1);
+  };
+
+  program
+    .command('my-command [arg1]')
+    .description('Command with optional argument')
+    .action(commandWithArgs);
+
+  return {
+    name: 'my-command',
+    description: 'Command with optional argument',
+    action: commandWithArgs,
+    argument: {
+      name: '[arg1]',
+      description: 'Optional argument description',
+    },
+  };
+}
+```
+
+### For Commands with Subcommands:
+
+```typescript
+/**
+ * Register command with subcommands
+ */
+export function registerCommand(program: Command): CommandModule {
+  const command = program
+    .command('my-command')
+    .description('Command with subcommands');
+
+  // Add subcommands
+  command
+    .command('sub1')
+    .description('First subcommand')
+    .action(async () => { /* implementation */ });
+
+  command
+    .command('sub2 <arg>')
+    .description('Second subcommand with argument')
+    .action(async (arg: string) => { /* implementation */ });
+
+  // Main command action (when called without subcommands)
+  command.action(myMainCommand);
+
+  return {
+    name: 'my-command',
+    description: 'Command with subcommands',
+    action: myMainCommand,
+  };
+}
 
 ## Adding New Actions
 
