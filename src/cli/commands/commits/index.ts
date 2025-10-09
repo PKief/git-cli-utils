@@ -64,7 +64,7 @@ const searchCommits = async () => {
         },
         (commit: GitCommit) =>
           `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`, // Search subject, hash, and tags
-        undefined, // No header
+        yellow('Select a commit from all branches:'), // Descriptive header
         createCommitActions() // Actions
       );
 
@@ -99,7 +99,7 @@ const searchCommits = async () => {
 export function registerCommand(program: Command): CommandModule {
   return createCommand(program, {
     name: 'commits',
-    description: 'Interactive commit selection with fuzzy search',
+    description: 'Browse and select from all commits across all branches',
     action: searchCommits,
   });
 }
