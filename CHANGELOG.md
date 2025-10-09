@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v1.14.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.13.1...v1.14.0)
+
+### 🚀 Enhancements
+
+- Refactor command registration to use Plugin/Module Pattern for better organization and maintainability ([91b65a6](https://github.com/PKief/git-cli-utils/commit/91b65a6))
+- Enhance branch display with relative commit dates in remote branches ([9038979](https://github.com/PKief/git-cli-utils/commit/9038979))
+
+### 🩹 Fixes
+
+- Reorder worktree action in branch commands for improved clarity ([f369879](https://github.com/PKief/git-cli-utils/commit/f369879))
+- Reorder command registration for improved structure and clarity ([f5a5da1](https://github.com/PKief/git-cli-utils/commit/f5a5da1))
+- Add descriptive header for commit selection and update command description ([8693118](https://github.com/PKief/git-cli-utils/commit/8693118))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.13.1
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.13.0...v1.13.1)
