@@ -20,23 +20,20 @@ export async function resetToRemoteBranch(
     const hasStaged = !stagedResult.success;
 
     // Check for unstaged changes
-    const unstagedResult = await GitExecutor.getInstance().executeCommand(
-      'git diff --quiet'
-    );
+    const unstagedResult =
+      await GitExecutor.getInstance().executeCommand('git diff --quiet');
     const hasUnstaged = !unstagedResult.success;
 
     if (hasStaged || hasUnstaged) {
-      writeErrorLine(
-        red('✗ Cannot reset: You have uncommitted changes.')
-      );
-      
+      writeErrorLine(red('✗ Cannot reset: You have uncommitted changes.'));
+
       if (hasStaged) {
         writeLine(yellow('  - You have staged changes'));
       }
       if (hasUnstaged) {
         writeLine(yellow('  - You have unstaged changes'));
       }
-      
+
       writeLine(yellow('Please commit, stash, or discard your changes first.'));
       return false;
     }
@@ -48,9 +45,7 @@ export async function resetToRemoteBranch(
     const currentBranch = currentBranchResult.stdout.trim();
 
     if (currentBranch === 'HEAD') {
-      writeErrorLine(
-        red('✗ Cannot reset: You are in detached HEAD state.')
-      );
+      writeErrorLine(red('✗ Cannot reset: You are in detached HEAD state.'));
       writeLine(yellow('Please checkout a branch first.'));
       return false;
     }
@@ -65,7 +60,9 @@ export async function resetToRemoteBranch(
     );
 
     writeLine(
-      green(`✓ Successfully reset '${currentBranch}' to '${remoteBranch.fullName}'`)
+      green(
+        `✓ Successfully reset '${currentBranch}' to '${remoteBranch.fullName}'`
+      )
     );
     writeLine(yellow(`Current branch now matches the remote branch.`));
 
