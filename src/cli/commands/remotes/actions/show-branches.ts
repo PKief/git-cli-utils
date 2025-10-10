@@ -9,6 +9,7 @@ import { createActions } from '../../../utils/action-helpers.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 import { checkoutRemoteBranchInWorktree } from '../../../utils/worktree-actions.js';
 import { checkoutRemoteBranch } from './checkout-branch.js';
+import { resetToRemoteBranch } from './reset-to-remote.js';
 import { setAsUpstream } from './set-as-upstream.js';
 
 /**
@@ -33,6 +34,13 @@ function createBranchActions() {
       label: 'Set as upstream',
       description: 'Set this branch as upstream for current branch',
       handler: setAsUpstream,
+    },
+    {
+      key: 'reset',
+      label: 'Reset current branch',
+      description:
+        'Reset current branch to match this remote branch (hard reset)',
+      handler: resetToRemoteBranch,
     },
   ]);
 }

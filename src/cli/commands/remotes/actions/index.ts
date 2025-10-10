@@ -2,6 +2,7 @@ export { addRemote } from './add-remote.js';
 export { copyRemoteName } from './copy.js';
 export { deleteRemote } from './delete.js';
 export { renameRemote } from './rename.js';
+export { resetToRemoteBranch } from './reset-to-remote.js';
 export { setAsDefault } from './set-as-default.js';
 export { setAsUpstream } from './set-as-upstream.js';
 export { setRemoteUrl } from './set-url.js';
