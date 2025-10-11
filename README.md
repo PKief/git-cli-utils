@@ -29,6 +29,7 @@ npx git-cli-utils
 ![demo](images/demo-git-utils.gif)
 
 **What you can do:**
+
 - Browse all commands with descriptions
 - Search commands by typing (e.g., type "branch" to filter)
 - Navigate with arrow keys and execute with Enter
@@ -75,6 +76,7 @@ git-utils commits
 ```
 
 **Live terminal output:**
+
 ```
 Search: refactor
 Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit
