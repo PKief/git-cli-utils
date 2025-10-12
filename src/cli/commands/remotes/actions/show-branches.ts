@@ -6,6 +6,7 @@ import {
 import { yellow } from '../../../ui/ansi.js';
 import { interactiveList } from '../../../ui/interactive-list.js';
 import { createActions } from '../../../utils/action-helpers.js';
+import { compareBranches } from '../../../utils/compare-branches.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 import { checkoutRemoteBranchInWorktree } from '../../../utils/worktree-actions.js';
 import { checkoutRemoteBranch } from './checkout-branch.js';
@@ -22,6 +23,12 @@ function createBranchActions() {
       label: 'Checkout',
       description: 'Checkout this branch',
       handler: checkoutRemoteBranch,
+    },
+    {
+      key: 'compare',
+      label: 'Compare with current',
+      description: 'Compare selected branch with currently checked out branch',
+      handler: compareBranches,
     },
     {
       key: 'worktree',

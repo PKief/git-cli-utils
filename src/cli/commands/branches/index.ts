@@ -5,6 +5,7 @@ import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
+import { compareBranches } from '../../utils/compare-branches.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { checkoutBranchInWorktree } from '../../utils/worktree-actions.js';
 import {
@@ -27,9 +28,15 @@ function createBranchActions() {
     },
     {
       key: 'copy',
-      label: 'Copy',
+      label: 'Copy name',
       description: 'Copy to clipboard',
       handler: copyBranchName,
+    },
+    {
+      key: 'compare',
+      label: 'Compare with current',
+      description: 'Compare selected branch with currently checked out branch',
+      handler: compareBranches,
     },
     {
       key: 'create',
