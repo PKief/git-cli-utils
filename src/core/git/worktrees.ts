@@ -9,7 +9,7 @@ export interface GitWorktree {
 }
 
 /**
- * Get list of existing git worktrees
+ * Get list of existing git worktrees (excluding the main repository)
  */
 export async function getGitWorktrees(): Promise<GitWorktree[]> {
   const executor = GitExecutor.getInstance();
@@ -18,7 +18,10 @@ export async function getGitWorktrees(): Promise<GitWorktree[]> {
     const result = await executor.executeCommand(
       'git worktree list --porcelain'
     );
-    return parseWorktreeList(result.stdout);
+    const allWorktrees = parseWorktreeList(result.stdout);
+
+    // Filter out the main repository - only return actual worktrees
+    return allWorktrees.filter((worktree: GitWorktree) => !worktree.isMain);
   } catch (error) {
     if (
       error instanceof Error &&
@@ -43,25 +46,28 @@ function parseWorktreeList(output: string): GitWorktree[] {
     .filter((line) => line.trim().length > 0);
 
   let currentWorktree: Partial<GitWorktree> = {};
+  let currentIsBare = false;
 
   for (const line of lines) {
     if (line.startsWith('worktree ')) {
       // Start of new worktree entry
       if (currentWorktree.path) {
         // Save previous worktree if it exists
+        currentWorktree.isMain = currentIsBare;
         worktrees.push(currentWorktree as GitWorktree);
       }
       currentWorktree = {
         path: line.substring('worktree '.length),
         isMain: false,
       };
+      currentIsBare = false;
     } else if (line.startsWith('HEAD ')) {
       currentWorktree.commit = line.substring('HEAD '.length);
     } else if (line.startsWith('branch ')) {
       currentWorktree.branch = line.substring('branch refs/heads/'.length);
     } else if (line === 'bare') {
-      // Bare repository, skip
-      continue;
+      // This indicates a bare repository
+      currentIsBare = true;
     } else if (line === 'detached') {
       currentWorktree.branch = 'HEAD (detached)';
     }
@@ -69,11 +75,13 @@ function parseWorktreeList(output: string): GitWorktree[] {
 
   // Add the last worktree
   if (currentWorktree.path) {
+    currentWorktree.isMain = currentIsBare;
     worktrees.push(currentWorktree as GitWorktree);
   }
 
-  // Mark the main worktree
-  if (worktrees.length > 0) {
+  // According to git documentation: "The main worktree is listed first, followed by each of the linked worktrees"
+  // If no bare repository was found, the first worktree is the main working tree
+  if (worktrees.length > 0 && !worktrees.some((wt) => wt.isMain)) {
     worktrees[0].isMain = true;
   }
 

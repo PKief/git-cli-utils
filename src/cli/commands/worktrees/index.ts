@@ -55,22 +55,7 @@ const manageWorktrees = async () => {
     const worktrees = await getGitWorktrees();
 
     if (worktrees.length === 0) {
-      writeLine(yellow('No worktrees found!'));
-      writeLine('You can create worktrees using:');
-      writeLine(
-        '  • git-utils branches → select branch → "Checkout in worktree"'
-      );
-      writeLine(
-        '  • git-utils commits → select commit → "Checkout in worktree"'
-      );
-      writeLine(
-        '  • git-utils remotes → show branches → "Checkout in worktree"'
-      );
-      process.exit(0);
-    }
-
-    if (worktrees.length === 1) {
-      writeLine(yellow('Only main worktree exists.'));
+      writeLine(yellow('No additional worktrees found.'));
       writeLine('Create additional worktrees to see management options.');
       writeLine('You can create worktrees using:');
       writeLine(
