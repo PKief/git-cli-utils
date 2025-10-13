@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v1.15.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.14.0...v1.15.0)
+
+### 🚀 Enhancements
+
+- Add resetToRemoteBranch action to reset current branch to match remote ([c86d3ca](https://github.com/PKief/git-cli-utils/commit/c86d3ca))
+- Add compareBranches utility for comparing local and remote branches ([f5b0e46](https://github.com/PKief/git-cli-utils/commit/f5b0e46))
+- Implement alias management commands including create, edit, delete, copy, and execute ([226a545](https://github.com/PKief/git-cli-utils/commit/226a545))
+
+### 🩹 Fixes
+
+- Update remote branch fetching to include commit info and timestamps ([276d99a](https://github.com/PKief/git-cli-utils/commit/276d99a))
+- Streamline error messages and improve code formatting in resetToRemoteBranch function ([35f7085](https://github.com/PKief/git-cli-utils/commit/35f7085))
+- Add missing line breaks for improved readability in README ([5219ef1](https://github.com/PKief/git-cli-utils/commit/5219ef1))
+- Improve worktree management by filtering out the main repository in getGitWorktrees function ([f4a28a1](https://github.com/PKief/git-cli-utils/commit/f4a28a1))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.14.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.13.1...v1.14.0)
