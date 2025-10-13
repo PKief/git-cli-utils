@@ -1,11 +1,10 @@
 import { Command } from 'commander';
 import { type GitAlias, getGitAliases } from '../../../core/git/aliases.js';
-import { gitExecutor } from '../../../core/git/executor.js';
 import { green, red, yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
-import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { writeLine } from '../../utils/terminal.js';
 
 const listAliases = async (): Promise<void> => {
   try {
@@ -22,42 +21,21 @@ const listAliases = async (): Promise<void> => {
     writeLine();
 
     try {
+      // Use action-based interactive list so user can choose execute / copy / new
+      const { getAliasActions } = await import('./actions/index.js');
+      const actions = getAliasActions();
+
       const selectedAlias = await interactiveList<GitAlias>(
         aliases,
         (alias: GitAlias) => `git ${alias.name.padEnd(12)} → ${alias.command}`,
-        (alias: GitAlias) => `${alias.name} ${alias.command}` // Search both name and command
+        (alias: GitAlias) => `${alias.name} ${alias.command}`, // Search both name and command
+        undefined,
+        actions
       );
 
       if (selectedAlias) {
-        writeLine();
-        writeLine(yellow(`Executing: git ${selectedAlias.name}`));
-        writeLine();
-
-        try {
-          // Execute the git alias
-          const result = await gitExecutor.executeCommand(
-            `git ${selectedAlias.name}`
-          );
-
-          // Display output
-          if (result.stdout) {
-            writeLine(result.stdout);
-          }
-          if (result.stderr) {
-            writeLine(result.stderr);
-          }
-
-          writeLine();
-          writeLine(green(`Successfully executed: git ${selectedAlias.name}`));
-          process.exit(0);
-        } catch (error) {
-          writeErrorLine(
-            red(
-              `Error executing alias '${selectedAlias.name}': ${error instanceof Error ? error.message : String(error)}`
-            )
-          );
-          process.exit(1);
-        }
+        // action handlers already perform work and print output. Exit cleanly.
+        process.exit(0);
       } else {
         writeLine(yellow('No alias selected.'));
         process.exit(0);
