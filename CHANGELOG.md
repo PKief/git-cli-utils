@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v1.16.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.15.0...v1.16.0)
+
+### 🚀 Enhancements
+
+- Add functionality to retrieve existing git alias commands and confirm overrides ([9e1aefc](https://github.com/PKief/git-cli-utils/commit/9e1aefc))
+- Enhance editAlias function to validate alias names and handle renaming ([5844e93](https://github.com/PKief/git-cli-utils/commit/5844e93))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.15.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.14.0...v1.15.0)
