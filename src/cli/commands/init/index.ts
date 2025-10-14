@@ -88,6 +88,15 @@ async function checkExistingAlias(alias: string): Promise<boolean> {
   }
 }
 
+async function getExistingAliasCommand(alias: string): Promise<string | null> {
+  try {
+    const { stdout } = await execAsync(`git config --global alias.${alias}`);
+    return stdout.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 async function setGitAlias(alias: string, command: string): Promise<boolean> {
   try {
     const optimalCommand = await getOptimalCommand(command);
@@ -160,14 +169,28 @@ const init = async () => {
     );
     if (!command) continue;
 
-    // Check if default alias already exists
+    // Check if default alias already exists and what command it has
     const aliasExists = await checkExistingAlias(command.defaultAlias);
+    const existingCommand = aliasExists
+      ? await getExistingAliasCommand(command.defaultAlias)
+      : null;
+    const newCommand = await getOptimalCommand(command.command);
 
     let aliasToUse = command.defaultAlias;
 
-    if (aliasExists) {
+    if (aliasExists && existingCommand) {
+      // Check if the existing command is the same as what we want to set
+      if (existingCommand === newCommand) {
+        // Same command, no need to ask - just skip with a message
+        writeLine(
+          `Alias '${command.defaultAlias}' already exists with the same command. Skipping.`
+        );
+        continue;
+      }
+
+      // Different command, ask for confirmation
       const shouldOverride = await p.confirm({
-        message: `Alias '${command.defaultAlias}' already exists. Override it?`,
+        message: `Alias '${command.defaultAlias}' already exists with different command:\n  Current: ${existingCommand}\n  New: ${newCommand}\n  Override it?`,
         initialValue: false,
       });
 
