@@ -15,11 +15,10 @@ export async function getGitBranches(): Promise<GitBranch[]> {
     const currentBranchName = currentBranchResult.stdout.trim();
 
     const command =
-      'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list';
-    const result = await gitExecutor.executeCommand(command);
+      'git branch --sort=-committerdate --format=%(refname:short)|%(committerdate:relative) --list';
+    const result = await gitExecutor.executeStreamingCommand(command);
 
-    const branches = result.stdout
-      .split('\n')
+    const branches = result.data
       .filter((branch) => branch.trim() !== '')
       .map((branch) => {
         const [name, date] = branch.trim().split('|');

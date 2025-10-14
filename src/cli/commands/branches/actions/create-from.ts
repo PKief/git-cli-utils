@@ -20,11 +20,10 @@ export async function createBranchFrom(
     const executor = GitExecutor.getInstance();
 
     // Get list of existing branches for validation
-    const existingBranchesResult = await executor.executeCommand(
-      'git branch --format="%(refname:short)"'
+    const existingBranchesResult = await executor.executeStreamingCommand(
+      'git branch --format=%(refname:short)'
     );
-    const existingBranches = existingBranchesResult.stdout
-      .split('\n')
+    const existingBranches = existingBranchesResult.data
       .map((b) => b.trim())
       .filter((b) => b !== '');
 

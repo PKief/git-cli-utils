@@ -69,18 +69,18 @@ export async function getRemoteBranches(
 
     // Get all remote branches with commit info in a single command
     // Format: refname:short|objectname:short|committerdate:relative
-    const result = await gitExecutor.executeCommand(
-      `git for-each-ref --sort=-committerdate --format='%(refname:short)|%(objectname:short)|%(committerdate:relative)' refs/remotes/${remoteName}`
+    // Use executeStreamingCommand to avoid shell interpretation issues on Windows
+    const result = await gitExecutor.executeStreamingCommand(
+      `git for-each-ref --sort=-committerdate --format=%(refname:short)|%(objectname:short)|%(committerdate:relative) refs/remotes/${remoteName}`
     );
 
-    if (!result.stdout) {
+    if (!result.data || result.data.length === 0) {
       return [];
     }
 
-    const lines = result.stdout.split('\n').filter((line) => line.trim());
     const branches: GitRemoteBranch[] = [];
 
-    for (const line of lines) {
+    for (const line of result.data) {
       const parts = line.split('|');
       if (parts.length === 3) {
         const [fullRefName, commitHash, relativeDate] = parts;
