@@ -3,30 +3,39 @@ import { filterBranches, type GitBranch, getGitBranches } from './branches';
 
 // Mock the GitExecutor
 const mockExecuteCommand = mock();
+const mockExecuteStreamingCommand = mock();
 
 mock.module('./executor.js', () => ({
   gitExecutor: {
     executeCommand: mockExecuteCommand,
+    executeStreamingCommand: mockExecuteStreamingCommand,
   },
 }));
 
 beforeEach(() => {
   mockExecuteCommand.mockClear();
+  mockExecuteStreamingCommand.mockClear();
 });
 
 afterEach(() => {
   mockExecuteCommand.mockReset();
+  mockExecuteStreamingCommand.mockReset();
 });
 
 describe('Git Branches', () => {
   describe('getGitBranches', () => {
     it('should parse git branches correctly', async () => {
       // Arrange
-      const mockStdout =
-        'main|2 hours ago\nfeature/test|1 day ago\ndevelop|3 days ago\n';
       mockExecuteCommand.mockResolvedValue({
-        stdout: mockStdout,
+        stdout: 'main',
         stderr: '',
+      });
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [
+          'main|2 hours ago',
+          'feature/test|1 day ago',
+          'develop|3 days ago',
+        ],
       });
 
       // Act
@@ -34,25 +43,25 @@ describe('Git Branches', () => {
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith(
-        'git branch --sort=-committerdate --format="%(refname:short)|%(committerdate:relative)" --list'
+        'git rev-parse --abbrev-ref HEAD'
+      );
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
+        'git branch --sort=-committerdate --format=%(refname:short)|%(committerdate:relative) --list'
       );
       expect(branches).toHaveLength(3);
       expect(branches[0]).toEqual({
         name: 'main',
         date: '2 hours ago',
-        current: false,
-        current: false,
+        current: true,
       });
       expect(branches[1]).toEqual({
         name: 'feature/test',
         date: '1 day ago',
         current: false,
-        current: false,
       });
       expect(branches[2]).toEqual({
         name: 'develop',
         date: '3 days ago',
-        current: false,
         current: false,
       });
     });
@@ -60,8 +69,11 @@ describe('Git Branches', () => {
     it('should handle empty git branch output', async () => {
       // Arrange
       mockExecuteCommand.mockResolvedValue({
-        stdout: '',
+        stdout: 'main',
         stderr: '',
+      });
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [],
       });
 
       // Act
@@ -73,10 +85,12 @@ describe('Git Branches', () => {
 
     it('should filter out empty lines', async () => {
       // Arrange
-      const mockStdout = 'main|2 hours ago\n\n\nfeature/test|1 day ago\n\n';
       mockExecuteCommand.mockResolvedValue({
-        stdout: mockStdout,
+        stdout: 'main',
         stderr: '',
+      });
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: ['main|2 hours ago', '', '', 'feature/test|1 day ago', ''],
       });
 
       // Act
@@ -87,7 +101,7 @@ describe('Git Branches', () => {
       expect(branches[0]).toEqual({
         name: 'main',
         date: '2 hours ago',
-        current: false,
+        current: true,
       });
       expect(branches[1]).toEqual({
         name: 'feature/test',
@@ -107,11 +121,15 @@ describe('Git Branches', () => {
 
     it('should handle branches with special characters', async () => {
       // Arrange
-      const mockStdout =
-        'feature/user-123|1 hour ago\nbugfix/fix-login-issue|yesterday\n';
       mockExecuteCommand.mockResolvedValue({
-        stdout: mockStdout,
+        stdout: 'main',
         stderr: '',
+      });
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [
+          'feature/user-123|1 hour ago',
+          'bugfix/fix-login-issue|yesterday',
+        ],
       });
 
       // Act
@@ -133,10 +151,12 @@ describe('Git Branches', () => {
 
     it('should handle malformed branch output gracefully', async () => {
       // Arrange
-      const mockStdout = 'main\nfeature/test|1 day ago\nbugfix|today|\n';
       mockExecuteCommand.mockResolvedValue({
-        stdout: mockStdout,
+        stdout: 'main',
         stderr: '',
+      });
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: ['main', 'feature/test|1 day ago', 'bugfix|today|'],
       });
 
       // Act
@@ -147,7 +167,7 @@ describe('Git Branches', () => {
       expect(branches[0]).toEqual({
         name: 'main',
         date: undefined,
-        current: false,
+        current: true,
       });
       expect(branches[1]).toEqual({
         name: 'feature/test',
