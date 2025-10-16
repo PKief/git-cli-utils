@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v1.17.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.16.0...v1.17.0)
+
+### 🚀 Enhancements
+
+- Add deleteTag and changeTagCommit functions for tag management ([5be048c](https://github.com/PKief/git-cli-utils/commit/5be048c))
+
+### 🩹 Fixes
+
+- Update command execution to use streaming for better compatibility and performance ([b5049fa](https://github.com/PKief/git-cli-utils/commit/b5049fa))
+- Adjust branches test suite to utilize streaming command and improve branch parsing ([82c3859](https://github.com/PKief/git-cli-utils/commit/82c3859))
+- Update lint-staged configuration to include formatting step in pre-commit hook ([1c0ff19](https://github.com/PKief/git-cli-utils/commit/1c0ff19))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.16.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.15.0...v1.16.0)
