@@ -6,7 +6,13 @@ import { createActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
-import { checkoutTag, copyTagName, showTagDetails } from './actions/index.js';
+import {
+  changeTagCommit,
+  checkoutTag,
+  copyTagName,
+  deleteTag,
+  showTagDetails,
+} from './actions/index.js';
 
 /**
  * Creates actions available for tag items
@@ -31,6 +37,18 @@ function createTagActions() {
       description: 'Checkout tag',
       handler: checkoutTag,
     },
+    {
+      key: 'change',
+      label: 'Change commit',
+      description: 'Change tag to point to a different commit',
+      handler: changeTagCommit,
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      description: 'Delete tag (locally and optionally from remotes)',
+      handler: deleteTag,
+    },
   ]);
 }
 
@@ -49,7 +67,7 @@ const searchTags = async () => {
         (tag: GitTag) => {
           const hashInfo = tag.hash ? ` (${tag.hash})` : '';
           const subjectInfo = tag.subject ? ` - ${tag.subject}` : '';
-          return `${tag.date} - ${tag.name}${subjectInfo}${hashInfo}`;
+          return `${tag.date} - ${tag.name}${hashInfo}${subjectInfo}`;
         },
         (tag: GitTag) => `${tag.name} ${tag.subject} ${tag.tagger}`, // Search name, subject, and tagger
         undefined, // No header

@@ -11,21 +11,35 @@ export interface GitTag {
 export const getGitTags = async (): Promise<GitTag[]> => {
   try {
     // Get tags with their commit info
+    // Use %(objectname:short) for lightweight tags and %(*objectname:short) for annotated tags
+    // Use %(contents:subject) for lightweight tags and %(*subject) for annotated tags
     const command =
-      'git tag --sort=-version:refname --format=%(refname:short)|%(creatordate:relative)|%(*objectname:short)|%(*subject)|%(taggername)';
+      'git tag --sort=-version:refname --format=%(refname:short)|%(creatordate:relative)|%(objectname:short)|%(*objectname:short)|%(contents:subject)|%(*subject)|%(taggername)';
     const result = await gitExecutor.executeStreamingCommand(command);
 
     const tags: GitTag[] = [];
 
     result.data.forEach((line) => {
       if (!line.trim()) return;
-      const [name, date, hash, subject, tagger] = line.split('|');
+      const [
+        name,
+        date,
+        lightweightHash,
+        annotatedHash,
+        lightweightSubject,
+        annotatedSubject,
+        tagger,
+      ] = line.split('|');
+
+      // Use annotated tag info if available, otherwise fall back to lightweight tag info
+      const hash = annotatedHash || lightweightHash || '';
+      const subject = annotatedSubject || lightweightSubject || '';
 
       tags.push({
         name,
         date: date || 'Unknown',
-        hash: hash || '',
-        subject: subject || '',
+        hash,
+        subject,
         tagger: tagger || 'Unknown',
       });
     });
