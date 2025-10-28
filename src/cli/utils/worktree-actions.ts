@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import * as p from '@clack/prompts';
 import { getEditorConfig } from '../../core/config.js';
 import { GitBranch } from '../../core/git/branches.js';
@@ -9,7 +10,7 @@ import {
   getGitWorktrees,
 } from '../../core/git/worktrees.js';
 import { configCommand } from '../commands/config/index.js';
-import { green } from '../ui/ansi.js';
+import { green, yellow } from '../ui/ansi.js';
 import { openInConfiguredEditor } from './editor.js';
 import { writeErrorLine, writeLine } from './terminal.js';
 
@@ -19,12 +20,12 @@ import { writeErrorLine, writeLine } from './terminal.js';
 async function openWorktreeInEditor(worktreePath: string): Promise<void> {
   const editorConfig = getEditorConfig();
 
-  if (!editorConfig) {
-    // No editor configured - show helpful message and offer to configure
-    writeLine();
-    writeErrorLine(
-      'No editor configured. Do you want to configure your default editor?'
-    );
+  // Check if no editor is configured OR if the configured editor doesn't exist
+  const needsConfiguration = !editorConfig || !existsSync(editorConfig.path);
+
+  if (needsConfiguration) {
+    // Show clear message regardless of whether config is missing or invalid
+    writeLine(yellow('No editor configured'));
 
     const shouldConfigure = await p.confirm({
       message: 'Configure editor now?',
@@ -38,15 +39,15 @@ async function openWorktreeInEditor(worktreePath: string): Promise<void> {
     // Launch interactive config to set up editor
     await configCommand();
 
-    // After config, automatically open if editor was configured
+    // After config, automatically open if editor was configured and valid
     const newEditorConfig = getEditorConfig();
-    if (newEditorConfig) {
+    if (newEditorConfig && existsSync(newEditorConfig.path)) {
       openInConfiguredEditor(worktreePath, { silent: false });
     }
     return;
   }
 
-  // Editor is configured - open automatically
+  // Editor is configured and exists - open automatically
   openInConfiguredEditor(worktreePath, { silent: false });
 }
 

@@ -1,7 +1,8 @@
+import { existsSync } from 'node:fs';
 import * as p from '@clack/prompts';
 import { getEditorConfig } from '../../../../core/config.js';
 import { GitWorktree } from '../../../../core/git/worktrees.js';
-import { green } from '../../../ui/ansi.js';
+import { green, yellow } from '../../../ui/ansi.js';
 import { openInConfiguredEditor } from '../../../utils/editor.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 import { configCommand } from '../../config/index.js';
@@ -15,12 +16,12 @@ export async function openWorktreeInEditor(
   try {
     const editorConfig = getEditorConfig();
 
-    if (!editorConfig) {
-      // No editor configured - show helpful message and offer to configure
-      writeLine();
-      writeErrorLine(
-        'No editor configured. Do you want to configure your default editor?'
-      );
+    // Check if no editor is configured OR if the configured editor doesn't exist
+    const needsConfiguration = !editorConfig || !existsSync(editorConfig.path);
+
+    if (needsConfiguration) {
+      // Show clear message regardless of whether config is missing or invalid
+      writeLine(yellow('No editor configured'));
 
       const shouldConfigure = await p.confirm({
         message: 'Configure editor now?',
@@ -34,9 +35,9 @@ export async function openWorktreeInEditor(
       // Launch interactive config to set up editor
       await configCommand();
 
-      // After config, try to open if editor was configured
+      // After config, try to open if editor was configured and valid
       const newEditorConfig = getEditorConfig();
-      if (newEditorConfig) {
+      if (newEditorConfig && existsSync(newEditorConfig.path)) {
         const shouldOpen = await p.confirm({
           message: 'Open worktree in the configured editor?',
           initialValue: true,
@@ -57,7 +58,7 @@ export async function openWorktreeInEditor(
       return true;
     }
 
-    // Editor is configured - open directly
+    // Editor is configured and exists - open directly
     const success = openInConfiguredEditor(worktree.path, { silent: false });
     if (success) {
       writeLine(green(`✓ Opened worktree in editor: ${worktree.path}`));
