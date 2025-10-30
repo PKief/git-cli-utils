@@ -127,7 +127,10 @@ const topAuthors = async (filePath?: string) => {
         }
 
         try {
-          await GitOperations.copyToClipboard(selectedAuthor.name);
+          const result = await GitOperations.copyToClipboard(
+            selectedAuthor.name
+          );
+          writeLine(green(`✓ ${result.message}`));
           process.exit(0);
         } catch (error) {
           writeErrorLine(

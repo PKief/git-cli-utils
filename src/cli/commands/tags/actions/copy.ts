@@ -13,8 +13,8 @@ import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
  */
 export async function copyTagName(tag: GitTag): Promise<ActionResult<GitTag>> {
   try {
-    await GitOperations.copyToClipboard(tag.name);
-    writeLine(green(`✓ Copied '${tag.name}'`));
+    const result = await GitOperations.copyToClipboard(tag.name);
+    writeLine(green(`✓ ${result.message}`));
     return actionSuccess(`Tag name copied`);
   } catch (error) {
     const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;

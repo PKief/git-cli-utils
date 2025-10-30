@@ -4,7 +4,7 @@ import {
   GitRemoteBranch,
   getGitRemotes,
   getRemoteBranches,
-} from '../../../core/git/index.js';
+} from '../../../core/git/remotes.js';
 import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import type { CommandModule } from '../../utils/command-registration.js';

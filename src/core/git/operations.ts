@@ -1,5 +1,4 @@
 import clipboardy from 'clipboardy';
-import { writeLine } from '../../cli/utils/terminal.js';
 import { gitExecutor } from './executor.js';
 
 /**
@@ -9,16 +8,16 @@ export class GitOperations {
   /**
    * Checkout a git branch
    */
-  static async checkoutBranch(branchName: string): Promise<void> {
+  static async checkoutBranch(
+    branchName: string
+  ): Promise<{ stdout?: string; stderr?: string }> {
     try {
       const result = await gitExecutor.executeCommand(
         `git checkout "${branchName}"`
       );
 
-      // If we reach here, git exited with code 0. Git sometimes writes informational
-      // messages to stderr even on success (hints, advice). Treat those as non-fatal.
-      if (result.stdout) writeLine(result.stdout.trim());
-      if (result.stderr) writeLine(result.stderr.trim());
+      // Return the result for the caller to handle output
+      return result;
     } catch (error) {
       throw new Error(
         `Failed to checkout branch '${branchName}': ${error instanceof Error ? error.message : String(error)}`
@@ -29,10 +28,10 @@ export class GitOperations {
   /**
    * Copy text to clipboard using clipboardy library for cross-platform support
    */
-  static async copyToClipboard(text: string): Promise<void> {
+  static async copyToClipboard(text: string): Promise<{ message: string }> {
     try {
       await clipboardy.write(text);
-      writeLine(`Copied to clipboard: ${text}`);
+      return { message: `Copied to clipboard: ${text}` };
     } catch (error) {
       throw new Error(
         `Failed to copy to clipboard: ${error instanceof Error ? error.message : String(error)}`

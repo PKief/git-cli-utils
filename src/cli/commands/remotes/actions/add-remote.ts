@@ -1,5 +1,5 @@
 import * as p from '@clack/prompts';
-import { gitExecutor } from '../../../../core/git/index.js';
+import { gitExecutor } from '../../../../core/git/executor.js';
 import { green, yellow } from '../../../ui/ansi.js';
 import { writeLine } from '../../../utils/terminal.js';
 

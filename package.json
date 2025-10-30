@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "postbuild": "bun run verify",
     "start": "bun ./dist/index.js",
     "lint": "biome check",
     "format": "bunx @biomejs/biome format --write ./",
@@ -21,7 +22,8 @@
     "test:e2e": "bun test test/e2e/",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
-    "prepublish": "npm run build",
+    "verify": "sheriff verify",
+    "prepublish": "bun run build",
     "prepare": "husky"
   },
   "sponsor": {
@@ -34,6 +36,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
+    "@softarc/sheriff-core": "^0.19.6",
     "@types/bun": "^1.2.22",
     "@types/clipboardy": "^2.0.4",
     "@types/node": "^24.5.2",

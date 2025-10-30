@@ -8,7 +8,6 @@ import {
   spyOn,
 } from 'bun:test';
 import clipboardy from 'clipboardy';
-import * as terminal from '../../cli/utils/terminal.js';
 import { GitOperations } from './operations';
 
 // Mock the GitExecutor
@@ -22,14 +21,10 @@ mock.module('./executor.js', () => ({
 
 // Mock dependencies
 let mockClipboardy: ReturnType<typeof spyOn>;
-let mockWriteLine: ReturnType<typeof spyOn>;
 
 beforeEach(() => {
   // Reset GitExecutor mock
   mockExecuteCommand.mockClear();
-
-  // Spy on terminal writeLine instead of globally mocking the module
-  mockWriteLine = spyOn(terminal, 'writeLine').mockImplementation(() => {});
 
   // Mock clipboardy
   mockClipboardy = spyOn(clipboardy, 'write').mockResolvedValue();
@@ -38,7 +33,6 @@ beforeEach(() => {
 afterEach(() => {
   // Restore all mocks
   mockExecuteCommand.mockReset();
-  mockWriteLine.mockRestore();
   mockClipboardy.mockRestore();
 });
 
@@ -54,13 +48,16 @@ describe('GitOperations', () => {
       });
 
       // Act
-      await GitOperations.checkoutBranch(branchName);
+      const result = await GitOperations.checkoutBranch(branchName);
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith(
         'git checkout "feature/test"'
       );
-      expect(mockWriteLine).toHaveBeenCalledWith(mockStdout.trim());
+      expect(result).toEqual({
+        stdout: mockStdout,
+        stderr: "Switched to branch 'feature/test'",
+      });
     });
 
     it('should handle already on branch message', async () => {
@@ -72,11 +69,14 @@ describe('GitOperations', () => {
       });
 
       // Act
-      await GitOperations.checkoutBranch(branchName);
+      const result = await GitOperations.checkoutBranch(branchName);
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith('git checkout "main"');
-      expect(mockWriteLine).toHaveBeenCalledWith("Already on 'main'");
+      expect(result).toEqual({
+        stdout: '',
+        stderr: "Already on 'main'",
+      });
     });
 
     it('should throw error when git checkout fails', async () => {
@@ -101,14 +101,14 @@ describe('GitOperations', () => {
         stderr: 'Informational message or hint',
       });
 
-      // Act & Assert - Should not throw, just log the stderr and succeed
-      await expect(
-        GitOperations.checkoutBranch(branchName)
-      ).resolves.toBeUndefined();
+      // Act
+      const result = await GitOperations.checkoutBranch(branchName);
 
-      expect(mockWriteLine).toHaveBeenCalledWith(
-        'Informational message or hint'
-      );
+      // Assert - Should return the result including stderr
+      expect(result).toEqual({
+        stdout: '',
+        stderr: 'Informational message or hint',
+      });
     });
 
     it('should handle branch names with special characters', async () => {
@@ -120,18 +120,16 @@ describe('GitOperations', () => {
       });
 
       // Act
-      await GitOperations.checkoutBranch(branchName);
+      const result = await GitOperations.checkoutBranch(branchName);
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith(
         'git checkout "feature/user-123"'
       );
-      expect(mockWriteLine).toHaveBeenCalledWith(
-        "Switched to a new branch 'feature/user-123'"
-      );
-      expect(mockWriteLine).toHaveBeenCalledWith(
-        "Switched to branch 'feature/user-123'"
-      );
+      expect(result).toEqual({
+        stdout: "Switched to a new branch 'feature/user-123'",
+        stderr: "Switched to branch 'feature/user-123'",
+      });
     });
   });
 
@@ -142,13 +140,13 @@ describe('GitOperations', () => {
       mockClipboardy.mockResolvedValue(undefined);
 
       // Act
-      await GitOperations.copyToClipboard(text);
+      const result = await GitOperations.copyToClipboard(text);
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
-      expect(mockWriteLine).toHaveBeenCalledWith(
-        `Copied to clipboard: ${text}`
-      );
+      expect(result).toEqual({
+        message: `Copied to clipboard: ${text}`,
+      });
     });
 
     it('should throw error when clipboard operation fails', async () => {
@@ -180,11 +178,13 @@ describe('GitOperations', () => {
       mockClipboardy.mockResolvedValue(undefined);
 
       // Act
-      await GitOperations.copyToClipboard(text);
+      const result = await GitOperations.copyToClipboard(text);
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith('');
-      expect(mockWriteLine).toHaveBeenCalledWith('Copied to clipboard: ');
+      expect(result).toEqual({
+        message: 'Copied to clipboard: ',
+      });
     });
 
     it('should handle special characters', async () => {
@@ -193,13 +193,13 @@ describe('GitOperations', () => {
       mockClipboardy.mockResolvedValue(undefined);
 
       // Act
-      await GitOperations.copyToClipboard(text);
+      const result = await GitOperations.copyToClipboard(text);
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
-      expect(mockWriteLine).toHaveBeenCalledWith(
-        `Copied to clipboard: ${text}`
-      );
+      expect(result).toEqual({
+        message: `Copied to clipboard: ${text}`,
+      });
     });
   });
 });

@@ -1,4 +1,5 @@
-import { GitRemote, gitExecutor } from '../../../../core/git/index.js';
+import { gitExecutor } from '../../../../core/git/executor.js';
+import { GitRemote } from '../../../../core/git/remotes.js';
 import { green, yellow } from '../../../ui/ansi.js';
 import { confirmDeletion } from '../../../utils/prompts.js';
 import { writeLine } from '../../../utils/terminal.js';

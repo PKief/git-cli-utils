@@ -12,8 +12,8 @@ export async function copyAliasCommand(
   alias: GitAlias
 ): Promise<ActionResult<GitAlias>> {
   try {
-    await GitOperations.copyToClipboard(alias.command);
-    writeLine(green(`✓ Copied alias command for '${alias.name}'`));
+    const result = await GitOperations.copyToClipboard(alias.command);
+    writeLine(green(`✓ ${result.message}`));
     return actionSuccess('Alias copied');
   } catch (error) {
     const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;

@@ -15,8 +15,8 @@ export async function copyCommitHash(
   commit: GitCommit
 ): Promise<ActionResult<GitCommit>> {
   try {
-    await GitOperations.copyToClipboard(commit.hash);
-    writeLine(green(`✓ Copied '${commit.hash}'`));
+    const result = await GitOperations.copyToClipboard(commit.hash);
+    writeLine(green(`✓ ${result.message}`));
     return actionSuccess(`Hash copied`);
   } catch (error) {
     const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;

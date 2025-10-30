@@ -15,7 +15,12 @@ export async function checkoutBranch(
   branch: GitBranch
 ): Promise<ActionResult<GitBranch>> {
   try {
-    await GitOperations.checkoutBranch(branch.name);
+    const result = await GitOperations.checkoutBranch(branch.name);
+    // Output the git command result
+    const output = result.stdout?.trim() || result.stderr?.trim() || '';
+    if (output) {
+      writeLine(output);
+    }
     writeLine(green(`✓ Switched to '${branch.name}'`));
     return actionSuccess(`Switched to '${branch.name}'`);
   } catch (error) {

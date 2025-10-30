@@ -1,4 +1,5 @@
-import { GitRemoteBranch, gitExecutor } from '../../../../core/git/index.js';
+import { gitExecutor } from '../../../../core/git/executor.js';
+import { GitRemoteBranch } from '../../../../core/git/remotes.js';
 import { green } from '../../../ui/ansi.js';
 import { writeLine } from '../../../utils/terminal.js';
 

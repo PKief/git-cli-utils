@@ -2,7 +2,7 @@ import {
   GitRemote,
   GitRemoteBranch,
   getRemoteBranches,
-} from '../../../../core/git/index.js';
+} from '../../../../core/git/remotes.js';
 import { yellow } from '../../../ui/ansi.js';
 import { interactiveList } from '../../../ui/interactive-list.js';
 import { createActions } from '../../../utils/action-helpers.js';

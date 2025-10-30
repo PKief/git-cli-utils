@@ -1,5 +1,5 @@
-import { GitRemote } from '../../../../core/git/index.js';
 import { GitOperations } from '../../../../core/git/operations.js';
+import { GitRemote } from '../../../../core/git/remotes.js';
 
 /**
  * Copy remote name to clipboard

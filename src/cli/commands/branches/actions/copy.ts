@@ -15,8 +15,8 @@ export async function copyBranchName(
   branch: GitBranch
 ): Promise<ActionResult<GitBranch>> {
   try {
-    await GitOperations.copyToClipboard(branch.name);
-    writeLine(green(`✓ Copied '${branch.name}'`));
+    const result = await GitOperations.copyToClipboard(branch.name);
+    writeLine(green(`✓ ${result.message}`));
     return actionSuccess(`Branch name copied`);
   } catch (error) {
     const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;

@@ -15,8 +15,10 @@ export async function copyStashReference(
   stash: GitStash
 ): Promise<ActionResult<GitStash>> {
   try {
-    await GitOperations.copyToClipboard(`stash@{${stash.index}}`);
-    writeLine(green(`✓ Copied stash@{${stash.index}}`));
+    const result = await GitOperations.copyToClipboard(
+      `stash@{${stash.index}}`
+    );
+    writeLine(green(`✓ ${result.message}`));
     return actionSuccess(`Reference copied`);
   } catch (error) {
     const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;

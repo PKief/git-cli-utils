@@ -1,5 +1,6 @@
 import * as p from '@clack/prompts';
-import { GitRemote, gitExecutor } from '../../../../core/git/index.js';
+import { gitExecutor } from '../../../../core/git/executor.js';
+import { GitRemote } from '../../../../core/git/remotes.js';
 import { green, yellow } from '../../../ui/ansi.js';
 import { writeLine } from '../../../utils/terminal.js';
 
