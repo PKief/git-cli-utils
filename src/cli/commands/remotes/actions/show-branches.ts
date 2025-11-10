@@ -10,6 +10,7 @@ import { compareBranches } from '../../../utils/compare-branches.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 import { checkoutRemoteBranchInWorktree } from '../../../utils/worktree-actions.js';
 import { checkoutRemoteBranch } from './checkout-branch.js';
+import { deleteRemoteBranch } from './delete-branch.js';
 import { resetToRemoteBranch } from './reset-to-remote.js';
 import { setAsUpstream } from './set-as-upstream.js';
 
@@ -48,6 +49,12 @@ function createBranchActions() {
       description:
         'Reset current branch to match this remote branch (hard reset)',
       handler: resetToRemoteBranch,
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      description: 'Delete this branch on remote (optionally local too)',
+      handler: deleteRemoteBranch,
     },
   ]);
 }

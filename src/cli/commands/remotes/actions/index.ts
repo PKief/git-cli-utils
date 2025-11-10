@@ -1,6 +1,7 @@
 export { addRemote } from './add-remote.js';
 export { copyRemoteName } from './copy.js';
 export { deleteRemote } from './delete.js';
+export { deleteRemoteBranch } from './delete-branch.js';
 export { renameRemote } from './rename.js';
 export { resetToRemoteBranch } from './reset-to-remote.js';
 export { setAsDefault } from './set-as-default.js';
