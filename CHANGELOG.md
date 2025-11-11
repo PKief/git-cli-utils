@@ -1,6 +1,32 @@
 # Changelog
 
 
+## v1.18.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.17.0...v1.18.0)
+
+### 🚀 Enhancements
+
+- Implement deleteRemoteBranch function and integrate into branch actions ([5d3a1a5](https://github.com/PKief/git-cli-utils/commit/5d3a1a5))
+
+### 🩹 Fixes
+
+- Enhance editor configuration checks and improve user prompts for worktree opening ([699cbc5](https://github.com/PKief/git-cli-utils/commit/699cbc5))
+
+### 💅 Refactors
+
+- Remove unused code ([99e815a](https://github.com/PKief/git-cli-utils/commit/99e815a))
+- Remove confirmation prompt for branch checkout ([7405217](https://github.com/PKief/git-cli-utils/commit/7405217))
+
+### 🏡 Chore
+
+- Add sheriff to verify architecture constraints ([ca88fa4](https://github.com/PKief/git-cli-utils/commit/ca88fa4))
+- Update dependencies to latest versions ([52352e4](https://github.com/PKief/git-cli-utils/commit/52352e4))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.17.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.16.0...v1.17.0)
