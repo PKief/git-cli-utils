@@ -8,11 +8,23 @@ export interface GitCommit {
   tags: string[];
 }
 
-export const getGitCommits = async (): Promise<GitCommit[]> => {
+export const getGitCommits = async (
+  filePath?: string
+): Promise<GitCommit[]> => {
   try {
-    const command =
-      'git log --all --date=relative --pretty=format:%h|%cd|%D|%s';
-    const result = await gitExecutor.executeStreamingCommand(command);
+    const args = [
+      'log',
+      '--all',
+      '--date=relative',
+      '--pretty=format:%h|%cd|%D|%s',
+    ];
+
+    // Add file path filter if provided
+    if (filePath) {
+      args.push('--', filePath);
+    }
+
+    const result = await gitExecutor.executeStreamingCommand(args);
 
     const commits: GitCommit[] = [];
 

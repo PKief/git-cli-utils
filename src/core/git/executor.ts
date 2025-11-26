@@ -115,12 +115,21 @@ export class GitExecutor {
    * Execute a Git command with streaming support for large outputs
    */
   async executeStreamingCommand(
-    command: string,
+    command: string | string[],
     options: GitExecutorOptions = {}
   ): Promise<GitStreamResult> {
     return new Promise((resolve, reject) => {
       const mergedOptions = { ...this.defaultOptions, ...options };
-      const args = command.split(' ').slice(1); // Remove 'git' from command
+
+      // Handle both string commands and args array
+      const args = Array.isArray(command)
+        ? command
+        : command.split(' ').slice(1); // Remove 'git' from command
+
+      const commandStr = Array.isArray(command)
+        ? `git ${command.join(' ')}`
+        : command;
+
       const git = spawn('git', args, {
         cwd: mergedOptions.cwd,
       });
@@ -137,7 +146,7 @@ export class GitExecutor {
           reject(
             new GitError(
               'Git command timed out',
-              command,
+              commandStr,
               `Command exceeded timeout of ${mergedOptions.timeout}ms`
             )
           );
@@ -179,7 +188,7 @@ export class GitExecutor {
           reject(
             new GitError(
               `Git command failed with exit code ${code}`,
-              command,
+              commandStr,
               errorOutput,
               code ?? undefined
             )
@@ -194,7 +203,7 @@ export class GitExecutor {
         reject(
           new GitError(
             `Failed to execute git command: ${error.message}`,
-            command,
+            commandStr,
             error.message
           )
         );

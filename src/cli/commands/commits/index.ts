@@ -45,16 +45,23 @@ function createCommitActions() {
   ]);
 }
 
-const searchCommits = async () => {
+const searchCommits = async (filePath?: string) => {
   try {
-    const commits = await getGitCommits();
+    const commits = await getGitCommits(filePath);
 
     if (commits.length === 0) {
-      writeLine(yellow('No commits found!'));
+      const message = filePath
+        ? `No commits found for file: ${filePath}`
+        : 'No commits found!';
+      writeLine(yellow(message));
       process.exit(0);
     }
 
     try {
+      const header = filePath
+        ? yellow(`Select a commit that modified: ${filePath}`)
+        : yellow('Select a commit from all branches:');
+
       const selectedCommit = await interactiveList<GitCommit>(
         commits,
         (commit: GitCommit) => {
@@ -64,7 +71,7 @@ const searchCommits = async () => {
         },
         (commit: GitCommit) =>
           `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`, // Search subject, hash, and tags
-        yellow('Select a commit from all branches:'), // Descriptive header
+        header, // Descriptive header
         createCommitActions() // Actions
       );
 
@@ -97,9 +104,18 @@ const searchCommits = async () => {
  * Register commits command with the CLI program
  */
 export function registerCommand(program: Command): CommandModule {
+  const commitsCommand = async (...args: unknown[]) => {
+    const filePath = args[0] as string | undefined;
+    await searchCommits(filePath);
+  };
+
   return createCommand(program, {
     name: 'commits',
     description: 'Browse and select from all commits across all branches',
-    action: searchCommits,
+    action: commitsCommand,
+    argument: {
+      name: '[file]',
+      description: 'file path to filter commits (optional)',
+    },
   });
 }
