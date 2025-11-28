@@ -36,9 +36,12 @@ describe('Git Commits', () => {
       const commits = await getGitCommits();
 
       // Assert
-      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
-        'git log --all --date=relative --pretty=format:%h|%cd|%D|%s'
-      );
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        '--all',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%D|%s',
+      ]);
       expect(commits).toHaveLength(3);
       expect(commits[0]).toEqual({
         hash: 'abc123',
@@ -65,9 +68,12 @@ describe('Git Commits', () => {
       const commits = await getGitCommits();
 
       // Assert
-      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
-        'git log --all --date=relative --pretty=format:%h|%cd|%D|%s'
-      );
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        '--all',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%D|%s',
+      ]);
       expect(commits).toHaveLength(3);
       expect(commits[1]).toEqual({
         hash: 'def456',
