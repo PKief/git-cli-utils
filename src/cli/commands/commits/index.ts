@@ -4,7 +4,6 @@ import { yellow } from '../../ui/ansi.js';
 import { interactiveList } from '../../ui/interactive-list.js';
 import { createActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
-import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { checkoutCommitInWorktree } from '../../utils/worktree-actions.js';
 import {
@@ -45,9 +44,9 @@ function createCommitActions() {
   ]);
 }
 
-const searchCommits = async (filePath?: string) => {
+const searchCommits = async (filePath?: string, showAll = false) => {
   try {
-    const commits = await getGitCommits(filePath);
+    const commits = await getGitCommits(filePath, showAll);
 
     if (commits.length === 0) {
       const message = filePath
@@ -60,7 +59,9 @@ const searchCommits = async (filePath?: string) => {
     try {
       const header = filePath
         ? yellow(`Select a commit that modified: ${filePath}`)
-        : yellow('Select a commit from all branches:');
+        : showAll
+          ? yellow('Select a commit from all branches:')
+          : yellow('Select a commit from current branch:');
 
       const selectedCommit = await interactiveList<GitCommit>(
         commits,
@@ -105,17 +106,32 @@ const searchCommits = async (filePath?: string) => {
  */
 export function registerCommand(program: Command): CommandModule {
   const commitsCommand = async (...args: unknown[]) => {
-    const filePath = args[0] as string | undefined;
-    await searchCommits(filePath);
+    // Commander.js passes: [argument1, options, command]
+    // When argument is not provided, it's undefined
+    const filePath =
+      typeof args[0] === 'string' && args[0] ? args[0] : undefined;
+    // Options is always at index 1 (after the optional argument)
+    const options = args[1] as { all?: boolean };
+    const showAll = options?.all ?? false;
+    await searchCommits(filePath, showAll);
   };
 
-  return createCommand(program, {
+  // Register the command with Commander
+  const _cmd = program
+    .command('commits')
+    .description('Browse and select commits from current branch')
+    .argument('[file]', 'file path to filter commits (optional)')
+    .option('--all', 'show commits from all branches')
+    .action(commitsCommand);
+
+  // Return the CommandModule format for the command selector
+  return {
     name: 'commits',
-    description: 'Browse and select from all commits across all branches',
+    description: 'Browse and select commits from current branch',
     action: commitsCommand,
     argument: {
       name: '[file]',
       description: 'file path to filter commits (optional)',
     },
-  });
+  };
 }

@@ -9,15 +9,16 @@ export interface GitCommit {
 }
 
 export const getGitCommits = async (
-  filePath?: string
+  filePath?: string,
+  showAllBranches = false
 ): Promise<GitCommit[]> => {
   try {
-    const args = [
-      'log',
-      '--all',
-      '--date=relative',
-      '--pretty=format:%h|%cd|%D|%s',
-    ];
+    const args = ['log', '--date=relative', '--pretty=format:%h|%cd|%D|%s'];
+
+    // Add --all flag if requested
+    if (showAllBranches) {
+      args.splice(1, 0, '--all');
+    }
 
     // Add file path filter if provided
     if (filePath) {

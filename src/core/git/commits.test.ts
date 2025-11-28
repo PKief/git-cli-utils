@@ -38,7 +38,6 @@ describe('Git Commits', () => {
       // Assert
       expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
         'log',
-        '--all',
         '--date=relative',
         '--pretty=format:%h|%cd|%D|%s',
       ]);
@@ -65,7 +64,7 @@ describe('Git Commits', () => {
       });
 
       // Act
-      const commits = await getGitCommits();
+      const commits = await getGitCommits(undefined, true);
 
       // Assert
       expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
