@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v1.19.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.18.0...v1.19.0)
+
+### 🚀 Enhancements
+
+- Enhance commit search functionality with optional file path filter ([766a4f0](https://github.com/PKief/git-cli-utils/commit/766a4f0))
+- Enhance getGitCommits to support filtering by branch and add CLI options for commit selection ([7e05b97](https://github.com/PKief/git-cli-utils/commit/7e05b97))
+
+### ✅ Tests
+
+- Update getGitCommits tests to use array syntax for command arguments ([3678066](https://github.com/PKief/git-cli-utils/commit/3678066))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.18.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.17.0...v1.18.0)
