@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "git-cli-utils",
@@ -13,7 +14,7 @@
         "@softarc/sheriff-core": "^0.19.6",
         "@types/bun": "^1.3.2",
         "@types/clipboardy": "^2.0.4",
-        "@types/node": "^24.10.0",
+        "@types/node": "^25.0.3",
         "changelogen": "^0.6.2",
         "husky": "^9.1.7",
         "lint-staged": "^16.2.6",
@@ -54,7 +55,7 @@
 
     "@types/clipboardy": ["@types/clipboardy@2.0.4", "", { "dependencies": { "clipboardy": "*" } }, "sha512-THIMJmyhXJq2iXlJZbDUdH6hO+CwlHVG109kMqczf0o8IvSyoLMr8/KXqEjyWEn2Tu/IGo8ASWfP3tVbuiYEqg=="],
 
-    "@types/node": ["@types/node@24.10.1", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ=="],
+    "@types/node": ["@types/node@25.0.3", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-W609buLVRVmeW693xKfzHeIV6nJGGz98uCPfeXI1ELMLXVeKYZ9m15fAMSaUPBHYLGFsVRcMmSCksQOrZV9BYA=="],
 
     "ansi-escapes": ["ansi-escapes@7.1.0", "", { "dependencies": { "environment": "^1.0.0" } }, "sha512-YdhtCd19sKRKfAAUsrcC1wzm4JuzJoiX4pOJqIoW2qmKj5WzG/dL8uUJ0361zaXtHqK7gEhOwtAtz7t3Yq3X5g=="],
 
