@@ -1,7 +1,15 @@
 import * as p from '@clack/prompts';
 import { Command } from 'commander';
+import {
+  getDefaultSymlinkPatterns,
+  getWorktreeSymlinkConfig,
+  setWorktreeSymlinkConfig,
+  type WorktreeMode,
+} from '../../../core/config.js';
+import { blue, gray, green, yellow } from '../../ui/ansi.js';
 import type { CommandRegistration } from '../../utils/command-registration.js';
 import { configureEditor, showEditorConfig } from '../../utils/editor.js';
+import { writeLine } from '../../utils/terminal.js';
 
 interface ConfigSection {
   name: string;
@@ -9,6 +17,122 @@ interface ConfigSection {
   showAction: () => void;
   setAction: (value: string, options?: Record<string, unknown>) => void;
   interactiveSetup: () => Promise<void>;
+}
+
+// Symlinks config helpers
+function showSymlinksConfig(): void {
+  const config = getWorktreeSymlinkConfig();
+  writeLine('Symlink configuration for new worktrees:');
+  writeLine(
+    `  Mode: ${config.mode === 'selective' ? green('selective') : yellow('plain')}`
+  );
+  if (config.mode === 'selective') {
+    writeLine(`  Default patterns: ${blue(config.defaultPatterns.join(', '))}`);
+  }
+  writeLine('');
+  writeLine(gray('Modes:'));
+  writeLine(
+    gray(
+      '  selective - Prompt to symlink git-ignored files when creating worktrees'
+    )
+  );
+  writeLine(
+    gray('  plain     - Create worktrees without symlinking any files')
+  );
+}
+
+async function interactiveSymlinksSetup(): Promise<void> {
+  const currentConfig = getWorktreeSymlinkConfig();
+
+  // Step 1: Select mode
+  const mode = await p.select({
+    message: 'Select worktree creation mode',
+    options: [
+      {
+        label: 'Selective',
+        value: 'selective',
+        hint: 'Prompt to symlink git-ignored files (node_modules, .env, etc.)',
+      },
+      {
+        label: 'Plain',
+        value: 'plain',
+        hint: 'Create worktrees without any symlinks',
+      },
+    ],
+    initialValue: currentConfig.mode,
+  });
+
+  if (p.isCancel(mode)) return;
+
+  const selectedMode = mode as WorktreeMode;
+
+  // Step 2: If selective mode, configure default patterns
+  if (selectedMode === 'selective') {
+    const configurePatterns = await p.confirm({
+      message: 'Configure default symlink patterns?',
+      initialValue: true,
+    });
+
+    if (p.isCancel(configurePatterns)) return;
+
+    if (configurePatterns) {
+      await configureSymlinkPatterns(currentConfig.defaultPatterns);
+    } else {
+      // Just save the mode change
+      setWorktreeSymlinkConfig({
+        mode: selectedMode,
+        defaultPatterns: currentConfig.defaultPatterns,
+      });
+      writeLine(green('Worktree mode set to: selective'));
+    }
+  } else {
+    // Plain mode - save without patterns prompt
+    setWorktreeSymlinkConfig({
+      mode: 'plain',
+      defaultPatterns: currentConfig.defaultPatterns, // Preserve patterns for later
+    });
+    writeLine(green('Worktree mode set to: plain'));
+    writeLine(gray('Worktrees will be created without symlinks'));
+  }
+}
+
+async function configureSymlinkPatterns(
+  currentPatterns: string[]
+): Promise<void> {
+  const defaultPatterns = getDefaultSymlinkPatterns();
+
+  writeLine('');
+  writeLine('Enter patterns for files/folders to symlink by default.');
+  writeLine(gray('Examples: node_modules, .env, .env.*, dist'));
+  writeLine('');
+
+  const patternsInput = await p.text({
+    message: 'Default symlink patterns (comma separated)',
+    placeholder: defaultPatterns.join(', '),
+    initialValue: currentPatterns.join(', '),
+    validate: (v) => {
+      if (!v?.trim()) {
+        return 'At least one pattern is required for selective mode';
+      }
+      return undefined;
+    },
+  });
+
+  if (p.isCancel(patternsInput)) return;
+
+  const patterns = patternsInput
+    .split(',')
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+
+  setWorktreeSymlinkConfig({
+    mode: 'selective',
+    defaultPatterns: patterns,
+  });
+
+  writeLine(green('Worktree configuration saved:'));
+  writeLine(`  Mode: ${green('selective')}`);
+  writeLine(`  Default patterns: ${blue(patterns.join(', '))}`);
 }
 
 // Available config sections
@@ -41,6 +165,29 @@ const CONFIG_SECTIONS: ConfigSection[] = [
         : undefined;
       configureEditor(path.trim(), args);
     },
+  },
+  {
+    name: 'symlinks',
+    description:
+      'Configure symlinks for new worktrees (node_modules, .env, etc.)',
+    showAction: showSymlinksConfig,
+    setAction: (value: string) => {
+      // Handle CLI set command: config symlinks set <mode>
+      const mode = value.toLowerCase();
+      if (mode !== 'plain' && mode !== 'selective') {
+        writeLine(
+          yellow(`Invalid mode: ${value}. Use 'plain' or 'selective'.`)
+        );
+        return;
+      }
+      const currentConfig = getWorktreeSymlinkConfig();
+      setWorktreeSymlinkConfig({
+        mode: mode as WorktreeMode,
+        defaultPatterns: currentConfig.defaultPatterns,
+      });
+      writeLine(green(`Worktree mode set to: ${mode}`));
+    },
+    interactiveSetup: interactiveSymlinksSetup,
   },
 ];
 

@@ -187,7 +187,7 @@ export async function createWorktreeFromCommit(
 /**
  * Get the root directory of the current git repository
  */
-async function getRepositoryRoot(): Promise<string> {
+export async function getRepositoryRoot(): Promise<string> {
   const executor = GitExecutor.getInstance();
 
   try {

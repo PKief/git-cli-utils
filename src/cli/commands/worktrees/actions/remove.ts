@@ -1,7 +1,11 @@
 import { confirm } from '@clack/prompts';
 import { GitExecutor } from '../../../../core/git/executor.js';
+import {
+  findSymlinksInDirectory,
+  removeSymlinksInDirectory,
+} from '../../../../core/git/worktree-symlinks.js';
 import { GitWorktree } from '../../../../core/git/worktrees.js';
-import { green, red, yellow } from '../../../ui/ansi.js';
+import { gray, green, red, yellow } from '../../../ui/ansi.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 
 /**
@@ -33,6 +37,16 @@ export async function removeWorktree(worktree: GitWorktree): Promise<boolean> {
     if (!confirmed) {
       writeLine(yellow('Worktree removal cancelled.'));
       return true;
+    }
+
+    // Check for symlinks and remove them first to protect linked files
+    const symlinks = await findSymlinksInDirectory(worktree.path);
+
+    if (symlinks.length > 0) {
+      const symlinkNames = symlinks.map((s) => s.path.split(/[/\\]/).pop());
+      writeLine(gray(`Unlinking symlinks: ${symlinkNames.join(', ')}`));
+
+      await removeSymlinksInDirectory(worktree.path);
     }
 
     // Remove the worktree using git command
