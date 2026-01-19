@@ -291,6 +291,39 @@ async function runCLICommand(args: string[]): Promise<{ exitCode, stdout, stderr
 }
 ```
 
+### Integration Test Guidelines
+
+Follow the **test pyramid principle**: keep integration tests focused on core functionality, test details in unit tests.
+
+**Test Files:**
+- `test/e2e/commands.test.ts` - Basic smoke tests for CLI commands
+- `test/e2e/worktree-symlinks.test.ts` - Worktree-specific functionality
+
+**Sandbox Utility (`test/utils/sandbox.ts`):**
+```typescript
+import { createTestSandbox, createWorktreeSandbox, GitSandbox } from '../utils/sandbox.js';
+
+// Basic sandbox with git repo
+const sandbox = createTestSandbox();
+
+// Sandbox with branches, ignored files (.env, node_modules)
+const sandbox = createWorktreeSandbox();
+
+// Run CLI command in sandbox
+const result = await sandbox.runCLI(['worktrees']);
+expect(result.exitCode).toBe(0);
+
+// Always cleanup
+afterEach(() => sandbox?.cleanup());
+```
+
+**Key Principles:**
+1. **Test core functionality only** - Multiple tests per command are fine, but only for distinct core features
+2. **Don't test every detail** - Edge cases and small behaviors belong in unit tests
+3. **Use sandbox for isolation** - Never affect real git repos
+4. **Keep tests independent** - Each test creates its own sandbox
+5. **No duplicates** - If tested in one file, don't repeat in another
+
 ---
 
 ## Common Tasks
