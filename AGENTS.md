@@ -295,34 +295,51 @@ async function runCLICommand(args: string[]): Promise<{ exitCode, stdout, stderr
 
 Follow the **test pyramid principle**: keep integration tests focused on core functionality, test details in unit tests.
 
-**Test Files:**
-- `test/e2e/commands.test.ts` - Basic smoke tests for CLI commands
-- `test/e2e/worktree-symlinks.test.ts` - Worktree-specific functionality
+**Test Files (one per command/feature):**
+| File | Commands | Tests |
+|------|----------|-------|
+| `cli.test.ts` | Basic CLI | --version, --help, invalid command |
+| `branches.test.ts` | branches | List branches, current branch |
+| `commits.test.ts` | commits | List commits, show messages |
+| `tags.test.ts` | tags | No tags, list tags, annotated tags |
+| `stashes.test.ts` | stashes, save | List stashes, clean directory |
+| `remotes.test.ts` | remotes | No remotes, list remotes |
+| `config.test.ts` | config | Show config, subcommand help |
+| `worktree-symlinks.test.ts` | worktrees | Create, list, remove worktrees |
 
 **Sandbox Utility (`test/utils/sandbox.ts`):**
 ```typescript
 import { createTestSandbox, createWorktreeSandbox, GitSandbox } from '../utils/sandbox.js';
 
-// Basic sandbox with git repo
-const sandbox = createTestSandbox();
+describe('mycommand', () => {
+  let sandbox: GitSandbox;
 
-// Sandbox with branches, ignored files (.env, node_modules)
-const sandbox = createWorktreeSandbox();
+  afterEach(() => {
+    sandbox?.cleanup();
+  });
 
-// Run CLI command in sandbox
-const result = await sandbox.runCLI(['worktrees']);
-expect(result.exitCode).toBe(0);
+  it('should do something', async () => {
+    // Create sandbox with options
+    sandbox = createTestSandbox({ branches: ['feature-1'], commitCount: 3 });
 
-// Always cleanup
-afterEach(() => sandbox?.cleanup());
+    // Or use worktree sandbox (includes .gitignore, node_modules, .env)
+    sandbox = createWorktreeSandbox();
+
+    // Run CLI and assert
+    const result = await sandbox.runCLI(['mycommand']);
+    expect(result.exitCode).toBe(0);
+  });
+});
 ```
 
 **Key Principles:**
-1. **Test core functionality only** - Multiple tests per command are fine, but only for distinct core features
-2. **Don't test every detail** - Edge cases and small behaviors belong in unit tests
-3. **Use sandbox for isolation** - Never affect real git repos
-4. **Keep tests independent** - Each test creates its own sandbox
+1. **One file per command** - Keep tests organized and easy to find
+2. **3-5 tests per command** - Test core functionality, not every detail
+3. **Test different states** - Empty repo, with data, edge cases
+4. **Use sandbox for isolation** - Each test creates its own sandbox via `afterEach`
 5. **No duplicates** - If tested in one file, don't repeat in another
+
+**When adding a new command:** Create `test/e2e/<command>.test.ts` with 3-5 tests covering core functionality
 
 ---
 
