@@ -4,6 +4,7 @@ export interface GitBranch {
   name: string;
   date: string | undefined;
   current: boolean;
+  upstream?: string; // e.g., "origin/main" or undefined if not tracking
 }
 
 export async function getGitBranches(): Promise<GitBranch[]> {
@@ -15,17 +16,20 @@ export async function getGitBranches(): Promise<GitBranch[]> {
     const currentBranchName = currentBranchResult.stdout.trim();
 
     const command =
-      'git branch --sort=-committerdate --format=%(refname:short)|%(committerdate:relative) --list';
+      'git branch --sort=-committerdate --format=%(refname:short)|%(committerdate:relative)|%(upstream:short) --list';
     const result = await gitExecutor.executeStreamingCommand(command);
 
     const branches = result.data
       .filter((branch) => branch.trim() !== '')
       .map((branch) => {
-        const [name, date] = branch.trim().split('|');
+        const parts = branch.trim().split('|');
+        const [name, date] = parts;
+        const upstream = parts[2] || undefined; // Empty string becomes undefined
         return {
           name,
           date,
           current: name === currentBranchName,
+          upstream: upstream || undefined, // Ensure empty strings become undefined
         };
       })
       .filter((branch) => {
