@@ -12,14 +12,6 @@ describe('config', () => {
     sandbox?.cleanup();
   });
 
-  it('should show symlinks config', async () => {
-    sandbox = createTestSandbox();
-    const result = await sandbox.runCLI(['config', 'symlinks', 'show']);
-
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout.toLowerCase()).toContain('mode');
-  });
-
   it('should show editor config', async () => {
     sandbox = createTestSandbox();
     const result = await sandbox.runCLI(['config', 'editor', 'show']);
@@ -36,11 +28,11 @@ describe('config', () => {
     expect(result.stdout.toLowerCase()).toContain('config');
   });
 
-  it('should show symlinks subcommand help', async () => {
+  it('should show editor subcommand help', async () => {
     sandbox = createTestSandbox();
-    const result = await sandbox.runCLI(['config', 'symlinks', '--help']);
+    const result = await sandbox.runCLI(['config', 'editor', '--help']);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stdout.toLowerCase()).toContain('symlink');
+    expect(result.stdout.toLowerCase()).toContain('editor');
   });
 });

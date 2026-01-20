@@ -305,11 +305,11 @@ Follow the **test pyramid principle**: keep integration tests focused on core fu
 | `stashes.test.ts` | stashes, save | List stashes, clean directory |
 | `remotes.test.ts` | remotes | No remotes, list remotes |
 | `config.test.ts` | config | Show config, subcommand help |
-| `worktree-symlinks.test.ts` | worktrees | Create, list, remove worktrees |
+| `worktrees.test.ts` | worktrees | Create, list, remove worktrees |
 
 **Sandbox Utility (`test/utils/sandbox.ts`):**
 ```typescript
-import { createTestSandbox, createWorktreeSandbox, GitSandbox } from '../utils/sandbox.js';
+import { createTestSandbox, GitSandbox } from '../utils/sandbox.js';
 
 describe('mycommand', () => {
   let sandbox: GitSandbox;
@@ -321,9 +321,6 @@ describe('mycommand', () => {
   it('should do something', async () => {
     // Create sandbox with options
     sandbox = createTestSandbox({ branches: ['feature-1'], commitCount: 3 });
-
-    // Or use worktree sandbox (includes .gitignore, node_modules, .env)
-    sandbox = createWorktreeSandbox();
 
     // Run CLI and assert
     const result = await sandbox.runCLI(['mycommand']);

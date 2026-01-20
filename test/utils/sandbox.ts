@@ -5,7 +5,6 @@
  * - Branches
  * - Commits
  * - Worktrees
- * - Ignored files (for symlink testing)
  *
  * Each sandbox is completely isolated and cleaned up after tests.
  */
@@ -26,12 +25,6 @@ export interface SandboxOptions {
   branches?: string[];
   /** Number of commits to create on main branch */
   commitCount?: number;
-  /** Files to create in .gitignore */
-  ignoredPatterns?: string[];
-  /** Ignored directories to create with content */
-  ignoredDirs?: string[];
-  /** Ignored files to create */
-  ignoredFiles?: Record<string, string>;
 }
 
 export interface CLIResult {
@@ -81,29 +74,6 @@ export class GitSandbox {
       }
       // Return to main branch
       this.git(['checkout', 'main']);
-    }
-
-    // Setup .gitignore
-    if (options.ignoredPatterns && options.ignoredPatterns.length > 0) {
-      this.writeFile('.gitignore', options.ignoredPatterns.join('\n') + '\n');
-      this.git(['add', '.gitignore']);
-      this.git(['commit', '-m', 'Add .gitignore']);
-    }
-
-    // Create ignored directories
-    if (options.ignoredDirs) {
-      for (const dir of options.ignoredDirs) {
-        const dirPath = join(this.repoDir, dir);
-        mkdirSync(dirPath, { recursive: true });
-        writeFileSync(join(dirPath, 'placeholder.txt'), `Content in ${dir}`);
-      }
-    }
-
-    // Create ignored files
-    if (options.ignoredFiles) {
-      for (const [filename, content] of Object.entries(options.ignoredFiles)) {
-        this.writeFile(filename, content);
-      }
     }
   }
 
@@ -371,24 +341,5 @@ export function createTestSandbox(options: SandboxOptions = {}): GitSandbox {
     initGit: true,
     initialCommit: true,
     ...options,
-  });
-}
-
-/**
- * Create a sandbox configured for worktree/symlink testing
- */
-export function createWorktreeSandbox(): GitSandbox {
-  return new GitSandbox({
-    name: 'worktree-test',
-    initGit: true,
-    initialCommit: true,
-    commitCount: 3,
-    branches: ['feature-a', 'feature-b'],
-    ignoredPatterns: ['node_modules/', '.env', '.env.*', 'dist/', 'coverage/'],
-    ignoredDirs: ['node_modules', 'dist'],
-    ignoredFiles: {
-      '.env': 'SECRET_KEY=test123\nAPI_URL=http://localhost:3000',
-      '.env.local': 'LOCAL_VAR=local_value',
-    },
   });
 }

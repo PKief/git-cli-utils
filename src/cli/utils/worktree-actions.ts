@@ -1,27 +1,16 @@
 import { existsSync } from 'node:fs';
 import * as p from '@clack/prompts';
-import {
-  getEditorConfig,
-  getWorktreeSymlinkConfig,
-  setWorktreeSymlinkConfig,
-} from '../../core/config.js';
+import { getEditorConfig } from '../../core/config.js';
 import { GitBranch } from '../../core/git/branches.js';
 import { GitCommit } from '../../core/git/commits.js';
 import { GitRemoteBranch } from '../../core/git/remotes.js';
 import {
-  createSymlinksForIgnored,
-  filterByPatterns,
-  getIgnoredPaths,
-  type IgnoredPath,
-} from '../../core/git/worktree-symlinks.js';
-import {
   createWorktree,
   createWorktreeFromCommit,
   getGitWorktrees,
-  getRepositoryRoot,
 } from '../../core/git/worktrees.js';
 import { configCommand } from '../commands/config/index.js';
-import { blue, gray, green, yellow } from '../ui/ansi.js';
+import { green, yellow } from '../ui/ansi.js';
 import { openInConfiguredEditor } from './editor.js';
 import { writeErrorLine, writeLine } from './terminal.js';
 
@@ -63,102 +52,6 @@ async function openWorktreeInEditor(worktreePath: string): Promise<void> {
 }
 
 /**
- * Prompt user to select which git-ignored files/folders to symlink to the worktree
- */
-async function promptForSymlinks(
-  sourceRepo: string,
-  worktreePath: string
-): Promise<void> {
-  const config = getWorktreeSymlinkConfig();
-
-  // Skip if mode is plain (no symlinks)
-  if (config.mode === 'plain') {
-    return;
-  }
-
-  // Get all ignored paths in the repo
-  const ignoredPaths = await getIgnoredPaths(sourceRepo);
-
-  if (ignoredPaths.length === 0) {
-    return;
-  }
-
-  // Filter by default patterns to get pre-selected items
-  const defaultMatches = filterByPatterns(ignoredPaths, config.defaultPatterns);
-  const defaultMatchPaths = new Set(defaultMatches.map((p) => p.relativePath));
-
-  // Build options for multiselect
-  const options = ignoredPaths.map((item) => ({
-    value: item,
-    label: item.isDirectory ? `${item.relativePath}/` : item.relativePath,
-    hint: item.isDirectory ? 'directory' : 'file',
-  }));
-
-  // Ask user which files to symlink
-  writeLine('');
-  const selected = await p.multiselect({
-    message: 'Select git-ignored files/folders to symlink to the worktree',
-    options,
-    initialValues: ignoredPaths.filter((p) =>
-      defaultMatchPaths.has(p.relativePath)
-    ),
-    required: false,
-  });
-
-  if (p.isCancel(selected) || selected.length === 0) {
-    return;
-  }
-
-  const selectedPaths = selected as IgnoredPath[];
-
-  // Create the symlinks
-  writeLine(gray('Creating symlinks...'));
-  const results = await createSymlinksForIgnored(
-    sourceRepo,
-    worktreePath,
-    selectedPaths
-  );
-
-  // Report results
-  const successful = results.filter((r) => r.success);
-  const failed = results.filter((r) => !r.success);
-
-  if (successful.length > 0) {
-    writeLine(
-      green(`  Symlinked: ${successful.map((r) => r.path).join(', ')}`)
-    );
-  }
-
-  if (failed.length > 0) {
-    for (const f of failed) {
-      writeErrorLine(`  Failed to symlink ${f.path}: ${f.error}`);
-    }
-  }
-
-  // Ask if user wants to save their selection as default patterns
-  const selectedNames = selectedPaths.map((p) => p.relativePath);
-  const currentPatterns = config.defaultPatterns;
-  const patternsChanged =
-    selectedNames.length !== currentPatterns.length ||
-    !selectedNames.every((n) => currentPatterns.includes(n));
-
-  if (patternsChanged && successful.length > 0) {
-    const shouldSave = await p.confirm({
-      message: 'Save this selection as default for future worktrees?',
-      initialValue: false,
-    });
-
-    if (!p.isCancel(shouldSave) && shouldSave) {
-      setWorktreeSymlinkConfig({
-        mode: 'selective',
-        defaultPatterns: selectedNames,
-      });
-      writeLine(blue('Default symlink patterns updated'));
-    }
-  }
-}
-
-/**
  * Checkout a branch in a new worktree
  */
 export async function checkoutBranchInWorktree(
@@ -186,14 +79,10 @@ export async function checkoutBranchInWorktree(
     }
 
     // Auto-generate path based on branch name
-    const repoRoot = await getRepositoryRoot();
     const createdPath = await createWorktree(branch.name);
 
     writeLine(green(`✓ Worktree created: ${createdPath}`));
     writeLine(`  Branch: ${branch.name}`);
-
-    // Prompt for symlinking git-ignored files
-    await promptForSymlinks(repoRoot, createdPath);
 
     // Automatically open in configured editor
     await openWorktreeInEditor(createdPath);
@@ -219,14 +108,10 @@ export async function checkoutCommitInWorktree(
     );
 
     // Auto-generate path based on commit hash
-    const repoRoot = await getRepositoryRoot();
     const createdPath = await createWorktreeFromCommit(commit.hash);
 
     writeLine(green(`✓ Worktree created: ${createdPath}`));
     writeLine(`  Commit: ${commit.hash.substring(0, 8)}`);
-
-    // Prompt for symlinking git-ignored files
-    await promptForSymlinks(repoRoot, createdPath);
 
     // Automatically open in configured editor
     await openWorktreeInEditor(createdPath);
@@ -272,14 +157,10 @@ export async function checkoutRemoteBranchInWorktree(
     }
 
     // Auto-generate path based on remote branch name
-    const repoRoot = await getRepositoryRoot();
     const createdPath = await createWorktree(remoteBranch.fullName);
 
     writeLine(green(`✓ Worktree created: ${createdPath}`));
     writeLine(`  Remote branch: ${remoteName}/${branchName}`);
-
-    // Prompt for symlinking git-ignored files
-    await promptForSymlinks(repoRoot, createdPath);
 
     // Automatically open in configured editor
     await openWorktreeInEditor(createdPath);
