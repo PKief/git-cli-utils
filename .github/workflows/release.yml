@@ -54,5 +54,5 @@ jobs:
 
       - name: 🌐 Publish to NPM Registry
         run: |
-          npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+          npm set "//registry.npmjs.org/"
           npm publish --provenance --access public
