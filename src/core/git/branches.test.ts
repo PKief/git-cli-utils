@@ -32,9 +32,9 @@ describe('Git Branches', () => {
       });
       mockExecuteStreamingCommand.mockResolvedValue({
         data: [
-          'main|2 hours ago',
-          'feature/test|1 day ago',
-          'develop|3 days ago',
+          'main|2 hours ago|origin/main',
+          'feature/test|1 day ago|origin/feature/test',
+          'develop|3 days ago|',
         ],
       });
 
@@ -46,23 +46,26 @@ describe('Git Branches', () => {
         'git rev-parse --abbrev-ref HEAD'
       );
       expect(mockExecuteStreamingCommand).toHaveBeenCalledWith(
-        'git branch --sort=-committerdate --format=%(refname:short)|%(committerdate:relative) --list'
+        'git branch --sort=-committerdate --format=%(refname:short)|%(committerdate:relative)|%(upstream:short) --list'
       );
       expect(branches).toHaveLength(3);
       expect(branches[0]).toEqual({
         name: 'main',
         date: '2 hours ago',
         current: true,
+        upstream: 'origin/main',
       });
       expect(branches[1]).toEqual({
         name: 'feature/test',
         date: '1 day ago',
         current: false,
+        upstream: 'origin/feature/test',
       });
       expect(branches[2]).toEqual({
         name: 'develop',
         date: '3 days ago',
         current: false,
+        upstream: undefined,
       });
     });
 
@@ -90,7 +93,13 @@ describe('Git Branches', () => {
         stderr: '',
       });
       mockExecuteStreamingCommand.mockResolvedValue({
-        data: ['main|2 hours ago', '', '', 'feature/test|1 day ago', ''],
+        data: [
+          'main|2 hours ago|origin/main',
+          '',
+          '',
+          'feature/test|1 day ago|',
+          '',
+        ],
       });
 
       // Act
@@ -102,11 +111,13 @@ describe('Git Branches', () => {
         name: 'main',
         date: '2 hours ago',
         current: true,
+        upstream: 'origin/main',
       });
       expect(branches[1]).toEqual({
         name: 'feature/test',
         date: '1 day ago',
         current: false,
+        upstream: undefined,
       });
     });
 
@@ -127,8 +138,8 @@ describe('Git Branches', () => {
       });
       mockExecuteStreamingCommand.mockResolvedValue({
         data: [
-          'feature/user-123|1 hour ago',
-          'bugfix/fix-login-issue|yesterday',
+          'feature/user-123|1 hour ago|upstream/feature/user-123',
+          'bugfix/fix-login-issue|yesterday|',
         ],
       });
 
@@ -141,11 +152,13 @@ describe('Git Branches', () => {
         name: 'feature/user-123',
         date: '1 hour ago',
         current: false,
+        upstream: 'upstream/feature/user-123',
       });
       expect(branches[1]).toEqual({
         name: 'bugfix/fix-login-issue',
         date: 'yesterday',
         current: false,
+        upstream: undefined,
       });
     });
 
@@ -156,7 +169,7 @@ describe('Git Branches', () => {
         stderr: '',
       });
       mockExecuteStreamingCommand.mockResolvedValue({
-        data: ['main', 'feature/test|1 day ago', 'bugfix|today|'],
+        data: ['main', 'feature/test|1 day ago', 'bugfix|today|origin/bugfix'],
       });
 
       // Act
@@ -168,16 +181,19 @@ describe('Git Branches', () => {
         name: 'main',
         date: undefined,
         current: true,
+        upstream: undefined,
       });
       expect(branches[1]).toEqual({
         name: 'feature/test',
         date: '1 day ago',
         current: false,
+        upstream: undefined,
       });
       expect(branches[2]).toEqual({
         name: 'bugfix',
         date: 'today',
         current: false,
+        upstream: 'origin/bugfix',
       });
     });
   });

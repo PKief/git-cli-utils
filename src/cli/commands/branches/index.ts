@@ -13,6 +13,7 @@ import {
   copyBranchName,
   createBranchFrom,
   deleteBranch,
+  setUpstream,
 } from './actions/index.js';
 
 /**
@@ -51,6 +52,12 @@ function createBranchActions() {
       handler: checkoutBranchInWorktree,
     },
     {
+      key: 'upstream',
+      label: 'Set upstream remote',
+      description: 'Set or change tracking remote',
+      handler: setUpstream,
+    },
+    {
       key: 'delete',
       label: 'Delete',
       description: 'Delete branch',
@@ -71,8 +78,12 @@ export const searchBranches = async () => {
     try {
       const selectedBranch = await interactiveList<GitBranch>(
         branches,
-        (branch: GitBranch) =>
-          `${branch.date} - ${branch.name}${branch.current ? ' (current)' : ''}`,
+        (branch: GitBranch) => {
+          const tracking = branch.upstream
+            ? ` → ${branch.upstream.split('/')[0]}` // Show just remote name
+            : '';
+          return `${branch.date} - ${branch.name}${branch.current ? ' (current)' : ''}${tracking}`;
+        },
         (branch: GitBranch) => branch.name, // Only search branch names, not dates
         undefined, // No header
         createBranchActions() // Actions
