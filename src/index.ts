@@ -19,6 +19,7 @@ import {
   type GitUtilsCommand,
   showCommandSelector,
 } from './cli/ui/command-selector.js';
+import { handleErrorAndExit } from './cli/utils/exit.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packagePath = join(__dirname, '..', 'package.json');
@@ -65,7 +66,5 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error('Error:', error);
-  process.exit(1);
-});
+// Centralized error handling - all errors bubble up here
+main().catch(handleErrorAndExit);

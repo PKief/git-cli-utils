@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { AppError } from '../utils/exit.js';
 import { writeLine } from '../utils/terminal.js';
 import { yellow } from './ansi.js';
 import {
@@ -88,37 +89,26 @@ export async function showCommandSelector(
     writeLine('Select a command to run:');
     writeLine();
 
-    try {
-      const result = await selectionList<GitUtilsCommand>({
-        items: commands,
-        renderItem: (cmd) => `${cmd.name.padEnd(12)} ${cmd.description}`,
-        getSearchText: (cmd) => `${cmd.name} ${cmd.description}`,
-        actions: createCommandActions,
-        defaultActionKey: 'open',
-      });
+    const result = await selectionList<GitUtilsCommand>({
+      items: commands,
+      renderItem: (cmd) => `${cmd.name.padEnd(12)} ${cmd.description}`,
+      getSearchText: (cmd) => `${cmd.name} ${cmd.description}`,
+      actions: createCommandActions,
+      defaultActionKey: 'open',
+    });
 
-      if (!result.success && !result.action) {
-        writeLine(yellow('No command selected. Exiting.'));
-        process.exit(0);
-      }
-
-      // Check if the command requested to go back
-      if (lastCommandResult && (lastCommandResult as CommandResult).back) {
-        // Continue the loop to show command selector again
-        continue;
-      }
-
-      // Command completed normally, exit
-      break;
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine();
-        writeLine(yellow('Selection cancelled. Exiting.'));
-        process.exit(0);
-      }
-      // Re-throw other errors
-      throw error;
+    if (!result.success && !result.action) {
+      writeLine(yellow('No command selected. Exiting.'));
+      throw AppError.silent();
     }
+
+    // Check if the command requested to go back
+    if (lastCommandResult && (lastCommandResult as CommandResult).back) {
+      // Continue the loop to show command selector again
+      continue;
+    }
+
+    // Command completed normally, exit
+    break;
   }
 }

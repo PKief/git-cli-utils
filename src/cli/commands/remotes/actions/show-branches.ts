@@ -73,32 +73,23 @@ export async function showRemoteBranches(remote: GitRemote): Promise<boolean> {
       return true;
     }
 
-    try {
-      const result = await selectionList<GitRemoteBranch>({
-        items: branches,
-        renderItem: (branch) => {
-          const relativeDate = branch.lastCommitDate || 'unknown';
-          return `${relativeDate} - ${branch.name} (${branch.lastCommit})`;
-        },
-        getSearchText: (branch) => branch.name,
-        header: yellow(`Select a branch from '${remote.name}':`),
-        actions: createBranchActions(),
-      });
+    const result = await selectionList<GitRemoteBranch>({
+      items: branches,
+      renderItem: (branch) => {
+        const relativeDate = branch.lastCommitDate || 'unknown';
+        return `${relativeDate} - ${branch.name} (${branch.lastCommit})`;
+      },
+      getSearchText: (branch) => branch.name,
+      header: yellow(`Select a branch from '${remote.name}':`),
+      actions: createBranchActions(),
+    });
 
-      if (result.success) {
-        // Action has already been executed by the selection list
-        return true;
-      } else {
-        writeLine(yellow('No branch selected.'));
-        return true;
-      }
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine(yellow('Branch selection cancelled.'));
-        return true;
-      }
-      throw error;
+    if (result.success) {
+      // Action has already been executed by the selection list
+      return true;
+    } else {
+      writeLine(yellow('No branch selected.'));
+      return true;
     }
   } catch (error) {
     writeErrorLine(

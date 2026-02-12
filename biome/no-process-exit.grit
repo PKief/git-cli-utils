@@ -1,0 +1,3 @@
+`process.exit($args)` where {
+  register_diagnostic(span=$args, message="Do not use process.exit() directly. Throw AppError instead and let the centralized handler in src/index.ts handle exits.")
+}

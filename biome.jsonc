@@ -1,5 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
+  "plugins": ["./biome/no-process-exit.grit"],
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,
@@ -70,6 +71,11 @@
           }
         }
       }
+    },
+    {
+      // Allow process.exit only in the centralized exit handler
+      "includes": ["**/src/cli/utils/exit.ts", "**/src/index.ts"],
+      "plugins": []
     }
   ]
 }

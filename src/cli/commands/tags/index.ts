@@ -5,7 +5,8 @@ import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
-import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { AppError } from '../../utils/exit.js';
+import { writeLine } from '../../utils/terminal.js';
 import { getTagGlobalActions } from './global-actions/index.js';
 import { getTagItemActions } from './item-actions/index.js';
 
@@ -18,42 +19,30 @@ const searchTags = async (): Promise<void | CommandResult> => {
       return;
     }
 
-    try {
-      const result = await selectionList<GitTag>({
-        items: tags,
-        renderItem: (tag) => {
-          const hashInfo = tag.hash ? ` (${tag.hash})` : '';
-          const subjectInfo = tag.subject ? ` - ${tag.subject}` : '';
-          return `${tag.date} - ${tag.name}${hashInfo}${subjectInfo}`;
-        },
-        getSearchText: (tag) => `${tag.name} ${tag.subject} ${tag.tagger}`,
-        actions: getTagItemActions(),
-        allowBack: true,
-      });
+    const result = await selectionList<GitTag>({
+      items: tags,
+      renderItem: (tag) => {
+        const hashInfo = tag.hash ? ` (${tag.hash})` : '';
+        const subjectInfo = tag.subject ? ` - ${tag.subject}` : '';
+        return `${tag.date} - ${tag.name}${hashInfo}${subjectInfo}`;
+      },
+      getSearchText: (tag) => `${tag.name} ${tag.subject} ${tag.tagger}`,
+      actions: getTagItemActions(),
+      allowBack: true,
+    });
 
-      if (result.back) {
-        return { back: true };
-      }
+    if (result.back) {
+      return { back: true };
+    }
 
-      if (result.success && result.item) {
-        writeLine();
-        writeLine(`Selected tag: ${result.item.name}`);
-      } else {
-        writeLine(yellow('No tag selected.'));
-      }
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine(yellow('Selection cancelled.'));
-        return;
-      }
-      throw error; // Re-throw other errors
+    if (result.success && result.item) {
+      writeLine();
+      writeLine(`Selected tag: ${result.item.name}`);
+    } else {
+      writeLine(yellow('No tag selected.'));
     }
   } catch (error) {
-    writeErrorLine(
-      `Error fetching tags: ${error instanceof Error ? error.message : String(error)}`
-    );
-    process.exit(1);
+    throw AppError.fromError(error, 'Failed to fetch tags');
   }
 };
 

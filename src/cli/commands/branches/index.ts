@@ -5,7 +5,8 @@ import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
-import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { AppError } from '../../utils/exit.js';
+import { writeLine } from '../../utils/terminal.js';
 import { getBranchGlobalActions } from './global-actions/index.js';
 import { getBranchItemActions } from './item-actions/index.js';
 
@@ -18,37 +19,24 @@ export const searchBranches = async (): Promise<void | CommandResult> => {
       return;
     }
 
-    try {
-      const result = await selectionList<GitBranch>({
-        items: branches,
-        renderItem: (branch) =>
-          `${branch.date} - ${branch.name}${branch.current ? ' (current)' : ''}`,
-        getSearchText: (branch) => branch.name,
-        actions: getBranchItemActions(),
-        allowBack: true,
-      });
+    const result = await selectionList<GitBranch>({
+      items: branches,
+      renderItem: (branch) =>
+        `${branch.date} - ${branch.name}${branch.current ? ' (current)' : ''}`,
+      getSearchText: (branch) => branch.name,
+      actions: getBranchItemActions(),
+      allowBack: true,
+    });
 
-      // User pressed ESC to go back
-      if (result.back) {
-        return { back: true };
-      }
+    if (result.back) {
+      return { back: true };
+    }
 
-      if (!result.success) {
-        writeLine(yellow('No branch selected.'));
-      }
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine(yellow('Selection cancelled.'));
-        return;
-      }
-      throw error; // Re-throw other errors
+    if (!result.success) {
+      writeLine(yellow('No branch selected.'));
     }
   } catch (error) {
-    writeErrorLine(
-      `Error fetching branches: ${error instanceof Error ? error.message : String(error)}`
-    );
-    process.exit(1);
+    throw AppError.fromError(error, 'Failed to fetch branches');
   }
 };
 

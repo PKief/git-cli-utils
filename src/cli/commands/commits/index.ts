@@ -5,7 +5,8 @@ import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
-import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { AppError } from '../../utils/exit.js';
+import { writeLine } from '../../utils/terminal.js';
 import { checkoutCommitInWorktree } from '../../utils/worktree-actions.js';
 import {
   checkoutCommit,
@@ -60,50 +61,38 @@ const searchCommits = async (
       return;
     }
 
-    try {
-      const header = filePath
-        ? yellow(`Select a commit that modified: ${filePath}`)
-        : showAll
-          ? yellow('Select a commit from all branches:')
-          : yellow('Select a commit from current branch:');
+    const header = filePath
+      ? yellow(`Select a commit that modified: ${filePath}`)
+      : showAll
+        ? yellow('Select a commit from all branches:')
+        : yellow('Select a commit from current branch:');
 
-      const result = await selectionList<GitCommit>({
-        items: commits,
-        renderItem: (commit) => {
-          const tagInfo =
-            commit.tags.length > 0 ? ` [${commit.tags.join(', ')}]` : '';
-          return `${commit.date} - ${commit.subject}${tagInfo} (${commit.hash})`;
-        },
-        getSearchText: (commit) =>
-          `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`,
-        header,
-        actions: createCommitActions(),
-        allowBack: true,
-      });
+    const result = await selectionList<GitCommit>({
+      items: commits,
+      renderItem: (commit) => {
+        const tagInfo =
+          commit.tags.length > 0 ? ` [${commit.tags.join(', ')}]` : '';
+        return `${commit.date} - ${commit.subject}${tagInfo} (${commit.hash})`;
+      },
+      getSearchText: (commit) =>
+        `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`,
+      header,
+      actions: createCommitActions(),
+      allowBack: true,
+    });
 
-      if (result.back) {
-        return { back: true };
-      }
+    if (result.back) {
+      return { back: true };
+    }
 
-      if (result.success && result.item) {
-        writeLine();
-        writeLine(`Selected commit: ${result.item.hash}`);
-      } else {
-        writeLine(yellow('No commit selected.'));
-      }
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine(yellow('Selection cancelled.'));
-        return;
-      }
-      throw error; // Re-throw other errors
+    if (result.success && result.item) {
+      writeLine();
+      writeLine(`Selected commit: ${result.item.hash}`);
+    } else {
+      writeLine(yellow('No commit selected.'));
     }
   } catch (error) {
-    writeErrorLine(
-      `Error fetching commits: ${error instanceof Error ? error.message : String(error)}`
-    );
-    process.exit(1);
+    throw AppError.fromError(error, 'Failed to fetch commits');
   }
 };
 
@@ -117,7 +106,7 @@ export function registerCommand(program: Command): CommandModule {
     const filePath =
       typeof args[0] === 'string' && args[0] ? args[0] : undefined;
     // Options is always at index 1 (after the optional argument)
-    const options = args[1] as { all?: boolean };
+    const options = args[1] as { all?: boolean } | undefined;
     const showAll = options?.all ?? false;
     return searchCommits(filePath, showAll);
   };
@@ -127,22 +116,21 @@ export function registerCommand(program: Command): CommandModule {
     await commitsCommand(...args);
   };
 
-  // Register the command with Commander
-  const _cmd = program
-    .command('commits')
-    .description('Browse and select commits from current branch')
-    .argument('[file]', 'file path to filter commits (optional)')
-    .option('--all', 'show commits from all branches')
+  const cmd = new Command('commits')
+    .description('Interactive commit selection with fuzzy search')
+    .argument('[file]', 'Show commits that modified this file')
+    .option('-a, --all', 'Show commits from all branches')
     .action(wrappedAction);
 
-  // Return the CommandModule format for the command selector
+  program.addCommand(cmd);
+
   return {
     name: 'commits',
-    description: 'Browse and select commits from current branch',
+    description: 'Interactive commit selection with fuzzy search',
     action: commitsCommand,
     argument: {
       name: '[file]',
-      description: 'file path to filter commits (optional)',
+      description: 'Show commits that modified this file',
     },
   };
 }

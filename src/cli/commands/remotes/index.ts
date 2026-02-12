@@ -6,7 +6,8 @@ import { selectionList } from '../../ui/selection-list/index.js';
 import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
-import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { AppError } from '../../utils/exit.js';
+import { writeLine } from '../../utils/terminal.js';
 import {
   addRemote,
   copyRemoteName,
@@ -105,35 +106,23 @@ const searchRemotes = async (): Promise<void | CommandResult> => {
       remotes.push(dummyRemote);
     }
 
-    try {
-      const result = await selectionList<GitRemote>({
-        items: remotes,
-        renderItem: (remote) => `${remote.name} - ${remote.url}`,
-        getSearchText: (remote) => remote.name,
-        actions: hasRemotes ? createRemoteActions() : createAddOnlyActions(),
-        allowBack: true,
-      });
+    const result = await selectionList<GitRemote>({
+      items: remotes,
+      renderItem: (remote) => `${remote.name} - ${remote.url}`,
+      getSearchText: (remote) => remote.name,
+      actions: hasRemotes ? createRemoteActions() : createAddOnlyActions(),
+      allowBack: true,
+    });
 
-      if (result.back) {
-        return { back: true };
-      }
+    if (result.back) {
+      return { back: true };
+    }
 
-      if (!result.success) {
-        writeLine(yellow('No remote selected.'));
-      }
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine(yellow('Selection cancelled.'));
-        return;
-      }
-      throw error; // Re-throw other errors
+    if (!result.success) {
+      writeLine(yellow('No remote selected.'));
     }
   } catch (error) {
-    writeErrorLine(
-      `Error fetching remotes: ${error instanceof Error ? error.message : String(error)}`
-    );
-    process.exit(1);
+    throw AppError.fromError(error, 'Failed to fetch remotes');
   }
 };
 

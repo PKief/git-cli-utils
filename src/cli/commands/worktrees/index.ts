@@ -6,7 +6,8 @@ import { selectionList } from '../../ui/selection-list/index.js';
 import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
-import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { AppError } from '../../utils/exit.js';
+import { writeLine } from '../../utils/terminal.js';
 import {
   openWorktreeInEditor,
   removeWorktree,
@@ -71,36 +72,24 @@ const manageWorktrees = async (): Promise<void | CommandResult> => {
       return;
     }
 
-    try {
-      const result = await selectionList<GitWorktree>({
-        items: worktrees,
-        renderItem: formatWorktreeDisplay,
-        getSearchText: (worktree) => `${worktree.branch} ${worktree.path}`,
-        header: yellow('Select a worktree:'),
-        actions: createWorktreeActions(),
-        allowBack: true,
-      });
+    const result = await selectionList<GitWorktree>({
+      items: worktrees,
+      renderItem: formatWorktreeDisplay,
+      getSearchText: (worktree) => `${worktree.branch} ${worktree.path}`,
+      header: yellow('Select a worktree:'),
+      actions: createWorktreeActions(),
+      allowBack: true,
+    });
 
-      if (result.back) {
-        return { back: true };
-      }
+    if (result.back) {
+      return { back: true };
+    }
 
-      if (!result.success) {
-        writeLine(yellow('No worktree selected.'));
-      }
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine(yellow('Worktree selection cancelled.'));
-        return;
-      }
-      throw error; // Re-throw other errors
+    if (!result.success) {
+      writeLine(yellow('No worktree selected.'));
     }
   } catch (error) {
-    writeErrorLine(
-      `Error managing worktrees: ${error instanceof Error ? error.message : String(error)}`
-    );
-    process.exit(1);
+    throw AppError.fromError(error, 'Failed to manage worktrees');
   }
 };
 

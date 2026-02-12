@@ -9,6 +9,7 @@
  */
 
 import * as readline from 'readline';
+import { AppError } from '../../utils/exit.js';
 import { clearScreen, write, writeLine } from '../../utils/terminal.js';
 import { blue, yellow } from '../ansi.js';
 import {
@@ -64,25 +65,20 @@ async function executeAction<T>(
   action: Action<T>,
   item: T | null
 ): Promise<boolean> {
-  try {
-    let result: boolean | void;
+  let result: boolean | void;
 
-    if (action.type === 'global') {
-      result = await action.handler();
-    } else {
-      // Item action - requires an item
-      if (item === null) {
-        return false;
-      }
-      result = await action.handler(item);
+  if (action.type === 'global') {
+    result = await action.handler();
+  } else {
+    // Item action - requires an item
+    if (item === null) {
+      return false;
     }
-
-    // If handler returned void/undefined, treat as success
-    return result !== false;
-  } catch (error) {
-    console.error('Action failed:', error);
-    return false;
+    result = await action.handler(item);
   }
+
+  // If handler returned void/undefined, treat as success
+  return result !== false;
 }
 
 /**
@@ -282,14 +278,17 @@ export function selectionList<T>(
         return;
       }
 
-      // Execute the action
-      const success = await executeAction(selectedAction, selectedItem);
-
-      resolve({
-        item: selectedItem,
-        action: selectedAction,
-        success,
-      });
+      // Execute the action - propagate errors (like AppError.cancelled)
+      try {
+        const success = await executeAction(selectedAction, selectedItem);
+        resolve({
+          item: selectedItem,
+          action: selectedAction,
+          success,
+        });
+      } catch (error) {
+        reject(error);
+      }
     };
 
     // Handle keypress events
@@ -300,8 +299,8 @@ export function selectionList<T>(
       switch (keyEvent.type) {
         case 'cancel':
           cleanup();
-          reject(new Error('Selection cancelled'));
-          break;
+          reject(AppError.cancelled('Selection cancelled.'));
+          return;
 
         case 'escape':
           // If back is allowed, go back

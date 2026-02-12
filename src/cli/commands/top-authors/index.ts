@@ -7,12 +7,13 @@ import {
   getLastAuthor,
 } from '../../../core/git/authors.js';
 import { GitOperations } from '../../../core/git/operations.js';
-import { blue, gray, green, red, yellow } from '../../ui/ansi.js';
+import { blue, gray, green, yellow } from '../../ui/ansi.js';
 import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
-import { writeErrorLine, writeLine } from '../../utils/terminal.js';
+import { AppError } from '../../utils/exit.js';
+import { writeLine } from '../../utils/terminal.js';
 
 /**
  * Format and display a simple timeline showing years of activity
@@ -94,76 +95,58 @@ const topAuthors = async (filePath?: string): Promise<void | CommandResult> => {
     }
 
     // Create a scrollable list with persistent header
-    try {
-      const result = await selectionList<FileAuthor>({
-        items: authors,
-        renderItem: (author) => {
-          const commits = author.commitCount === 1 ? 'commit' : 'commits';
-          const lastCommitInfo = author.lastCommitHash
-            ? ` | Last: #${author.lastCommitHash} ${author.lastCommitDate}`
-            : '';
-          return `${author.name} (${author.commitCount} ${commits})${lastCommitInfo}`;
-        },
-        getSearchText: (author) => author.name,
-        header,
-        allowBack: true,
-      });
+    const result = await selectionList<FileAuthor>({
+      items: authors,
+      renderItem: (author) => {
+        const commits = author.commitCount === 1 ? 'commit' : 'commits';
+        const lastCommitInfo = author.lastCommitHash
+          ? ` | Last: #${author.lastCommitHash} ${author.lastCommitDate}`
+          : '';
+        return `${author.name} (${author.commitCount} ${commits})${lastCommitInfo}`;
+      },
+      getSearchText: (author) => author.name,
+      header,
+      allowBack: true,
+    });
 
-      if (result.back) {
-        return { back: true };
-      }
+    if (result.back) {
+      return { back: true };
+    }
 
-      if (result.success && result.item) {
-        const selectedAuthor = result.item;
-        writeLine();
-        writeLine(`${selectedAuthor.name} <${selectedAuthor.email}>`);
-        writeLine(
-          `${selectedAuthor.commitCount} commits | Last: #${selectedAuthor.lastCommitHash} on ${selectedAuthor.lastCommitDate}`
+    if (result.success && result.item) {
+      const selectedAuthor = result.item;
+      writeLine();
+      writeLine(`${selectedAuthor.name} <${selectedAuthor.email}>`);
+      writeLine(
+        `${selectedAuthor.commitCount} commits | Last: #${selectedAuthor.lastCommitHash} on ${selectedAuthor.lastCommitDate}`
+      );
+
+      // Show the timeline
+      try {
+        const timeline = await getAuthorTimeline(
+          selectedAuthor.email,
+          filePath
         );
-
-        // Show the timeline
-        try {
-          const timeline = await getAuthorTimeline(
-            selectedAuthor.email,
-            filePath
-          );
-          displayTimeline(timeline);
-        } catch {
-          // Don't fail the entire command if timeline fails
-          writeLine(yellow('Could not generate timeline data.'));
-        }
-
-        try {
-          const clipboardResult = await GitOperations.copyToClipboard(
-            selectedAuthor.name
-          );
-          writeLine(green(`✓ ${clipboardResult.message}`));
-        } catch (error) {
-          writeErrorLine(
-            red(
-              `Error copying to clipboard: ${error instanceof Error ? error.message : String(error)}`
-            )
-          );
-          writeLine(yellow(`Author name: ${selectedAuthor.name}`));
-        }
-      } else {
-        writeLine(yellow('No author selected.'));
+        displayTimeline(timeline);
+      } catch {
+        // Don't fail the entire command if timeline fails
+        writeLine(yellow('Could not generate timeline data.'));
       }
-    } catch (error) {
-      // Handle user cancellation gracefully
-      if (error instanceof Error && error.message === 'Selection cancelled') {
-        writeLine(yellow('Selection cancelled.'));
-        return;
+
+      try {
+        const clipboardResult = await GitOperations.copyToClipboard(
+          selectedAuthor.name
+        );
+        writeLine(green(`✓ ${clipboardResult.message}`));
+      } catch {
+        // Clipboard may not be available in all environments
+        writeLine(yellow(`Author name: ${selectedAuthor.name}`));
       }
-      throw error; // Re-throw other errors
+    } else {
+      writeLine(yellow('No author selected.'));
     }
   } catch (error) {
-    writeErrorLine(
-      red(
-        `Error fetching authors: ${error instanceof Error ? error.message : String(error)}`
-      )
-    );
-    process.exit(1);
+    throw AppError.fromError(error, 'Failed to fetch authors');
   }
 };
 
@@ -178,12 +161,11 @@ export function registerCommand(program: Command): CommandModule {
 
   return createCommand(program, {
     name: 'authors',
-    description:
-      'Show top contributors by commit count, optionally for a specific file',
+    description: 'Show top contributors by commit count',
     action: authorsCommand,
     argument: {
       name: '[file]',
-      description: 'file path to analyze (optional)',
+      description: 'Show authors for a specific file',
     },
   });
 }
