@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { GitBranch, getGitBranches } from '../../../core/git/branches.js';
 import { yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
@@ -8,13 +9,13 @@ import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { getBranchGlobalActions } from './global-actions/index.js';
 import { getBranchItemActions } from './item-actions/index.js';
 
-export const searchBranches = async () => {
+export const searchBranches = async (): Promise<void | CommandResult> => {
   try {
     const branches = await getGitBranches();
 
     if (branches.length === 0) {
       writeLine(yellow('No branches found!'));
-      process.exit(0);
+      return;
     }
 
     try {
@@ -24,20 +25,22 @@ export const searchBranches = async () => {
           `${branch.date} - ${branch.name}${branch.current ? ' (current)' : ''}`,
         getSearchText: (branch) => branch.name,
         actions: getBranchItemActions(),
+        allowBack: true,
       });
 
-      if (result.success) {
-        // Action has already been executed by the selection list
-        process.exit(0);
-      } else {
+      // User pressed ESC to go back
+      if (result.back) {
+        return { back: true };
+      }
+
+      if (!result.success) {
         writeLine(yellow('No branch selected.'));
-        process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
         writeLine(yellow('Selection cancelled.'));
-        process.exit(0);
+        return;
       }
       throw error; // Re-throw other errors
     }

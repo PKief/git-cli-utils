@@ -67,6 +67,9 @@ export interface SelectionListConfig<T> {
 
   /** Key of the action to select by default */
   defaultActionKey?: string;
+
+  /** Allow navigating back with ESC when search is empty (default: false) */
+  allowBack?: boolean;
 }
 
 /**
@@ -81,6 +84,9 @@ export interface SelectionResult<T> {
 
   /** Whether the operation succeeded */
   success: boolean;
+
+  /** Whether the user requested to go back (ESC with empty search) */
+  back?: boolean;
 }
 
 /**

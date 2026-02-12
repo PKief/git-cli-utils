@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { GitCommit, getGitCommits } from '../../../core/git/commits.js';
 import { yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
@@ -44,7 +45,10 @@ function createCommitActions() {
   ]);
 }
 
-const searchCommits = async (filePath?: string, showAll = false) => {
+const searchCommits = async (
+  filePath?: string,
+  showAll = false
+): Promise<void | CommandResult> => {
   try {
     const commits = await getGitCommits(filePath, showAll);
 
@@ -53,7 +57,7 @@ const searchCommits = async (filePath?: string, showAll = false) => {
         ? `No commits found for file: ${filePath}`
         : 'No commits found!';
       writeLine(yellow(message));
-      process.exit(0);
+      return;
     }
 
     try {
@@ -74,22 +78,24 @@ const searchCommits = async (filePath?: string, showAll = false) => {
           `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`,
         header,
         actions: createCommitActions(),
+        allowBack: true,
       });
+
+      if (result.back) {
+        return { back: true };
+      }
 
       if (result.success && result.item) {
         writeLine();
         writeLine(`Selected commit: ${result.item.hash}`);
-        // Action has already been executed by the selection list
-        process.exit(0);
       } else {
         writeLine(yellow('No commit selected.'));
-        process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
         writeLine(yellow('Selection cancelled.'));
-        process.exit(0);
+        return;
       }
       throw error; // Re-throw other errors
     }
@@ -113,7 +119,12 @@ export function registerCommand(program: Command): CommandModule {
     // Options is always at index 1 (after the optional argument)
     const options = args[1] as { all?: boolean };
     const showAll = options?.all ?? false;
-    await searchCommits(filePath, showAll);
+    return searchCommits(filePath, showAll);
+  };
+
+  // Wrap action for Commander.js compatibility (strip CommandResult)
+  const wrappedAction = async (...args: unknown[]): Promise<void> => {
+    await commitsCommand(...args);
   };
 
   // Register the command with Commander
@@ -122,7 +133,7 @@ export function registerCommand(program: Command): CommandModule {
     .description('Browse and select commits from current branch')
     .argument('[file]', 'file path to filter commits (optional)')
     .option('--all', 'show commits from all branches')
-    .action(commitsCommand);
+    .action(wrappedAction);
 
   // Return the CommandModule format for the command selector
   return {

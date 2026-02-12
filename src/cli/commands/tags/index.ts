@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { GitTag, getGitTags } from '../../../core/git/tags.js';
 import { yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
@@ -8,13 +9,13 @@ import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { getTagGlobalActions } from './global-actions/index.js';
 import { getTagItemActions } from './item-actions/index.js';
 
-const searchTags = async () => {
+const searchTags = async (): Promise<void | CommandResult> => {
   try {
     const tags = await getGitTags();
 
     if (tags.length === 0) {
       writeLine(yellow('No tags found!'));
-      process.exit(0);
+      return;
     }
 
     try {
@@ -27,22 +28,24 @@ const searchTags = async () => {
         },
         getSearchText: (tag) => `${tag.name} ${tag.subject} ${tag.tagger}`,
         actions: getTagItemActions(),
+        allowBack: true,
       });
+
+      if (result.back) {
+        return { back: true };
+      }
 
       if (result.success && result.item) {
         writeLine();
         writeLine(`Selected tag: ${result.item.name}`);
-        // Action has already been executed by the selection list
-        process.exit(0);
       } else {
         writeLine(yellow('No tag selected.'));
-        process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
         writeLine(yellow('Selection cancelled.'));
-        process.exit(0);
+        return;
       }
       throw error; // Re-throw other errors
     }

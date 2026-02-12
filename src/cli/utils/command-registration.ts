@@ -1,10 +1,10 @@
 import { Command } from 'commander';
-import type { CommandAction } from '../ui/command-selector.js';
+import type { CommandAction, CommandResult } from '../ui/command-selector.js';
 
 export interface CommandModule {
   name: string;
   description: string;
-  action: (...args: unknown[]) => Promise<void>;
+  action: (...args: unknown[]) => Promise<void | CommandResult>;
   argument?: {
     name: string;
     description: string;
@@ -25,7 +25,7 @@ export type CommandRegistration = (program: Command) => CommandModule;
 export interface CommandConfig {
   name: string;
   description: string;
-  action: (...args: unknown[]) => Promise<void>;
+  action: (...args: unknown[]) => Promise<void | CommandResult>;
   argument?: {
     name: string;
     description: string;
@@ -70,10 +70,15 @@ export function createCommand(
     ? `${config.name} ${config.argument.name}`
     : config.name;
 
+  // Wrap action to strip CommandResult for Commander.js compatibility
+  const wrappedAction = async (...args: unknown[]): Promise<void> => {
+    await config.action(...args);
+  };
+
   program
     .command(commandName)
     .description(config.description)
-    .action(config.action);
+    .action(wrappedAction);
 
   return {
     name: config.name,
@@ -125,10 +130,15 @@ export function createCommandWithSubcommands(
   program: Command,
   config: CommandConfig & { subcommands?: SubcommandConfig[] }
 ): CommandModule {
+  // Wrap action to strip CommandResult for Commander.js compatibility
+  const wrappedAction = async (...args: unknown[]): Promise<void> => {
+    await config.action(...args);
+  };
+
   const command = program
     .command(config.name)
     .description(config.description)
-    .action(config.action);
+    .action(wrappedAction);
 
   // Add subcommands if provided
   config.subcommands?.forEach((sub) => {

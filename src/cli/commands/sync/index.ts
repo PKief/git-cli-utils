@@ -6,6 +6,7 @@ import {
   getRemoteBranches,
 } from '../../../core/git/remotes.js';
 import { yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
@@ -15,7 +16,7 @@ import { syncFromRemoteBranch } from './actions/sync.js';
 /**
  * Main sync command that allows users to select a remote and branch to sync from
  */
-const syncCommand = async () => {
+const syncCommand = async (): Promise<void | CommandResult> => {
   try {
     // Step 1: Get list of available remotes
     const remotes = await getGitRemotes();
@@ -26,7 +27,7 @@ const syncCommand = async () => {
           'No remotes found! Make sure you have configured remote repositories.'
         )
       );
-      process.exit(0);
+      return;
     }
 
     // Step 2: Let user select a remote
@@ -35,11 +36,16 @@ const syncCommand = async () => {
       renderItem: (remote) => `${remote.name} - ${remote.url}`,
       getSearchText: (remote) => remote.name,
       header: yellow('Select a remote to fetch from:'),
+      allowBack: true,
     });
+
+    if (remoteResult.back) {
+      return { back: true };
+    }
 
     if (!remoteResult.success || !remoteResult.item) {
       writeLine(yellow('No remote selected.'));
-      process.exit(0);
+      return;
     }
 
     const selectedRemote = remoteResult.item;
@@ -51,7 +57,7 @@ const syncCommand = async () => {
       writeLine(
         yellow(`No branches found on remote '${selectedRemote.name}'!`)
       );
-      process.exit(0);
+      return;
     }
 
     // Step 4: Let user select a branch from the remote
@@ -60,11 +66,17 @@ const syncCommand = async () => {
       renderItem: (branch) => `${branch.name} (${branch.lastCommit})`,
       getSearchText: (branch) => branch.name,
       header: yellow(`Select a branch from '${selectedRemote.name}' to sync:`),
+      allowBack: true,
     });
+
+    if (branchResult.back) {
+      // Go back to remote selection - for now just return to main menu
+      return { back: true };
+    }
 
     if (!branchResult.success || !branchResult.item) {
       writeLine(yellow('No branch selected.'));
-      process.exit(0);
+      return;
     }
 
     const selectedBranch = branchResult.item;
@@ -75,11 +87,10 @@ const syncCommand = async () => {
     writeLine(
       `Successfully synced from ${selectedRemote.name}/${selectedBranch.name}`
     );
-    process.exit(0);
   } catch (error) {
     if (error instanceof Error && error.message === 'Selection cancelled') {
       writeLine(yellow('Sync cancelled.'));
-      process.exit(0);
+      return;
     }
 
     writeErrorLine(

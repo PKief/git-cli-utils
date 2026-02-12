@@ -136,6 +136,7 @@ export function selectionList<T>(
       header,
       actions: actionProvider,
       defaultActionKey,
+      allowBack = false,
     } = config;
 
     // Handle empty items
@@ -200,8 +201,9 @@ export function selectionList<T>(
 
       // Search line
       writeLine(`${blue('Search:')} ${state.searchTerm || '(type to search)'}`);
+      const escHint = allowBack ? 'Esc to go back' : 'Esc to clear search';
       writeLine(
-        'Use arrow keys to navigate, Enter to select, Esc to clear search, Ctrl+C to exit'
+        `Use arrow keys to navigate, Enter to select, ${escHint}, Ctrl+C to exit`
       );
       writeLine();
 
@@ -243,10 +245,10 @@ export function selectionList<T>(
 
     // Cleanup function
     const cleanup = () => {
+      process.stdin.removeListener('keypress', handleKeypress);
       if (typeof process.stdin.setRawMode === 'function') {
         process.stdin.setRawMode(false);
       }
-      process.stdin.removeAllListeners('keypress');
     };
 
     // Handle Enter - execute action and resolve
@@ -302,6 +304,18 @@ export function selectionList<T>(
           break;
 
         case 'escape':
+          // If back is allowed, go back
+          if (allowBack) {
+            cleanup();
+            resolve({
+              item: null,
+              action: null,
+              success: false,
+              back: true,
+            });
+            return;
+          }
+          // Otherwise, clear search
           state.searchTerm = '';
           filterItems();
           render();

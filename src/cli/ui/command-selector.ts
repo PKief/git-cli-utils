@@ -14,12 +14,20 @@ import {
 export type CommandAction = GlobalAction;
 
 /**
+ * Result from a command action indicating navigation intent
+ */
+export interface CommandResult {
+  /** Whether to go back to the command selector */
+  back?: boolean;
+}
+
+/**
  * Interface for commands available in git-utils
  */
 export interface GitUtilsCommand {
   name: string;
   description: string;
-  action: (...args: string[]) => Promise<void>;
+  action: (...args: unknown[]) => Promise<void | CommandResult>;
   argument?: {
     name: string;
     description: string;
@@ -30,9 +38,14 @@ export interface GitUtilsCommand {
   commandActions?: CommandAction[];
 }
 
+// Store the last command result for back navigation detection
+let lastCommandResult: CommandResult | undefined = undefined;
+
 /**
  * Creates actions for a command in the command selector
  * Includes a default "open" action plus any command-specific actions
+ *
+ * @param cmd - The command to create actions for
  */
 function createCommandActions(
   cmd: GitUtilsCommand | null
@@ -48,10 +61,8 @@ function createCommandActions(
     label: 'Open',
     description: `Open ${cmd.name}`,
     handler: async () => {
-      writeLine();
-      writeLine(yellow(`Executing: ${cmd.name}`));
-      writeLine();
-      await cmd.action();
+      const result = await cmd.action();
+      lastCommandResult = result ?? undefined;
       return true;
     },
   };
@@ -65,34 +76,49 @@ function createCommandActions(
 /**
  * Interactive command selector - the main landing page for git-utils
  * Shows a searchable list of available commands with actions
+ * Loops back when a command returns { back: true }
  */
 export async function showCommandSelector(
   commands: GitUtilsCommand[]
 ): Promise<void> {
-  writeLine('Select a command to run:');
-  writeLine();
+  while (true) {
+    // Reset last command result
+    lastCommandResult = undefined;
 
-  try {
-    const result = await selectionList<GitUtilsCommand>({
-      items: commands,
-      renderItem: (cmd) => `${cmd.name.padEnd(12)} ${cmd.description}`,
-      getSearchText: (cmd) => `${cmd.name} ${cmd.description}`,
-      actions: createCommandActions,
-      defaultActionKey: 'open',
-    });
+    writeLine('Select a command to run:');
+    writeLine();
 
-    if (!result.success && !result.action) {
-      writeLine(yellow('No command selected. Exiting.'));
-      process.exit(0);
+    try {
+      const result = await selectionList<GitUtilsCommand>({
+        items: commands,
+        renderItem: (cmd) => `${cmd.name.padEnd(12)} ${cmd.description}`,
+        getSearchText: (cmd) => `${cmd.name} ${cmd.description}`,
+        actions: createCommandActions,
+        defaultActionKey: 'open',
+      });
+
+      if (!result.success && !result.action) {
+        writeLine(yellow('No command selected. Exiting.'));
+        process.exit(0);
+      }
+
+      // Check if the command requested to go back
+      if (lastCommandResult && (lastCommandResult as CommandResult).back) {
+        // Continue the loop to show command selector again
+        continue;
+      }
+
+      // Command completed normally, exit
+      break;
+    } catch (error) {
+      // Handle user cancellation gracefully
+      if (error instanceof Error && error.message === 'Selection cancelled') {
+        writeLine();
+        writeLine(yellow('Selection cancelled. Exiting.'));
+        process.exit(0);
+      }
+      // Re-throw other errors
+      throw error;
     }
-  } catch (error) {
-    // Handle user cancellation gracefully
-    if (error instanceof Error && error.message === 'Selection cancelled') {
-      writeLine();
-      writeLine(yellow('Selection cancelled. Exiting.'));
-      process.exit(0);
-    }
-    // Re-throw other errors
-    throw error;
   }
 }

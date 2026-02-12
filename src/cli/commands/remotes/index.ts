@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { GitRemote, getGitRemotes } from '../../../core/git/remotes.js';
 import { yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
@@ -84,7 +85,7 @@ function createAddOnlyActions() {
   ]);
 }
 
-const searchRemotes = async () => {
+const searchRemotes = async (): Promise<void | CommandResult> => {
   try {
     const remotes = await getGitRemotes();
     const hasRemotes = remotes.length > 0;
@@ -110,21 +111,21 @@ const searchRemotes = async () => {
         renderItem: (remote) => `${remote.name} - ${remote.url}`,
         getSearchText: (remote) => remote.name,
         actions: hasRemotes ? createRemoteActions() : createAddOnlyActions(),
+        allowBack: true,
       });
 
-      if (result.success) {
-        // Action has already been executed by the selection list
-        // and provided its own success message
-        process.exit(0);
-      } else {
+      if (result.back) {
+        return { back: true };
+      }
+
+      if (!result.success) {
         writeLine(yellow('No remote selected.'));
-        process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
         writeLine(yellow('Selection cancelled.'));
-        process.exit(0);
+        return;
       }
       throw error; // Re-throw other errors
     }

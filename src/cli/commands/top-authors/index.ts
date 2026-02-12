@@ -8,6 +8,7 @@ import {
 } from '../../../core/git/authors.js';
 import { GitOperations } from '../../../core/git/operations.js';
 import { blue, gray, green, red, yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
@@ -63,14 +64,14 @@ const displayTimeline = (timeline: AuthorTimeline) => {
   }
 };
 
-const topAuthors = async (filePath?: string) => {
+const topAuthors = async (filePath?: string): Promise<void | CommandResult> => {
   try {
     // Get authors sorted by commit count
     const authors = await getFileAuthors(filePath);
 
     if (authors.length === 0) {
       writeLine(yellow('No authors found!'));
-      process.exit(0);
+      return;
     }
 
     // Prepare header with file context if provided
@@ -105,7 +106,12 @@ const topAuthors = async (filePath?: string) => {
         },
         getSearchText: (author) => author.name,
         header,
+        allowBack: true,
       });
+
+      if (result.back) {
+        return { back: true };
+      }
 
       if (result.success && result.item) {
         const selectedAuthor = result.item;
@@ -132,7 +138,6 @@ const topAuthors = async (filePath?: string) => {
             selectedAuthor.name
           );
           writeLine(green(`✓ ${clipboardResult.message}`));
-          process.exit(0);
         } catch (error) {
           writeErrorLine(
             red(
@@ -140,19 +145,15 @@ const topAuthors = async (filePath?: string) => {
             )
           );
           writeLine(yellow(`Author name: ${selectedAuthor.name}`));
-          // In CI/non-interactive environments, don't fail the entire command just because clipboard failed
-          const isCI = process.env.CI || process.env.GITHUB_ACTIONS;
-          process.exit(isCI ? 0 : 1);
         }
       } else {
         writeLine(yellow('No author selected.'));
-        process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
         writeLine(yellow('Selection cancelled.'));
-        process.exit(0);
+        return;
       }
       throw error; // Re-throw other errors
     }
@@ -172,7 +173,7 @@ const topAuthors = async (filePath?: string) => {
 export function registerCommand(program: Command): CommandModule {
   const authorsCommand = async (...args: unknown[]) => {
     const file = args[0] as string | undefined;
-    await topAuthors(file);
+    return topAuthors(file);
   };
 
   return createCommand(program, {

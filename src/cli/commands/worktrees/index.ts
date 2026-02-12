@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { GitWorktree, getGitWorktrees } from '../../../core/git/worktrees.js';
 import { yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
@@ -50,7 +51,7 @@ function formatWorktreeDisplay(worktree: GitWorktree): string {
 /**
  * Main worktrees management command
  */
-const manageWorktrees = async () => {
+const manageWorktrees = async (): Promise<void | CommandResult> => {
   try {
     const worktrees = await getGitWorktrees();
 
@@ -67,7 +68,7 @@ const manageWorktrees = async () => {
       writeLine(
         '  - git-utils remotes → show branches → "Checkout in worktree"'
       );
-      process.exit(0);
+      return;
     }
 
     try {
@@ -77,20 +78,21 @@ const manageWorktrees = async () => {
         getSearchText: (worktree) => `${worktree.branch} ${worktree.path}`,
         header: yellow('Select a worktree:'),
         actions: createWorktreeActions(),
+        allowBack: true,
       });
 
-      if (result.success) {
-        // Action has already been executed by the selection list
-        process.exit(0);
-      } else {
+      if (result.back) {
+        return { back: true };
+      }
+
+      if (!result.success) {
         writeLine(yellow('No worktree selected.'));
-        process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
         writeLine(yellow('Worktree selection cancelled.'));
-        process.exit(0);
+        return;
       }
       throw error; // Re-throw other errors
     }

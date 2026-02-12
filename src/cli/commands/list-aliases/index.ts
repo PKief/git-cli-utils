@@ -1,12 +1,13 @@
 import { Command } from 'commander';
 import { type GitAlias, getGitAliases } from '../../../core/git/aliases.js';
 import { green, red, yellow } from '../../ui/ansi.js';
+import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeLine } from '../../utils/terminal.js';
 
-const listAliases = async (): Promise<void> => {
+const listAliases = async (): Promise<void | CommandResult> => {
   try {
     const aliases = await getGitAliases();
 
@@ -31,21 +32,22 @@ const listAliases = async (): Promise<void> => {
           `git ${alias.name.padEnd(12)} → ${alias.command}`,
         getSearchText: (alias) => `${alias.name} ${alias.command}`,
         actions,
+        allowBack: true,
       });
 
-      if (result.success) {
-        // action handlers already perform work and print output. Exit cleanly.
-        process.exit(0);
-      } else {
+      if (result.back) {
+        return { back: true };
+      }
+
+      if (!result.success) {
         writeLine(yellow('No alias selected.'));
-        process.exit(0);
       }
     } catch (error) {
       // Handle user cancellation gracefully
       if (error instanceof Error && error.message === 'Selection cancelled') {
         writeLine();
         writeLine(yellow('Selection cancelled.'));
-        process.exit(0);
+        return;
       }
       throw error; // Re-throw other errors
     }
