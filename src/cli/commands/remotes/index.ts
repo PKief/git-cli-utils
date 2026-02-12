@@ -9,7 +9,6 @@ import { createCommand } from '../../utils/command-registration.js';
 import { AppError } from '../../utils/exit.js';
 import { writeLine } from '../../utils/terminal.js';
 import {
-  addRemote,
   copyRemoteName,
   deleteRemote,
   renameRemote,
@@ -17,6 +16,7 @@ import {
   setRemoteUrl,
   showRemoteBranches,
 } from './actions/index.js';
+import { getRemoteGlobalActions } from './global-actions/index.js';
 
 /**
  * Creates actions available for remote items
@@ -54,14 +54,6 @@ function createRemoteActions() {
       handler: setRemoteUrl,
     },
     {
-      key: 'add',
-      label: 'Add remote',
-      description: 'Add a new remote repository',
-      handler: async () => {
-        return await addRemote();
-      },
-    },
-    {
       key: 'delete',
       label: 'Delete',
       description: 'Delete this remote',
@@ -70,47 +62,20 @@ function createRemoteActions() {
   ]);
 }
 
-/**
- * Creates actions available when no remotes exist
- */
-function createAddOnlyActions() {
-  return createItemActions([
-    {
-      key: 'add',
-      label: 'Add remote',
-      description: 'Add a new remote repository',
-      handler: async () => {
-        return await addRemote();
-      },
-    },
-  ]);
-}
-
 const searchRemotes = async (): Promise<void | CommandResult> => {
   try {
     const remotes = await getGitRemotes();
-    const hasRemotes = remotes.length > 0;
 
-    if (!hasRemotes) {
-      writeLine(
-        yellow(
-          'No remotes found! Use the "Add remote" action to add your first remote.'
-        )
-      );
-      // Create a dummy remote for the add action
-      const dummyRemote: GitRemote = {
-        name: 'No remotes available',
-        url: 'Use "Add remote" action to create one',
-        type: 'fetch',
-      };
-      remotes.push(dummyRemote);
+    if (remotes.length === 0) {
+      writeLine(yellow('No remotes found!'));
+      return;
     }
 
     const result = await selectionList<GitRemote>({
       items: remotes,
       renderItem: (remote) => `${remote.name} - ${remote.url}`,
       getSearchText: (remote) => remote.name,
-      actions: hasRemotes ? createRemoteActions() : createAddOnlyActions(),
+      actions: createRemoteActions(),
       allowBack: true,
     });
 
@@ -134,5 +99,6 @@ export function registerCommand(program: Command): CommandModule {
     name: 'remotes',
     description: 'Interactive remote management with actions',
     action: searchRemotes,
+    commandActions: getRemoteGlobalActions(),
   });
 }
