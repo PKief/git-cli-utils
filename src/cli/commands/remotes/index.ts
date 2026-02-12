@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { GitRemote, getGitRemotes } from '../../../core/git/remotes.js';
 import { yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
-import { createActions } from '../../utils/action-helpers.js';
+import { selectionList } from '../../ui/selection-list/index.js';
+import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
@@ -20,7 +20,7 @@ import {
  * Creates actions available for remote items
  */
 function createRemoteActions() {
-  return createActions([
+  return createItemActions([
     {
       key: 'branches',
       label: 'Show branches',
@@ -72,7 +72,7 @@ function createRemoteActions() {
  * Creates actions available when no remotes exist
  */
 function createAddOnlyActions() {
-  return createActions([
+  return createItemActions([
     {
       key: 'add',
       label: 'Add remote',
@@ -105,16 +105,15 @@ const searchRemotes = async () => {
     }
 
     try {
-      const selectedRemote = await interactiveList<GitRemote>(
-        remotes,
-        (remote: GitRemote) => `${remote.name} - ${remote.url}`,
-        (remote: GitRemote) => remote.name,
-        undefined, // No header
-        hasRemotes ? createRemoteActions() : createAddOnlyActions() // Show only "Add remote" when no remotes exist
-      );
+      const result = await selectionList<GitRemote>({
+        items: remotes,
+        renderItem: (remote) => `${remote.name} - ${remote.url}`,
+        getSearchText: (remote) => remote.name,
+        actions: hasRemotes ? createRemoteActions() : createAddOnlyActions(),
+      });
 
-      if (selectedRemote) {
-        // Action has already been executed by the interactive list
+      if (result.success) {
+        // Action has already been executed by the selection list
         // and provided its own success message
         process.exit(0);
       } else {

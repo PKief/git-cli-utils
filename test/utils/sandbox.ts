@@ -81,6 +81,11 @@ export class GitSandbox {
     this.git(['init', '-b', 'main']);
     this.git(['config', 'user.email', 'test@example.com']);
     this.git(['config', 'user.name', 'Test User']);
+    // Disable editor for tests to prevent interactive prompts
+    this.git(['config', 'core.editor', 'true']);
+    // Disable GPG signing for tests
+    this.git(['config', 'commit.gpgsign', 'false']);
+    this.git(['config', 'tag.gpgsign', 'false']);
   }
 
   private createInitialCommit(): void {

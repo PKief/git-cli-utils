@@ -3,7 +3,7 @@ import { GitCommit, getGitCommits } from '../../../../core/git/commits.js';
 import { GitExecutor } from '../../../../core/git/executor.js';
 import { GitTag } from '../../../../core/git/tags.js';
 import { green, red, yellow } from '../../../ui/ansi.js';
-import { interactiveList } from '../../../ui/interactive-list.js';
+import { selectionList } from '../../../ui/selection-list/index.js';
 import {
   ActionResult,
   actionFailure,
@@ -27,22 +27,22 @@ export async function changeTagCommit(
     }
 
     // Let user select the target commit
-    const selectedCommit = await interactiveList<GitCommit>(
-      commits,
-      (commit: GitCommit) => {
+    const result = await selectionList<GitCommit>({
+      items: commits,
+      renderItem: (commit) => {
         const branchInfo = commit.branch ? ` (${commit.branch})` : '';
         return `${commit.date} - ${commit.hash} - ${commit.subject}${branchInfo}`;
       },
-      (commit: GitCommit) =>
-        `${commit.hash} ${commit.subject} ${commit.branch}`, // Search hash, subject, and branch
-      yellow(`Select commit to change tag '${tag.name}' to:`),
-      undefined // No actions needed for selection
-    );
+      getSearchText: (commit) =>
+        `${commit.hash} ${commit.subject} ${commit.branch}`,
+      header: yellow(`Select commit to change tag '${tag.name}' to:`),
+    });
 
-    if (!selectedCommit) {
+    if (!result.success || !result.item) {
       return actionFailure('No commit selected');
     }
 
+    const selectedCommit = result.item;
     const trimmedCommit = selectedCommit.hash;
 
     // Show selected commit info

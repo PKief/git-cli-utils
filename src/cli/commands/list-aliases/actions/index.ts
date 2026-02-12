@@ -1,13 +1,15 @@
 import type { GitAlias } from '../../../../core/git/aliases.js';
-import { createActions } from '../../../utils/action-helpers.js';
+import { createItemActions } from '../../../utils/action-helpers.js';
 import { copyAliasCommand } from './copy.js';
 import { deleteAlias } from './delete.js';
 import { editAlias } from './edit.js';
 import { executeAlias } from './execute.js';
 import { createNewAlias } from './new.js';
 
-export function getAliasActions(): ReturnType<typeof createActions<GitAlias>> {
-  return createActions([
+export function getAliasActions(): ReturnType<
+  typeof createItemActions<GitAlias>
+> {
+  return createItemActions([
     {
       key: 'execute',
       label: 'Execute',

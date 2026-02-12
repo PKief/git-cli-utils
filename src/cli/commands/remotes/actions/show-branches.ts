@@ -4,8 +4,8 @@ import {
   getRemoteBranches,
 } from '../../../../core/git/remotes.js';
 import { yellow } from '../../../ui/ansi.js';
-import { interactiveList } from '../../../ui/interactive-list.js';
-import { createActions } from '../../../utils/action-helpers.js';
+import { selectionList } from '../../../ui/selection-list/index.js';
+import { createItemActions } from '../../../utils/action-helpers.js';
 import { compareBranches } from '../../../utils/compare-branches.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 import { checkoutRemoteBranchInWorktree } from '../../../utils/worktree-actions.js';
@@ -18,7 +18,7 @@ import { setAsUpstream } from './set-as-upstream.js';
  * Creates actions available for branch items from a remote
  */
 function createBranchActions() {
-  return createActions([
+  return createItemActions([
     {
       key: 'checkout',
       label: 'Checkout',
@@ -74,19 +74,19 @@ export async function showRemoteBranches(remote: GitRemote): Promise<boolean> {
     }
 
     try {
-      const selectedBranch = await interactiveList<GitRemoteBranch>(
-        branches,
-        (branch: GitRemoteBranch) => {
+      const result = await selectionList<GitRemoteBranch>({
+        items: branches,
+        renderItem: (branch) => {
           const relativeDate = branch.lastCommitDate || 'unknown';
           return `${relativeDate} - ${branch.name} (${branch.lastCommit})`;
         },
-        (branch: GitRemoteBranch) => branch.name,
-        yellow(`Select a branch from '${remote.name}':`),
-        createBranchActions()
-      );
+        getSearchText: (branch) => branch.name,
+        header: yellow(`Select a branch from '${remote.name}':`),
+        actions: createBranchActions(),
+      });
 
-      if (selectedBranch) {
-        // Action has already been executed by the interactive list
+      if (result.success) {
+        // Action has already been executed by the selection list
         return true;
       } else {
         writeLine(yellow('No branch selected.'));

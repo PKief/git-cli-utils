@@ -6,7 +6,7 @@ import {
   getRemoteBranches,
 } from '../../../core/git/remotes.js';
 import { yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
+import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
@@ -30,17 +30,19 @@ const syncCommand = async () => {
     }
 
     // Step 2: Let user select a remote
-    const selectedRemote = await interactiveList<GitRemote>(
-      remotes,
-      (remote: GitRemote) => `${remote.name} - ${remote.url}`,
-      (remote: GitRemote) => remote.name,
-      yellow('Select a remote to fetch from:')
-    );
+    const remoteResult = await selectionList<GitRemote>({
+      items: remotes,
+      renderItem: (remote) => `${remote.name} - ${remote.url}`,
+      getSearchText: (remote) => remote.name,
+      header: yellow('Select a remote to fetch from:'),
+    });
 
-    if (!selectedRemote) {
+    if (!remoteResult.success || !remoteResult.item) {
       writeLine(yellow('No remote selected.'));
       process.exit(0);
     }
+
+    const selectedRemote = remoteResult.item;
 
     // Step 3: Fetch branches from the selected remote
     const remoteBranches = await getRemoteBranches(selectedRemote.name);
@@ -53,17 +55,19 @@ const syncCommand = async () => {
     }
 
     // Step 4: Let user select a branch from the remote
-    const selectedBranch = await interactiveList<GitRemoteBranch>(
-      remoteBranches,
-      (branch: GitRemoteBranch) => `${branch.name} (${branch.lastCommit})`,
-      (branch: GitRemoteBranch) => branch.name,
-      yellow(`Select a branch from '${selectedRemote.name}' to sync:`)
-    );
+    const branchResult = await selectionList<GitRemoteBranch>({
+      items: remoteBranches,
+      renderItem: (branch) => `${branch.name} (${branch.lastCommit})`,
+      getSearchText: (branch) => branch.name,
+      header: yellow(`Select a branch from '${selectedRemote.name}' to sync:`),
+    });
 
-    if (!selectedBranch) {
+    if (!branchResult.success || !branchResult.item) {
       writeLine(yellow('No branch selected.'));
       process.exit(0);
     }
+
+    const selectedBranch = branchResult.item;
 
     // Step 5: Perform the sync operation
     await syncFromRemoteBranch(selectedRemote.name, selectedBranch.name);

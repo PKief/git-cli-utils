@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { type GitAlias, getGitAliases } from '../../../core/git/aliases.js';
 import { green, red, yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
+import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeLine } from '../../utils/terminal.js';
@@ -16,24 +16,24 @@ const listAliases = async (): Promise<void> => {
       return;
     }
 
-    writeLine(green('🔧 Git Aliases'));
+    writeLine(green('Git Aliases'));
     writeLine('Select an alias to execute:');
     writeLine();
 
     try {
-      // Use action-based interactive list so user can choose execute / copy / new
+      // Use action-based selection list so user can choose execute / copy / new
       const { getAliasActions } = await import('./actions/index.js');
       const actions = getAliasActions();
 
-      const selectedAlias = await interactiveList<GitAlias>(
-        aliases,
-        (alias: GitAlias) => `git ${alias.name.padEnd(12)} → ${alias.command}`,
-        (alias: GitAlias) => `${alias.name} ${alias.command}`, // Search both name and command
-        undefined,
-        actions
-      );
+      const result = await selectionList<GitAlias>({
+        items: aliases,
+        renderItem: (alias) =>
+          `git ${alias.name.padEnd(12)} → ${alias.command}`,
+        getSearchText: (alias) => `${alias.name} ${alias.command}`,
+        actions,
+      });
 
-      if (selectedAlias) {
+      if (result.success) {
         // action handlers already perform work and print output. Exit cleanly.
         process.exit(0);
       } else {

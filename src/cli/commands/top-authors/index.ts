@@ -8,7 +8,7 @@ import {
 } from '../../../core/git/authors.js';
 import { GitOperations } from '../../../core/git/operations.js';
 import { blue, gray, green, red, yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
+import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
@@ -94,20 +94,21 @@ const topAuthors = async (filePath?: string) => {
 
     // Create a scrollable list with persistent header
     try {
-      const selectedAuthor = await interactiveList<FileAuthor>(
-        authors,
-        (author: FileAuthor) => {
+      const result = await selectionList<FileAuthor>({
+        items: authors,
+        renderItem: (author) => {
           const commits = author.commitCount === 1 ? 'commit' : 'commits';
           const lastCommitInfo = author.lastCommitHash
             ? ` | Last: #${author.lastCommitHash} ${author.lastCommitDate}`
             : '';
           return `${author.name} (${author.commitCount} ${commits})${lastCommitInfo}`;
         },
-        (author: FileAuthor) => author.name, // Search by author name only
-        header // Pass the header to stay visible during selection
-      );
+        getSearchText: (author) => author.name,
+        header,
+      });
 
-      if (selectedAuthor) {
+      if (result.success && result.item) {
+        const selectedAuthor = result.item;
         writeLine();
         writeLine(`${selectedAuthor.name} <${selectedAuthor.email}>`);
         writeLine(
@@ -127,10 +128,10 @@ const topAuthors = async (filePath?: string) => {
         }
 
         try {
-          const result = await GitOperations.copyToClipboard(
+          const clipboardResult = await GitOperations.copyToClipboard(
             selectedAuthor.name
           );
-          writeLine(green(`✓ ${result.message}`));
+          writeLine(green(`✓ ${clipboardResult.message}`));
           process.exit(0);
         } catch (error) {
           writeErrorLine(

@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { GitCommit, getGitCommits } from '../../../core/git/commits.js';
 import { yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
-import { createActions } from '../../utils/action-helpers.js';
+import { selectionList } from '../../ui/selection-list/index.js';
+import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
 import { checkoutCommitInWorktree } from '../../utils/worktree-actions.js';
@@ -16,7 +16,7 @@ import {
  * Creates actions available for commit items
  */
 function createCommitActions() {
-  return createActions([
+  return createItemActions([
     {
       key: 'copy',
       label: 'Copy',
@@ -63,23 +63,23 @@ const searchCommits = async (filePath?: string, showAll = false) => {
           ? yellow('Select a commit from all branches:')
           : yellow('Select a commit from current branch:');
 
-      const selectedCommit = await interactiveList<GitCommit>(
-        commits,
-        (commit: GitCommit) => {
+      const result = await selectionList<GitCommit>({
+        items: commits,
+        renderItem: (commit) => {
           const tagInfo =
             commit.tags.length > 0 ? ` [${commit.tags.join(', ')}]` : '';
           return `${commit.date} - ${commit.subject}${tagInfo} (${commit.hash})`;
         },
-        (commit: GitCommit) =>
-          `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`, // Search subject, hash, and tags
-        header, // Descriptive header
-        createCommitActions() // Actions
-      );
+        getSearchText: (commit) =>
+          `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`,
+        header,
+        actions: createCommitActions(),
+      });
 
-      if (selectedCommit) {
+      if (result.success && result.item) {
         writeLine();
-        writeLine(`Selected commit: ${selectedCommit.hash}`);
-        // Action has already been executed by the interactive list
+        writeLine(`Selected commit: ${result.item.hash}`);
+        // Action has already been executed by the selection list
         process.exit(0);
       } else {
         writeLine(yellow('No commit selected.'));

@@ -1,56 +1,12 @@
 import { Command } from 'commander';
 import { GitTag, getGitTags } from '../../../core/git/tags.js';
 import { yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
-import { createActions } from '../../utils/action-helpers.js';
+import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
-import {
-  changeTagCommit,
-  checkoutTag,
-  copyTagName,
-  deleteTag,
-  showTagDetails,
-} from './actions/index.js';
-
-/**
- * Creates actions available for tag items
- */
-function createTagActions() {
-  return createActions([
-    {
-      key: 'copy',
-      label: 'Copy',
-      description: 'Copy tag name to clipboard',
-      handler: copyTagName,
-    },
-    {
-      key: 'show',
-      label: 'Details',
-      description: 'Show tag details',
-      handler: showTagDetails,
-    },
-    {
-      key: 'checkout',
-      label: 'Checkout',
-      description: 'Checkout tag',
-      handler: checkoutTag,
-    },
-    {
-      key: 'change',
-      label: 'Change commit',
-      description: 'Change tag to point to a different commit',
-      handler: changeTagCommit,
-    },
-    {
-      key: 'delete',
-      label: 'Delete',
-      description: 'Delete tag (locally and optionally from remotes)',
-      handler: deleteTag,
-    },
-  ]);
-}
+import { getTagGlobalActions } from './global-actions/index.js';
+import { getTagItemActions } from './item-actions/index.js';
 
 const searchTags = async () => {
   try {
@@ -62,22 +18,21 @@ const searchTags = async () => {
     }
 
     try {
-      const selectedTag = await interactiveList<GitTag>(
-        tags,
-        (tag: GitTag) => {
+      const result = await selectionList<GitTag>({
+        items: tags,
+        renderItem: (tag) => {
           const hashInfo = tag.hash ? ` (${tag.hash})` : '';
           const subjectInfo = tag.subject ? ` - ${tag.subject}` : '';
           return `${tag.date} - ${tag.name}${hashInfo}${subjectInfo}`;
         },
-        (tag: GitTag) => `${tag.name} ${tag.subject} ${tag.tagger}`, // Search name, subject, and tagger
-        undefined, // No header
-        createTagActions() // Actions
-      );
+        getSearchText: (tag) => `${tag.name} ${tag.subject} ${tag.tagger}`,
+        actions: getTagItemActions(),
+      });
 
-      if (selectedTag) {
+      if (result.success && result.item) {
         writeLine();
-        writeLine(`Selected tag: ${selectedTag.name}`);
-        // Action has already been executed by the interactive list
+        writeLine(`Selected tag: ${result.item.name}`);
+        // Action has already been executed by the selection list
         process.exit(0);
       } else {
         writeLine(yellow('No tag selected.'));
@@ -107,5 +62,6 @@ export function registerCommand(program: Command): CommandModule {
     name: 'tags',
     description: 'Interactive tag selection with fuzzy search',
     action: searchTags,
+    commandActions: getTagGlobalActions(),
   });
 }

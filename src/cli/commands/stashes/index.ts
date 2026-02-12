@@ -1,56 +1,12 @@
 import { Command } from 'commander';
 import { GitStash, getGitStashes } from '../../../core/git/stashes.js';
 import { yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
-import { createActions } from '../../utils/action-helpers.js';
+import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
-import {
-  applyStash,
-  copyStashReference,
-  createBranchFromStash,
-  deleteStash,
-  showStashDetails,
-} from './actions/index.js';
-
-/**
- * Creates actions available for stash items
- */
-function createStashActions() {
-  return createActions([
-    {
-      key: 'show',
-      label: 'Show',
-      description: 'View stash diff',
-      handler: showStashDetails,
-    },
-    {
-      key: 'apply',
-      label: 'Apply',
-      description: 'Apply to working directory',
-      handler: applyStash,
-    },
-    {
-      key: 'branch',
-      label: 'Create Branch',
-      description: 'Create branch from stash',
-      handler: createBranchFromStash,
-    },
-    {
-      key: 'copy',
-      label: 'Copy',
-      description: 'Copy to clipboard',
-      handler: copyStashReference,
-    },
-    {
-      key: 'delete',
-      label: 'Delete',
-      description: 'Delete stash permanently',
-      handler: deleteStash,
-    },
-  ]);
-}
+import { getStashGlobalActions } from './global-actions/index.js';
+import { getStashItemActions } from './item-actions/index.js';
 
 const searchStashes = async () => {
   try {
@@ -62,19 +18,18 @@ const searchStashes = async () => {
     }
 
     try {
-      const selectedStash = await interactiveList<GitStash>(
-        stashes,
-        (stash: GitStash) =>
+      const result = await selectionList<GitStash>({
+        items: stashes,
+        renderItem: (stash) =>
           `stash@{${stash.index}} on ${stash.branch}: ${stash.message}`,
-        (stash: GitStash) => stash.message, // Search stash messages
-        undefined, // No header
-        createStashActions() // Actions
-      );
+        getSearchText: (stash) => stash.message,
+        actions: getStashItemActions(),
+      });
 
-      if (selectedStash) {
+      if (result.success && result.item) {
         writeLine();
-        writeLine(`Selected stash: stash@{${selectedStash.index}}`);
-        // Action has already been executed by the interactive list
+        writeLine(`Selected stash: stash@{${result.item.index}}`);
+        // Action has already been executed by the selection list
         process.exit(0);
       } else {
         writeLine(yellow('No stash selected.'));
@@ -104,5 +59,6 @@ export function registerCommand(program: Command): CommandModule {
     name: 'stashes',
     description: 'Interactive stash selection with fuzzy search',
     action: searchStashes,
+    commandActions: getStashGlobalActions(),
   });
 }

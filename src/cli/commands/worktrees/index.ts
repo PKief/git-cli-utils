@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { GitWorktree, getGitWorktrees } from '../../../core/git/worktrees.js';
 import { yellow } from '../../ui/ansi.js';
-import { interactiveList } from '../../ui/interactive-list.js';
-import { createActions } from '../../utils/action-helpers.js';
+import { selectionList } from '../../ui/selection-list/index.js';
+import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { writeErrorLine, writeLine } from '../../utils/terminal.js';
@@ -16,7 +16,7 @@ import {
  * Creates actions available for worktree items
  */
 function createWorktreeActions() {
-  return createActions([
+  return createItemActions([
     {
       key: 'open',
       label: 'Open',
@@ -59,28 +59,28 @@ const manageWorktrees = async () => {
       writeLine('Create additional worktrees to see management options.');
       writeLine('You can create worktrees using:');
       writeLine(
-        '  • git-utils branches → select branch → "Checkout in worktree"'
+        '  - git-utils branches → select branch → "Checkout in worktree"'
       );
       writeLine(
-        '  • git-utils commits → select commit → "Checkout in worktree"'
+        '  - git-utils commits → select commit → "Checkout in worktree"'
       );
       writeLine(
-        '  • git-utils remotes → show branches → "Checkout in worktree"'
+        '  - git-utils remotes → show branches → "Checkout in worktree"'
       );
       process.exit(0);
     }
 
     try {
-      const selectedWorktree = await interactiveList<GitWorktree>(
-        worktrees,
-        formatWorktreeDisplay,
-        (worktree: GitWorktree) => `${worktree.branch} ${worktree.path}`, // Search both branch and path
-        yellow('Select a worktree:'),
-        createWorktreeActions()
-      );
+      const result = await selectionList<GitWorktree>({
+        items: worktrees,
+        renderItem: formatWorktreeDisplay,
+        getSearchText: (worktree) => `${worktree.branch} ${worktree.path}`,
+        header: yellow('Select a worktree:'),
+        actions: createWorktreeActions(),
+      });
 
-      if (selectedWorktree) {
-        // Action has already been executed by the interactive list
+      if (result.success) {
+        // Action has already been executed by the selection list
         process.exit(0);
       } else {
         writeLine(yellow('No worktree selected.'));

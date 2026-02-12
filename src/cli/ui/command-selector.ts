@@ -1,9 +1,21 @@
 import { Command } from 'commander';
 import { writeLine } from '../utils/terminal.js';
 import { yellow } from './ansi.js';
-import { interactiveList } from './interactive-list.js';
+import {
+  type Action,
+  type GlobalAction,
+  selectionList,
+} from './selection-list/index.js';
 
-// Define available commands interface
+/**
+ * Global action that can be performed at the command level
+ * (e.g., "new branch", "new tag" - actions that don't require selecting a specific item first)
+ */
+export type CommandAction = GlobalAction;
+
+/**
+ * Interface for commands available in git-utils
+ */
 export interface GitUtilsCommand {
   name: string;
   description: string;
@@ -12,13 +24,47 @@ export interface GitUtilsCommand {
     name: string;
     description: string;
   };
-  // Optional function to register subcommands after main command registration
+  /** Optional function to register subcommands after main command registration */
   registerSubcommands?: (program: Command, command: Command) => void;
+  /** Optional command-level actions (e.g., "new" to create a new branch/tag/etc.) */
+  commandActions?: CommandAction[];
+}
+
+/**
+ * Creates actions for a command in the command selector
+ * Includes a default "open" action plus any command-specific actions
+ */
+function createCommandActions(
+  cmd: GitUtilsCommand | null
+): Action<GitUtilsCommand>[] {
+  if (!cmd) {
+    return [];
+  }
+
+  // Default "open" action - enters the command's list view
+  const openAction: GlobalAction = {
+    type: 'global',
+    key: 'open',
+    label: 'Open',
+    description: `Open ${cmd.name}`,
+    handler: async () => {
+      writeLine();
+      writeLine(yellow(`Executing: ${cmd.name}`));
+      writeLine();
+      await cmd.action();
+      return true;
+    },
+  };
+
+  // Combine with command-specific actions
+  const commandSpecificActions = cmd.commandActions || [];
+
+  return [openAction, ...commandSpecificActions];
 }
 
 /**
  * Interactive command selector - the main landing page for git-utils
- * Shows a searchable list of available commands and executes the selected one
+ * Shows a searchable list of available commands with actions
  */
 export async function showCommandSelector(
   commands: GitUtilsCommand[]
@@ -27,18 +73,15 @@ export async function showCommandSelector(
   writeLine();
 
   try {
-    const selectedCommand = await interactiveList<GitUtilsCommand>(
-      commands,
-      (cmd: GitUtilsCommand) => `${cmd.name.padEnd(12)} ${cmd.description}`,
-      (cmd: GitUtilsCommand) => `${cmd.name} ${cmd.description}` // Search both name and description
-    );
+    const result = await selectionList<GitUtilsCommand>({
+      items: commands,
+      renderItem: (cmd) => `${cmd.name.padEnd(12)} ${cmd.description}`,
+      getSearchText: (cmd) => `${cmd.name} ${cmd.description}`,
+      actions: createCommandActions,
+      defaultActionKey: 'open',
+    });
 
-    if (selectedCommand) {
-      writeLine();
-      writeLine(yellow(`Executing: ${selectedCommand.name}`));
-      writeLine();
-      await selectedCommand.action();
-    } else {
+    if (!result.success && !result.action) {
       writeLine(yellow('No command selected. Exiting.'));
       process.exit(0);
     }

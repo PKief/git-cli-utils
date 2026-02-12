@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import type { CommandAction } from '../ui/command-selector.js';
 
 export interface CommandModule {
   name: string;
@@ -8,6 +9,8 @@ export interface CommandModule {
     name: string;
     description: string;
   };
+  /** Command-level actions (e.g., "new branch", "new tag") */
+  commandActions?: CommandAction[];
 }
 
 /**
@@ -27,6 +30,8 @@ export interface CommandConfig {
     name: string;
     description: string;
   };
+  /** Command-level actions (e.g., "new branch", "new tag") */
+  commandActions?: CommandAction[];
 }
 
 /**
@@ -75,6 +80,7 @@ export function createCommand(
     description: config.description,
     action: config.action,
     argument: config.argument,
+    commandActions: config.commandActions,
   };
 }
 
@@ -141,5 +147,6 @@ export function createCommandWithSubcommands(
     description: config.description,
     action: config.action,
     argument: config.argument,
+    commandActions: config.commandActions,
   };
 }
