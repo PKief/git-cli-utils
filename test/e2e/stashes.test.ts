@@ -1,5 +1,5 @@
 /**
- * Integration tests for stashes and save commands
+ * Integration tests for stashes command
  */
 
 import { afterEach, describe, expect, it } from 'bun:test';
@@ -48,29 +48,5 @@ describe('stashes', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('first stash');
     expect(result.stdout).toContain('second stash');
-  });
-});
-
-describe('save', () => {
-  let sandbox: GitSandbox;
-
-  afterEach(() => {
-    sandbox?.cleanup();
-  });
-
-  it('should report when working directory is clean', async () => {
-    sandbox = createTestSandbox();
-    const result = await sandbox.runCLI(['save']);
-
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout.toLowerCase()).toContain('clean');
-  });
-
-  it('should show help with --help flag', async () => {
-    sandbox = createTestSandbox();
-    const result = await sandbox.runCLI(['save', '--help']);
-
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout.toLowerCase()).toContain('save');
   });
 });

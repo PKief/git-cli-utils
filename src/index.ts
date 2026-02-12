@@ -9,7 +9,6 @@ import { registerCommand as registerConfig } from './cli/commands/config/index.j
 import { registerCommand as registerInit } from './cli/commands/init/index.js';
 import { registerCommand as registerAliases } from './cli/commands/list-aliases/index.js';
 import { registerCommand as registerRemotes } from './cli/commands/remotes/index.js';
-import { registerCommand as registerSave } from './cli/commands/save/index.js';
 import { registerCommand as registerStashes } from './cli/commands/stashes/index.js';
 import { registerCommand as registerSync } from './cli/commands/sync/index.js';
 import { registerCommand as registerTags } from './cli/commands/tags/index.js';
@@ -37,7 +36,6 @@ const commands: GitUtilsCommand[] = [
   registerCommits(program),
   registerTags(program),
   registerStashes(program),
-  registerSave(program),
   registerSync(program),
   registerRemotes(program),
   registerWorktrees(program),
