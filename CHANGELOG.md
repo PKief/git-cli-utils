@@ -1,6 +1,58 @@
 # Changelog
 
 
+## v1.20.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.19.0...v1.20.0)
+
+### 🚀 Enhancements
+
+- Add symlink configuration for worktrees ([39798ba](https://github.com/PKief/git-cli-utils/commit/39798ba))
+- Add integration tests for CLI commands and worktree symlinks functionality ([3302316](https://github.com/PKief/git-cli-utils/commit/3302316))
+- Add integration tests for branches, CLI commands, commits, config, remotes, stashes, and tags ([b5c7bed](https://github.com/PKief/git-cli-utils/commit/b5c7bed))
+- Remove worktree symlink functionality and related tests ([17cb7ba](https://github.com/PKief/git-cli-utils/commit/17cb7ba))
+- **tags:** Add global and item actions for tag management ([3f8e935](https://github.com/PKief/git-cli-utils/commit/3f8e935))
+- Enhance command actions to support back navigation and improve user experience ([af2e0f6](https://github.com/PKief/git-cli-utils/commit/af2e0f6))
+- Implement centralized error handling and exit management across CLI commands ([cf8b67f](https://github.com/PKief/git-cli-utils/commit/cf8b67f))
+- Remove save command and related tests ([8de0416](https://github.com/PKief/git-cli-utils/commit/8de0416))
+- **global-actions:** Move add remote functionality to global actions ([692835f](https://github.com/PKief/git-cli-utils/commit/692835f))
+- Implement global actions for branches, commits, remotes, stashes, and tags ([06583db](https://github.com/PKief/git-cli-utils/commit/06583db))
+- Implement unified actions architecture for global commands ([83cb3e6](https://github.com/PKief/git-cli-utils/commit/83cb3e6))
+- Enhance error handling for cancellation actions and update tests ([3811699](https://github.com/PKief/git-cli-utils/commit/3811699))
+- **global-actions:** Implement item actions for top-authors command ([74ddc45](https://github.com/PKief/git-cli-utils/commit/74ddc45))
+- **global-actions:** Add exitAfterExecution option for item actions ([b0c33db](https://github.com/PKief/git-cli-utils/commit/b0c33db))
+- **global-actions:** Implement cross-branch and reflog search actions ([650c7ff](https://github.com/PKief/git-cli-utils/commit/650c7ff))
+- **global-actions:** Reorder actions in getCommitGlobalActions function ([45055fc](https://github.com/PKief/git-cli-utils/commit/45055fc))
+
+### 🩹 Fixes
+
+- **deps:** Bump clipboardy from 5.0.0 to 5.0.1 ([#16](https://github.com/PKief/git-cli-utils/pull/16))
+- Update commitlint configuration to use ES module syntax ([3d83800](https://github.com/PKief/git-cli-utils/commit/3d83800))
+- **deps:** Bump clipboardy from 5.0.2 to 5.1.0 ([#27](https://github.com/PKief/git-cli-utils/pull/27))
+- **deps:** Bump commander from 14.0.2 to 14.0.3 ([#31](https://github.com/PKief/git-cli-utils/pull/31))
+
+### 📖 Documentation
+
+- Add AGENTS.md for AI Agent guide and project overview ([230d7ab](https://github.com/PKief/git-cli-utils/commit/230d7ab))
+- Update AGENTS.md with detailed test file organization and principles ([ee9e76f](https://github.com/PKief/git-cli-utils/commit/ee9e76f))
+- Restructure documentation with new architecture, common tasks, patterns, and testing sections ([4cba172](https://github.com/PKief/git-cli-utils/commit/4cba172))
+
+### 🏡 Chore
+
+- **deps-dev:** Bump lint-staged from 16.2.6 to 16.2.7 ([#18](https://github.com/PKief/git-cli-utils/pull/18))
+- **deps-dev:** Bump @types/bun from 1.3.2 to 1.3.3 ([#19](https://github.com/PKief/git-cli-utils/pull/19))
+- **deps-dev:** Bump @biomejs/biome from 2.3.4 to 2.3.8 ([#17](https://github.com/PKief/git-cli-utils/pull/17))
+- **deps-dev:** Bump @types/node from 24.10.0 to 24.10.1 ([#20](https://github.com/PKief/git-cli-utils/pull/20))
+- Update dependencies ([fd30cf8](https://github.com/PKief/git-cli-utils/commit/fd30cf8))
+- Update dependencies ([206ae48](https://github.com/PKief/git-cli-utils/commit/206ae48))
+- Update schema version to 2.3.10 in biome.jsonc ([4ba0f28](https://github.com/PKief/git-cli-utils/commit/4ba0f28))
+- Update copyright year to 2026 in LICENSE ([ccf3298](https://github.com/PKief/git-cli-utils/commit/ccf3298))
+- Update NPM registry authentication command ([f808d4d](https://github.com/PKief/git-cli-utils/commit/f808d4d))
+
+### ❤️ Contributors
+
+- Philipp Kief
+
 ## v1.19.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.18.0...v1.19.0)
