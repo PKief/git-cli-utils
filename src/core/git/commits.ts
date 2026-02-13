@@ -65,6 +65,39 @@ export const getGitCommits = async (
   }
 };
 
+export const getReflogCommits = async (): Promise<GitCommit[]> => {
+  try {
+    const args = [
+      'reflog',
+      '--date=relative',
+      '--pretty=format:%h|%cd|%gd|%gs',
+    ];
+
+    const result = await gitExecutor.executeStreamingCommand(args);
+
+    const commits: GitCommit[] = [];
+
+    result.data.forEach((line) => {
+      if (!line.trim()) return;
+      const [hash, date, selector, description] = line.split('|');
+
+      commits.push({
+        hash,
+        date,
+        branch: selector ?? '',
+        subject: description ?? '',
+        tags: [],
+      });
+    });
+
+    return commits;
+  } catch (error) {
+    throw new Error(
+      `Error executing git command: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+};
+
 export const filterCommits = (
   commits: GitCommit[],
   searchTerm: string

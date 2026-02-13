@@ -5,13 +5,30 @@
 import * as p from '@clack/prompts';
 import { GitExecutor } from '../../../../core/git/executor.js';
 import { yellow } from '../../../ui/ansi.js';
+import { createGlobalAction } from '../../../utils/action-helpers.js';
 import { writeLine } from '../../../utils/terminal.js';
+import type { SearchCallback } from './types.js';
 
 /**
  * Arguments for file history
  */
 export interface FileHistoryArgs {
   file: string;
+}
+
+export function createFileHistoryAction(searchWithOptions: SearchCallback) {
+  return createGlobalAction<FileHistoryArgs>({
+    key: 'file',
+    label: 'File history',
+    description: 'Show commits for a specific file',
+    cli: {
+      option: '--file <file>',
+    },
+    handler: async (args) => {
+      return searchWithOptions({ filePath: args.file });
+    },
+    promptForArgs: promptForFilePath,
+  });
 }
 
 /**

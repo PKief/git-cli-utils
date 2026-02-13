@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-import { filterCommits, type GitCommit, getGitCommits } from './commits';
+import {
+  filterCommits,
+  type GitCommit,
+  getGitCommits,
+  getReflogCommits,
+} from './commits';
 
 // Mock the GitExecutor
 const mockExecuteStreamingCommand = mock();
@@ -161,6 +166,75 @@ describe('Git Commits', () => {
         subject: 'Another valid commit',
         tags: [],
       });
+    });
+  });
+
+  describe('getReflogCommits', () => {
+    it('should return reflog entries', async () => {
+      // Arrange
+      const mockOutput = [
+        'abc123|2 hours ago|HEAD@{0}|commit: Add feature',
+        'def456|3 hours ago|HEAD@{1}|commit (amend): Fix typo',
+        'ghi789|5 hours ago|HEAD@{2}|checkout: moving from main to feature',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getReflogCommits();
+
+      // Assert
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'reflog',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%gd|%gs',
+      ]);
+      expect(commits).toHaveLength(3);
+      expect(commits[0]).toEqual({
+        hash: 'abc123',
+        date: '2 hours ago',
+        branch: 'HEAD@{0}',
+        subject: 'commit: Add feature',
+        tags: [],
+      });
+      expect(commits[1]).toEqual({
+        hash: 'def456',
+        date: '3 hours ago',
+        branch: 'HEAD@{1}',
+        subject: 'commit (amend): Fix typo',
+        tags: [],
+      });
+      expect(commits[2]).toEqual({
+        hash: 'ghi789',
+        date: '5 hours ago',
+        branch: 'HEAD@{2}',
+        subject: 'checkout: moving from main to feature',
+        tags: [],
+      });
+    });
+
+    it('should handle empty reflog', async () => {
+      // Arrange
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [],
+      });
+
+      // Act
+      const commits = await getReflogCommits();
+
+      // Assert
+      expect(commits).toHaveLength(0);
+    });
+
+    it('should handle git command errors', async () => {
+      // Arrange
+      const mockError = new Error('Not a git repository');
+      mockExecuteStreamingCommand.mockRejectedValue(mockError);
+
+      // Act & Assert
+      await expect(getReflogCommits()).rejects.toThrow('Not a git repository');
     });
   });
 

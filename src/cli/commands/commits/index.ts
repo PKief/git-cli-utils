@@ -1,5 +1,9 @@
 import { Command } from 'commander';
-import { GitCommit, getGitCommits } from '../../../core/git/commits.js';
+import {
+  GitCommit,
+  getGitCommits,
+  getReflogCommits,
+} from '../../../core/git/commits.js';
 import { yellow } from '../../ui/ansi.js';
 import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
@@ -59,24 +63,30 @@ function createCommitActions() {
 export const searchCommits = async (
   options: CommitSearchOptions = {}
 ): Promise<void | CommandResult> => {
-  const { filePath, showAll = false } = options;
+  const { filePath, showAll = false, reflog = false } = options;
 
   try {
-    const commits = await getGitCommits(filePath, showAll);
+    const commits = reflog
+      ? await getReflogCommits()
+      : await getGitCommits(filePath, showAll);
 
     if (commits.length === 0) {
-      const message = filePath
-        ? `No commits found for file: ${filePath}`
-        : 'No commits found!';
+      const message = reflog
+        ? 'No reflog entries found!'
+        : filePath
+          ? `No commits found for file: ${filePath}`
+          : 'No commits found!';
       writeLine(yellow(message));
       return;
     }
 
-    const header = filePath
-      ? yellow(`Select a commit that modified: ${filePath}`)
-      : showAll
-        ? yellow('Select a commit from all branches:')
-        : yellow('Select a commit from current branch:');
+    const header = reflog
+      ? yellow('Select a reflog entry:')
+      : filePath
+        ? yellow(`Select a commit that modified: ${filePath}`)
+        : showAll
+          ? yellow('Select a commit from all branches:')
+          : yellow('Select a commit from current branch:');
 
     const result = await selectionList<GitCommit>({
       items: commits,
