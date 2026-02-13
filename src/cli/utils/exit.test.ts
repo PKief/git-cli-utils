@@ -70,20 +70,20 @@ describe('exit utilities', () => {
     });
 
     describe('static cancelled()', () => {
-      it('should create cancellation error with default message', () => {
+      it('should create cancellation error with default message (silent)', () => {
         const error = AppError.cancelled();
 
         expect(error.message).toBe('Operation cancelled.');
         expect(error.exitCode).toBe(ExitCode.cancelled);
-        expect(error.silent).toBe(false);
+        expect(error.silent).toBe(true);
       });
 
-      it('should create cancellation error with custom message', () => {
+      it('should create cancellation error with custom message (silent)', () => {
         const error = AppError.cancelled('User aborted the operation');
 
         expect(error.message).toBe('User aborted the operation');
         expect(error.exitCode).toBe(ExitCode.cancelled);
-        expect(error.silent).toBe(false);
+        expect(error.silent).toBe(true);
       });
     });
 
@@ -152,7 +152,7 @@ describe('exit utilities', () => {
         expect(error).toBe(originalError); // Same instance
         expect(error.message).toBe('User cancelled');
         expect(error.exitCode).toBe(ExitCode.cancelled);
-        expect(error.silent).toBe(false);
+        expect(error.silent).toBe(true); // cancelled is silent by default
       });
 
       it('should preserve silent AppError unchanged', () => {

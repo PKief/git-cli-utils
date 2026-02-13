@@ -58,10 +58,10 @@ export class AppError extends Error {
   }
 
   /**
-   * Create an error for user cancellation
+   * Create an error for user cancellation (silent by default)
    */
   static cancelled(message = 'Operation cancelled.'): AppError {
-    return new AppError(message, ExitCode.cancelled, false);
+    return new AppError(message, ExitCode.cancelled, true);
   }
 
   /**

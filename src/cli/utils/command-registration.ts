@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import type { CommandAction, CommandResult } from '../ui/command-selector.js';
+import { handleErrorAndExit } from './exit.js';
 import {
   executeTriggeredAction,
   findTriggeredAction,
@@ -103,104 +104,33 @@ export function createCommand(
   }
 
   // Set up the command action handler
+  // Wrap in try/catch to handle errors before Commander.js prints them
   cmd.action(async (...args: unknown[]) => {
-    // Commander.js passes: [argument1, argument2, ..., options, command]
-    // Options is always second to last
-    const optionsIndex = args.length - 2;
-    const options = (args[optionsIndex] as Record<string, unknown>) ?? {};
+    try {
+      // Commander.js passes: [argument1, argument2, ..., options, command]
+      // Options is always second to last
+      const optionsIndex = args.length - 2;
+      const options = (args[optionsIndex] as Record<string, unknown>) ?? {};
 
-    // Check if any global action was triggered via CLI
-    if (config.globalActions) {
-      const triggered = findTriggeredAction(config.globalActions, options);
-      if (triggered) {
-        await executeTriggeredAction(triggered.action, triggered.cliValue);
-        return;
+      // Check if any global action was triggered via CLI
+      if (config.globalActions) {
+        const triggered = findTriggeredAction(config.globalActions, options);
+        if (triggered) {
+          await executeTriggeredAction(triggered.action, triggered.cliValue);
+          return;
+        }
       }
-    }
 
-    // No global action triggered - run default action with original args
-    // Strip options and command objects if action doesn't expect them
-    await config.action(...args);
+      // No global action triggered - run default action with original args
+      // Strip options and command objects if action doesn't expect them
+      await config.action(...args);
+    } catch (error) {
+      // Handle errors here to prevent Commander.js from printing stack traces
+      handleErrorAndExit(error);
+    }
   });
 
   program.addCommand(cmd);
-
-  // Convert global actions to interactive UI format
-  const commandActions = config.globalActions
-    ? toInteractiveActions(config.globalActions)
-    : [];
-
-  return {
-    name: config.name,
-    description: config.description,
-    action: config.action,
-    argument: config.argument,
-    commandActions: commandActions.length > 0 ? commandActions : undefined,
-  };
-}
-
-export interface SubcommandConfig {
-  name: string;
-  description: string;
-  action: (...args: unknown[]) => Promise<void>;
-  options?: Array<{
-    flags: string;
-    description: string;
-    defaultValue?: string | boolean | string[];
-  }>;
-}
-
-/**
- * Builder helper for commands with subcommands
- *
- * @example
- * ```typescript
- * export function registerCommand(program: Command): CommandModule {
- *   return createCommandWithSubcommands(program, {
- *     name: 'branches',
- *     description: 'Interactive branch selection with fuzzy search',
- *     action: searchBranches,
- *     subcommands: [
- *       {
- *         name: 'list',
- *         description: 'List all branches without interactive selection',
- *         action: listBranches,
- *       },
- *       {
- *         name: 'delete <name>',
- *         description: 'Delete a branch',
- *         action: deleteBranchCommand,
- *       },
- *     ],
- *   });
- * }
- * ```
- */
-export function createCommandWithSubcommands(
-  program: Command,
-  config: CommandConfig & { subcommands?: SubcommandConfig[] }
-): CommandModule {
-  // Wrap action to strip CommandResult for Commander.js compatibility
-  const wrappedAction = async (...args: unknown[]): Promise<void> => {
-    await config.action(...args);
-  };
-
-  const command = program
-    .command(config.name)
-    .description(config.description)
-    .action(wrappedAction);
-
-  // Add subcommands if provided
-  config.subcommands?.forEach((sub) => {
-    const subcommand = command.command(sub.name).description(sub.description);
-
-    // Add options if provided
-    sub.options?.forEach((option) => {
-      subcommand.option(option.flags, option.description, option.defaultValue);
-    });
-
-    subcommand.action(sub.action);
-  });
 
   // Convert global actions to interactive UI format
   const commandActions = config.globalActions
