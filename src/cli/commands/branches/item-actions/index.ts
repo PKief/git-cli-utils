@@ -27,6 +27,7 @@ export function getBranchItemActions() {
       label: 'Copy name',
       description: 'Copy to clipboard',
       handler: copyBranchName,
+      exitAfterExecution: true,
     },
     {
       key: 'compare',

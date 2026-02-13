@@ -30,6 +30,7 @@ function createCommitActions() {
       label: 'Copy',
       description: 'Copy hash to clipboard',
       handler: copyCommitHash,
+      exitAfterExecution: true,
     },
     {
       key: 'show',

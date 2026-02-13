@@ -3,6 +3,7 @@ import type {
   GlobalAction,
   ItemAction,
 } from '../ui/selection-list/index.js';
+import { AppError } from './exit.js';
 
 /**
  * Result of an action execution with optional follow-up
@@ -26,6 +27,8 @@ export interface ItemActionConfig<T> {
   label: string;
   /** Optional description for the action */
   description?: string;
+  /** Exit the CLI immediately after successful execution */
+  exitAfterExecution?: boolean;
   /** The action handler function - receives the selected item */
   handler: (
     item: T
@@ -44,6 +47,9 @@ export function createItemAction<T>(
 
     // If it's a simple boolean, return it
     if (typeof result === 'boolean') {
+      if (result && config.exitAfterExecution) {
+        throw AppError.silent();
+      }
       return result;
     }
 
@@ -52,6 +58,10 @@ export function createItemAction<T>(
       // Execute the follow-up action
       const followUpResult = await result.followUpAction.handler(item);
       return typeof followUpResult === 'boolean' ? followUpResult : true;
+    }
+
+    if (result.success && config.exitAfterExecution) {
+      throw AppError.silent();
     }
 
     return result.success;

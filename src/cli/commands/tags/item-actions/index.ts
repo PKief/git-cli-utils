@@ -20,6 +20,7 @@ export function getTagItemActions() {
       label: 'Copy',
       description: 'Copy tag name to clipboard',
       handler: copyTagName,
+      exitAfterExecution: true,
     },
     {
       key: 'show',

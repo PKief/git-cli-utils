@@ -38,6 +38,7 @@ export function getStashItemActions() {
       label: 'Copy',
       description: 'Copy to clipboard',
       handler: copyStashReference,
+      exitAfterExecution: true,
     },
     {
       key: 'delete',

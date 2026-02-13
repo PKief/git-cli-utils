@@ -24,6 +24,7 @@ export function getAuthorItemActions(filePath?: string) {
       label: 'Copy',
       description: 'Copy author name to clipboard',
       handler: copyAuthorName,
+      exitAfterExecution: true,
     },
   ]);
 }
