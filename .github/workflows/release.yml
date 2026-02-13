@@ -53,6 +53,4 @@ jobs:
         run: bun run build
 
       - name: 🌐 Publish to NPM Registry
-        run: |
-          npm set "//registry.npmjs.org/"
-          npm publish --provenance --access public
+        run: npm publish --provenance --access public
