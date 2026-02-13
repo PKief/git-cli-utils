@@ -37,8 +37,8 @@ export function getCommitGlobalActions() {
   const callback: SearchCallback = (options) => getSearchCallback()(options);
   return createGlobalActions([
     createCrossBranchAction(callback),
-    createReflogAction(callback),
     createFileHistoryAction(callback),
+    createReflogAction(callback),
   ]);
 }
 
