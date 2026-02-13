@@ -64,4 +64,13 @@ describe('remotes', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout.toLowerCase()).toContain('remote');
   });
+
+  it('should show --add option in help', async () => {
+    sandbox = createTestSandbox();
+    const result = await sandbox.runCLI(['remotes', '--help']);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('--add');
+    expect(result.stdout.toLowerCase()).toContain('add');
+  });
 });

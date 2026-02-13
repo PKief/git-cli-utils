@@ -45,12 +45,13 @@ const searchStashes = async (): Promise<void | CommandResult> => {
 
 /**
  * Register stashes command with the CLI program
+ * Uses unified actions - CLI options auto-generated from globalActions
  */
 export function registerCommand(program: Command): CommandModule {
   return createCommand(program, {
     name: 'stashes',
     description: 'Interactive stash selection with fuzzy search',
     action: searchStashes,
-    commandActions: getStashGlobalActions(),
+    globalActions: getStashGlobalActions(),
   });
 }

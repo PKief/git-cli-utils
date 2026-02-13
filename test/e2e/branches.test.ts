@@ -44,4 +44,13 @@ describe('branches', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout.toLowerCase()).toContain('branch');
   });
+
+  it('should show --new option in help', async () => {
+    sandbox = createTestSandbox();
+    const result = await sandbox.runCLI(['branches', '--help']);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('--new');
+    expect(result.stdout.toLowerCase()).toContain('create');
+  });
 });

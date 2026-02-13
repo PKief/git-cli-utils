@@ -98,31 +98,49 @@ function validateBranchName(name: string): string | undefined {
 }
 
 /**
- * Create a new branch from current HEAD
+ * Arguments for creating a branch
  */
-export async function createBranch(): Promise<boolean> {
+export interface CreateBranchArgs {
+  name: string;
+}
+
+/**
+ * Prompt user for branch name
+ * Returns null if user cancels
+ */
+export async function promptForBranchName(): Promise<CreateBranchArgs | null> {
+  const rawInput = await p.text({
+    message: 'Enter new branch name:',
+    placeholder: 'feature/my-new-feature',
+    validate: (value) => {
+      const sanitized = sanitizeBranchName(value);
+      return validateBranchName(sanitized);
+    },
+  });
+
+  if (typeof rawInput === 'symbol') {
+    writeLine(yellow('Branch creation cancelled.'));
+    return null;
+  }
+
+  // Sanitize the input
+  const branchName = sanitizeBranchName(rawInput);
+
+  // Show the sanitized name if it differs from input
+  if (branchName !== rawInput.trim()) {
+    writeLine(`Branch name sanitized to: ${branchName}`);
+  }
+
+  return { name: branchName };
+}
+
+/**
+ * Create a new branch from current HEAD
+ * @param args - Branch creation arguments (name required)
+ */
+export async function createBranch(args: CreateBranchArgs): Promise<boolean> {
   try {
-    const rawInput = await p.text({
-      message: 'Enter new branch name:',
-      placeholder: 'feature/my-new-feature',
-      validate: (value) => {
-        const sanitized = sanitizeBranchName(value);
-        return validateBranchName(sanitized);
-      },
-    });
-
-    if (typeof rawInput === 'symbol') {
-      writeLine(yellow('Branch creation cancelled.'));
-      return false;
-    }
-
-    // Sanitize the input
-    const branchName = sanitizeBranchName(rawInput);
-
-    // Show the sanitized name if it differs from input
-    if (branchName !== rawInput.trim()) {
-      writeLine(`Branch name sanitized to: ${branchName}`);
-    }
+    const { name: branchName } = args;
 
     const executor = GitExecutor.getInstance();
 

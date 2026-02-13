@@ -8,9 +8,49 @@ import { green, red, yellow } from '../../../ui/ansi.js';
 import { writeLine } from '../../../utils/terminal.js';
 
 /**
- * Create a new stash from current changes
+ * Arguments for creating a stash
  */
-export async function createStash(): Promise<boolean> {
+export interface CreateStashArgs {
+  message?: string;
+  includeUntracked?: boolean;
+}
+
+/**
+ * Prompt user for stash options
+ * Returns null if user cancels
+ */
+export async function promptForStashOptions(): Promise<CreateStashArgs | null> {
+  const message = await p.text({
+    message: 'Enter stash message (optional):',
+    placeholder: 'WIP: working on feature',
+  });
+
+  if (typeof message === 'symbol') {
+    writeLine(yellow('Stash creation cancelled.'));
+    return null;
+  }
+
+  const includeUntracked = await p.confirm({
+    message: 'Include untracked files?',
+    initialValue: false,
+  });
+
+  if (typeof includeUntracked === 'symbol') {
+    writeLine(yellow('Stash creation cancelled.'));
+    return null;
+  }
+
+  return {
+    message: message?.trim() || undefined,
+    includeUntracked,
+  };
+}
+
+/**
+ * Create a new stash from current changes
+ * @param args - Stash creation arguments (all optional)
+ */
+export async function createStash(args: CreateStashArgs): Promise<boolean> {
   try {
     const executor = GitExecutor.getInstance();
 
@@ -23,32 +63,12 @@ export async function createStash(): Promise<boolean> {
       return false;
     }
 
-    const message = await p.text({
-      message: 'Enter stash message (optional):',
-      placeholder: 'WIP: working on feature',
-    });
-
-    if (typeof message === 'symbol') {
-      writeLine(yellow('Stash creation cancelled.'));
-      return false;
-    }
-
-    const includeUntracked = await p.confirm({
-      message: 'Include untracked files?',
-      initialValue: false,
-    });
-
-    if (typeof includeUntracked === 'symbol') {
-      writeLine(yellow('Stash creation cancelled.'));
-      return false;
-    }
-
     let command = 'git stash push';
-    if (includeUntracked) {
+    if (args.includeUntracked) {
       command += ' --include-untracked';
     }
-    if (message && message.trim()) {
-      command += ` -m "${message.trim()}"`;
+    if (args.message) {
+      command += ` -m "${args.message}"`;
     }
 
     await executor.executeCommand(command);

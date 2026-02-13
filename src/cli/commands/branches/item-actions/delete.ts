@@ -6,7 +6,7 @@ import {
   actionCancelled,
   actionFailure,
   actionSuccess,
-  createAction,
+  createItemAction,
 } from '../../../utils/action-helpers.js';
 import { confirmDeletion } from '../../../utils/prompts.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
@@ -40,7 +40,7 @@ export async function deleteBranch(
       errorMessage.includes('git branch -D')
     ) {
       // Create a follow-up force delete action
-      const forceDeleteAction = createAction({
+      const forceDeleteAction = createItemAction({
         key: 'force-delete',
         label: 'Force delete',
         description: 'Force delete (WARNING: loses changes)',

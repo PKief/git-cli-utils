@@ -93,12 +93,13 @@ const searchRemotes = async (): Promise<void | CommandResult> => {
 
 /**
  * Register remotes command with the CLI program
+ * Uses unified actions - CLI options auto-generated from globalActions
  */
 export function registerCommand(program: Command): CommandModule {
   return createCommand(program, {
     name: 'remotes',
     description: 'Interactive remote management with actions',
     action: searchRemotes,
-    commandActions: getRemoteGlobalActions(),
+    globalActions: getRemoteGlobalActions(),
   });
 }

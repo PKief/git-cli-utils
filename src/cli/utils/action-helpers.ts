@@ -33,20 +33,6 @@ export interface ItemActionConfig<T> {
 }
 
 /**
- * Configuration for creating a global action
- */
-export interface GlobalActionConfig {
-  /** Unique identifier for the action */
-  key: string;
-  /** Display name for the action */
-  label: string;
-  /** Optional description for the action */
-  description?: string;
-  /** The action handler function - no item parameter */
-  handler: () => Promise<boolean> | boolean;
-}
-
-/**
  * Creates a type-safe item action with follow-up support
  */
 export function createItemAction<T>(
@@ -81,58 +67,12 @@ export function createItemAction<T>(
 }
 
 /**
- * Creates a type-safe global action (no item required)
- */
-export function createGlobalAction(config: GlobalActionConfig): GlobalAction {
-  return {
-    type: 'global',
-    key: config.key,
-    label: config.label,
-    description: config.description,
-    handler: config.handler,
-  };
-}
-
-/**
  * Creates multiple item actions in a type-safe way
  */
 export function createItemActions<T>(
   configs: ItemActionConfig<T>[]
 ): ItemAction<T>[] {
   return configs.map((config) => createItemAction(config));
-}
-
-/**
- * Creates multiple global actions in a type-safe way
- */
-export function createGlobalActions(
-  configs: GlobalActionConfig[]
-): GlobalAction[] {
-  return configs.map((config) => createGlobalAction(config));
-}
-
-// Legacy aliases for backward compatibility during migration
-// TODO: Remove these after all commands are updated
-
-/**
- * @deprecated Use ItemActionConfig instead
- */
-export type ActionConfig<T> = ItemActionConfig<T>;
-
-/**
- * @deprecated Use createItemAction instead
- */
-export function createAction<T>(config: ItemActionConfig<T>): ItemAction<T> {
-  return createItemAction(config);
-}
-
-/**
- * @deprecated Use createItemActions instead
- */
-export function createActions<T>(
-  configs: ItemActionConfig<T>[]
-): ItemAction<T>[] {
-  return createItemActions(configs);
 }
 
 /**
@@ -175,3 +115,11 @@ export function actionCancelled<T>(message?: string): ActionResult<T> {
 
 // Re-export types for convenience
 export type { Action, GlobalAction, ItemAction };
+
+// Re-export global action utilities for convenience
+export {
+  createGlobalAction,
+  createGlobalActions,
+  type GlobalActionConfig,
+  type GlobalActionWithCLI,
+} from './global-action.js';

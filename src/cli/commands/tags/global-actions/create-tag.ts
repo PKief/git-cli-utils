@@ -71,30 +71,47 @@ function validateTagName(name: string): string | undefined {
 }
 
 /**
- * Create a new tag at the current HEAD
+ * Arguments for creating a tag
  */
-export async function createTag(): Promise<boolean> {
+export interface CreateTagArgs {
+  name: string;
+}
+
+/**
+ * Prompt user for tag name and options
+ * Returns null if user cancels
+ */
+export async function promptForTagName(): Promise<CreateTagArgs | null> {
+  const rawInput = await p.text({
+    message: 'Enter new tag name:',
+    placeholder: 'v1.0.0',
+    validate: (value) => {
+      const sanitized = sanitizeTagName(value);
+      return validateTagName(sanitized);
+    },
+  });
+
+  if (typeof rawInput === 'symbol') {
+    writeLine(yellow('Tag creation cancelled.'));
+    return null;
+  }
+
+  const tagName = sanitizeTagName(rawInput);
+
+  if (tagName !== rawInput.trim()) {
+    writeLine(`Tag name sanitized to: ${tagName}`);
+  }
+
+  return { name: tagName };
+}
+
+/**
+ * Create a new tag at the current HEAD
+ * @param args - Tag creation arguments (name required)
+ */
+export async function createTag(args: CreateTagArgs): Promise<boolean> {
   try {
-    const rawInput = await p.text({
-      message: 'Enter new tag name:',
-      placeholder: 'v1.0.0',
-      validate: (value) => {
-        const sanitized = sanitizeTagName(value);
-        return validateTagName(sanitized);
-      },
-    });
-
-    if (typeof rawInput === 'symbol') {
-      writeLine(yellow('Tag creation cancelled.'));
-      return false;
-    }
-
-    const tagName = sanitizeTagName(rawInput);
-
-    if (tagName !== rawInput.trim()) {
-      writeLine(`Tag name sanitized to: ${tagName}`);
-    }
-
+    const { name: tagName } = args;
     const executor = GitExecutor.getInstance();
 
     // Check if tag already exists

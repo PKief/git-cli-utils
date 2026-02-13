@@ -1,256 +1,258 @@
 # Commands Architecture
 
-This document describes the new, maintainable structure for git-cli-utils commands.
+This document describes the structure for git-cli-utils commands.
 
 ## Folder Structure
 
 ```
 src/cli/
 ├── utils/
-│   └── action-helpers.ts      # Type-safe action creation helpers
+│   ├── action-helpers.ts      # Type-safe action creation helpers
+│   ├── global-action.ts       # Global actions (CLI + interactive UI)
+│   └── command-registration.ts # Command registration helpers
 └── commands/
 ├── branches/
 │   ├── index.ts              # Main branches command
-│   └── actions/
-│       ├── index.ts          # Action exports
-│       ├── checkout.ts       # Checkout branch action
-│       ├── copy.ts           # Copy branch name action
-│       └── delete.ts         # Delete branch action (with force delete follow-up)
+│   ├── global-actions/       # Actions that don't require selecting an item
+│   │   ├── index.ts
+│   │   └── create-branch.ts
+│   └── item-actions/         # Actions that operate on selected items
+│       ├── index.ts
+│       ├── checkout.ts
+│       ├── copy.ts
+│       └── delete.ts
 ├── commits/
 │   ├── index.ts              # Main commits command
-│   └── actions/
-│       ├── index.ts          # Action exports
-│       ├── checkout.ts       # Checkout commit action
-│       ├── copy.ts           # Copy commit hash action
-│       └── show.ts           # Show commit details action
+│   ├── global-actions/       # Cross-branch search, file history
+│   │   ├── index.ts
+│   │   └── file-history.ts
+│   └── actions/              # Item actions
+│       ├── index.ts
+│       ├── checkout.ts
+│       ├── copy.ts
+│       └── show.ts
 ├── stashes/
 │   ├── index.ts              # Main stashes command
-│   └── actions/
-│       ├── index.ts          # Action exports
-│       ├── apply.ts          # Apply stash action
-│       ├── copy.ts           # Copy stash reference action
-│       └── delete.ts         # Delete stash action
-├── init/
-│   └── index.ts              # Git aliases setup command
-├── list-aliases/
-│   └── index.ts              # Interactive git aliases explorer
-└── top-authors/
-    └── index.ts              # Repository contributors analysis
+│   ├── global-actions/       # Create new stash
+│   │   ├── index.ts
+│   │   └── create-stash.ts
+│   └── item-actions/
+│       ├── index.ts
+│       ├── apply.ts
+│       ├── copy.ts
+│       └── delete.ts
+└── ...
 ```
 
-## Key Features
+## Key Concepts
 
-### 1. **Maintainable Structure**
-- Each command has its own folder
-- Actions are split into individual files
-- Clear separation of concerns
-- Easy to locate and modify specific functionality
+### 1. **Unified Actions Architecture**
 
-### 2. **Type-Safe Action Helpers**
-The `cli/utils/action-helpers.ts` provides utilities for creating actions:
+Global actions are defined once and automatically generate both CLI options and interactive UI actions:
 
 ```typescript
-// Create a single action
-const action = createAction({
-  key: 'checkout',
-  label: 'Checkout branch',
-  description: 'Switch to this branch',
-  handler: checkoutBranch,
-});
+// branches/global-actions/index.ts
+import { createGlobalActions } from '../../../utils/action-helpers.js';
+import { createBranch, promptForBranchName } from './create-branch.js';
 
-// Create multiple actions at once
-const actions = createActions([
-  { key: 'copy', label: 'Copy name', handler: copyBranchName },
-  { key: 'delete', label: 'Delete branch', handler: deleteBranch },
-]);
-```
-
-### 3. **Follow-Up Actions System**
-Actions can now trigger follow-up actions. For example, when a branch deletion fails because it's not fully merged:
-
-```typescript
-// In delete.ts
-if (errorMessage.includes('not fully merged')) {
-  const forceDeleteAction = createAction({
-    key: 'force-delete',
-    label: 'Force delete branch',
-    description: 'Force delete this branch (WARNING: will lose changes)',
-    handler: (item: GitBranch) => forceDeleteBranch(item),
-  });
-
-  return actionFailure(
-    `Cannot delete branch '${branch.name}' - it's not fully merged`,
-    forceDeleteAction
-  );
+export function getBranchGlobalActions() {
+  return createGlobalActions([
+    {
+      key: 'new',
+      label: 'New branch',
+      description: 'Create a new branch from HEAD',
+      cli: { option: '--new [name]' },  // Auto-generates CLI option
+      handler: createBranch,
+      promptForArgs: promptForBranchName,
+    },
+  ]);
 }
 ```
 
-### 4. **Consistent Action Results**
-All actions return `ActionResult<T>` which provides:
-- `success: boolean` - Whether the action succeeded
-- `message?: string` - Optional message to display
-- `followUpAction?: Action<T>` - Optional follow-up action
+This automatically makes the action available:
+- **CLI**: `git-utils branches --new feat/test` or `git-utils branches --new` (prompts)
+- **Interactive**: Shows "New branch" in the action bar
 
-Helper functions make this easy:
-- `actionSuccess(message?, followUpAction?)` - For successful actions
-- `actionFailure(message?, followUpAction?)` - For failed actions
-- `actionCancelled(message?)` - For cancelled actions
+### 2. **Item Actions**
 
-## Example Usage
+Item actions operate on a selected item and use `createItemActions`:
 
-### Branch Delete with Force Delete Follow-up
+```typescript
+// branches/item-actions/index.ts
+import { createItemActions } from '../../../utils/action-helpers.js';
 
-When you try to delete a branch that's not fully merged:
-
-1. **Initial Action**: Regular delete fails
-2. **Follow-up Action**: System automatically offers "Force delete" option
-3. **User Choice**: User can choose to force delete or cancel
-
+export function getBranchItemActions() {
+  return createItemActions([
+    {
+      key: 'checkout',
+      label: 'Checkout',
+      description: 'Switch to this branch',
+      handler: checkoutBranch,
+    },
+    {
+      key: 'delete',
+      label: 'Delete',
+      description: 'Delete this branch',
+      handler: deleteBranch,
+    },
+  ]);
+}
 ```
-[x] Delete branch
-Delete this branch (local only)
 
-✗ Error deleting branch: the branch 'feat/top-authors' is not fully merged
-hint: If you are sure you want to delete it, run 'git branch -D feat/top-authors'
+### 3. **Command Registration**
 
-[x] Force delete branch
-Force delete this branch (WARNING: will lose changes)
+Commands use `createCommand` which auto-registers CLI options from global actions:
 
-◆ Are you sure you want to delete branch "feat/top-authors" with FORCE (this will permanently lose any unmerged changes)?
-│ ● Yes / ○ No
+```typescript
+// branches/index.ts
+import { createCommand } from '../../utils/command-registration.js';
+import { getBranchGlobalActions } from './global-actions/index.js';
+
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'branches',
+    description: 'Interactive branch selection with fuzzy search',
+    action: searchBranches,
+    globalActions: getBranchGlobalActions(),
+  });
+}
+```
+
+Result: `git-utils branches --help` shows:
+```
+Options:
+  --new [name]  Create a new branch from HEAD
+  -h, --help    display help for command
+```
+
+## Action Types
+
+### Unified Action Config
+
+For global actions that should be available both via CLI and interactive UI:
+
+```typescript
+interface GlobalActionConfig<TArgs> {
+  key: string;           // Unique identifier
+  label: string;         // Display name
+  description?: string;  // For help text and tooltips
+  cli?: {
+    option: string;      // Commander.js option syntax
+    optionDescription?: string;
+  };
+  handler: (args: TArgs) => Promise<boolean>;
+  promptForArgs?: () => Promise<TArgs | null>;
+}
+```
+
+CLI option formats:
+- `'--flag'` - Boolean flag
+- `'--option [value]'` - Optional argument
+- `'--option <value>'` - Required argument
+- `'-a, --all'` - Short + long alias
+
+### Item Action Config
+
+For actions on selected items:
+
+```typescript
+interface ItemActionConfig<T> {
+  key: string;
+  label: string;
+  description?: string;
+  handler: (item: T) => Promise<ActionResult<T> | boolean>;
+}
+```
+
+### Action Results
+
+Actions can return:
+- `true/false` - Simple success/failure
+- `ActionResult<T>` - With optional message and follow-up action
+
+```typescript
+// For failed actions that offer a follow-up
+return actionFailure(
+  'Cannot delete - not fully merged',
+  createItemAction({
+    key: 'force-delete',
+    label: 'Force delete',
+    handler: forceDeleteBranch,
+  })
+);
+```
+
+## Adding New Commands
+
+### 1. Create the folder structure:
+```
+src/cli/commands/my-command/
+├── index.ts
+├── global-actions/
+│   ├── index.ts
+│   └── my-action.ts
+└── item-actions/
+    ├── index.ts
+    └── my-item-action.ts
+```
+
+### 2. Define global actions (if needed):
+```typescript
+// global-actions/my-action.ts
+export interface MyActionArgs {
+  name: string;
+}
+
+export async function promptForMyArgs(): Promise<MyActionArgs | null> {
+  // Interactive prompt
+}
+
+export async function myAction(args: MyActionArgs): Promise<boolean> {
+  // Implementation
+}
+
+// global-actions/index.ts
+export function getMyGlobalActions() {
+  return createGlobalActions([
+    {
+      key: 'create',
+      label: 'Create',
+      description: 'Create something new',
+      cli: { option: '--create [name]' },
+      handler: myAction,
+      promptForArgs: promptForMyArgs,
+    },
+  ]);
+}
+```
+
+### 3. Register the command:
+```typescript
+// index.ts
+export function registerCommand(program: Command): CommandModule {
+  return createCommand(program, {
+    name: 'my-command',
+    description: 'My command description',
+    action: myMainAction,
+    globalActions: getMyGlobalActions(),
+  });
+}
+```
+
+### 4. Add to main index:
+```typescript
+// src/index.ts
+import { registerCommand as registerMyCommand } from './cli/commands/my-command/index.js';
+
+registerMyCommand(program);
+commands.push(registerMyCommand(program));
 ```
 
 ## Benefits
 
-1. **Scalability**: Easy to add new commands and actions
-2. **Maintainability**: Clear separation makes code easy to understand and modify
-3. **Type Safety**: TypeScript ensures correct action configuration
-4. **Reusability**: Shared helpers reduce code duplication
-5. **User Experience**: Follow-up actions provide intelligent workflows
-6. **Testing**: Individual action files are easier to test
-
-## Command Types
-
-### Interactive Commands (with actions)
-- **branches/**, **commits/**, **stashes/**: Use the action system with individual action files
-- Support follow-up actions and sophisticated user workflows
-- Each action is in its own file for better maintainability
-
-### Utility Commands (without actions)
-- **init/**, **list-aliases/**, **top-authors/**: Simple command structure
-- Single `index.ts` file containing the entire command logic
-- No need for separate action files since they perform one main function
-
-## Adding New Commands
-
-All commands now use the **Plugin/Module Pattern** for consistent architecture:
-
-### For Interactive Commands (with actions):
-1. Create a new folder: `src/cli/commands/my-command/`
-2. Create actions folder: `src/cli/commands/my-command/actions/`
-3. Implement individual action files in the actions folder
-4. Create `actions/index.ts` to export all actions
-5. Create main command file: `src/cli/commands/my-command/index.ts`
-6. Export a `registerCommand(program: Command): CommandModule` function
-7. Add the command import and registration call in `src/index.ts`
-
-### For Utility Commands (simple):
-1. Create a new folder: `src/cli/commands/my-command/`
-2. Create main command file: `src/cli/commands/my-command/index.ts`
-3. Export a `registerCommand(program: Command): CommandModule` function
-4. Add the command import and registration call in `src/index.ts`
-
-### Plugin/Module Pattern Template:
-
-```typescript
-import { Command } from 'commander';
-import type { CommandModule } from '../../utils/command-registration.js';
-
-const myCommand = async () => {
-  // Command implementation
-};
-
-/**
- * Register my-command with the CLI program
- */
-export function registerCommand(program: Command): CommandModule {
-  program
-    .command('my-command')
-    .description('Description of my command')
-    .action(myCommand);
-
-  return {
-    name: 'my-command',
-    description: 'Description of my command',
-    action: myCommand,
-  };
-}
-```
-
-### For Commands with Arguments:
-
-```typescript
-/**
- * Register command with arguments
- */
-export function registerCommand(program: Command): CommandModule {
-  const commandWithArgs = async (...args: unknown[]) => {
-    const arg1 = args[0] as string | undefined;
-    await myCommand(arg1);
-  };
-
-  program
-    .command('my-command [arg1]')
-    .description('Command with optional argument')
-    .action(commandWithArgs);
-
-  return {
-    name: 'my-command',
-    description: 'Command with optional argument',
-    action: commandWithArgs,
-    argument: {
-      name: '[arg1]',
-      description: 'Optional argument description',
-    },
-  };
-}
-```
-
-### For Commands with Subcommands:
-
-```typescript
-/**
- * Register command with subcommands
- */
-export function registerCommand(program: Command): CommandModule {
-  const command = program
-    .command('my-command')
-    .description('Command with subcommands');
-
-  // Add subcommands
-  command
-    .command('sub1')
-    .description('First subcommand')
-    .action(async () => { /* implementation */ });
-
-  command
-    .command('sub2 <arg>')
-    .description('Second subcommand with argument')
-    .action(async (arg: string) => { /* implementation */ });
-
-  // Main command action (when called without subcommands)
-  command.action(myMainCommand);
-
-  return {
-    name: 'my-command',
-    description: 'Command with subcommands',
-    action: myMainCommand,
-  };
-}
-
-## Adding New Actions
-
-1. Create a new action file: `src/cli/commands/[command]/actions/my-action.ts`
-2. Implement the action function returning `ActionResult<T>`
-3. Export the action in `actions/index.ts`
-4. Add the action configuration in the main command file using `createActions()`
+1. **Single Source of Truth**: Define actions once, use everywhere
+2. **CLI Alignment**: CLI options auto-generated from interactive actions
+3. **Type Safety**: TypeScript ensures correct configuration
+4. **Discoverability**: `--help` shows all available options
+5. **Flexibility**: Actions work with or without arguments
+6. **User Experience**: Consistent behavior between CLI and interactive modes

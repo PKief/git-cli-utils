@@ -45,4 +45,21 @@ describe('commits', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout.toLowerCase()).toContain('commit');
   });
+
+  it('should show --all option in help', async () => {
+    sandbox = createTestSandbox();
+    const result = await sandbox.runCLI(['commits', '--help']);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('--all');
+    expect(result.stdout).toContain('-a');
+  });
+
+  it('should show --file option in help', async () => {
+    sandbox = createTestSandbox();
+    const result = await sandbox.runCLI(['commits', '--help']);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('--file');
+  });
 });

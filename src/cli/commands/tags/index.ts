@@ -48,12 +48,13 @@ const searchTags = async (): Promise<void | CommandResult> => {
 
 /**
  * Register tags command with the CLI program
+ * Uses unified actions - CLI options auto-generated from globalActions
  */
 export function registerCommand(program: Command): CommandModule {
   return createCommand(program, {
     name: 'tags',
     description: 'Interactive tag selection with fuzzy search',
     action: searchTags,
-    commandActions: getTagGlobalActions(),
+    globalActions: getTagGlobalActions(),
   });
 }

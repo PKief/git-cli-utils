@@ -48,4 +48,13 @@ describe('tags', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout.toLowerCase()).toContain('tag');
   });
+
+  it('should show --new option in help', async () => {
+    sandbox = createTestSandbox();
+    const result = await sandbox.runCLI(['tags', '--help']);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('--new');
+    expect(result.stdout.toLowerCase()).toContain('create');
+  });
 });

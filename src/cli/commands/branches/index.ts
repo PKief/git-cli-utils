@@ -42,13 +42,13 @@ export const searchBranches = async (): Promise<void | CommandResult> => {
 
 /**
  * Plugin/Module Pattern Registration
- * Command with subcommands - fully self-contained
+ * Uses unified actions - CLI options auto-generated from globalActions
  */
 export function registerCommand(program: Command): CommandModule {
   return createCommand(program, {
     name: 'branches',
     description: 'Interactive branch selection with fuzzy search',
     action: searchBranches,
-    commandActions: getBranchGlobalActions(),
+    globalActions: getBranchGlobalActions(),
   });
 }

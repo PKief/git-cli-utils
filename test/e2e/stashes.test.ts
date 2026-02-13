@@ -49,4 +49,13 @@ describe('stashes', () => {
     expect(result.stdout).toContain('first stash');
     expect(result.stdout).toContain('second stash');
   });
+
+  it('should show --new option in help', async () => {
+    sandbox = createTestSandbox();
+    const result = await sandbox.runCLI(['stashes', '--help']);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('--new');
+    expect(result.stdout.toLowerCase()).toContain('stash');
+  });
 });

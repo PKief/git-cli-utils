@@ -5,6 +5,7 @@ import type { CommandResult } from '../../ui/command-selector.js';
 import { selectionList } from '../../ui/selection-list/index.js';
 import { createItemActions } from '../../utils/action-helpers.js';
 import type { CommandModule } from '../../utils/command-registration.js';
+import { createCommand } from '../../utils/command-registration.js';
 import { AppError } from '../../utils/exit.js';
 import { writeLine } from '../../utils/terminal.js';
 import { checkoutCommitInWorktree } from '../../utils/worktree-actions.js';
@@ -13,6 +14,11 @@ import {
   copyCommitHash,
   showCommitDetails,
 } from './actions/index.js';
+import {
+  type CommitSearchOptions,
+  getCommitGlobalActions,
+  setSearchCallback,
+} from './global-actions/index.js';
 
 /**
  * Creates actions available for commit items
@@ -46,10 +52,14 @@ function createCommitActions() {
   ]);
 }
 
-const searchCommits = async (
-  filePath?: string,
-  showAll = false
+/**
+ * Search commits with configurable options
+ */
+export const searchCommits = async (
+  options: CommitSearchOptions = {}
 ): Promise<void | CommandResult> => {
+  const { filePath, showAll = false } = options;
+
   try {
     const commits = await getGitCommits(filePath, showAll);
 
@@ -96,41 +106,26 @@ const searchCommits = async (
   }
 };
 
+// Register callback for global actions to use
+setSearchCallback(async (options) => {
+  await searchCommits(options);
+  return true;
+});
+
 /**
  * Register commits command with the CLI program
+ * Uses unified actions - CLI options auto-generated from globalActions
  */
 export function registerCommand(program: Command): CommandModule {
-  const commitsCommand = async (...args: unknown[]) => {
-    // Commander.js passes: [argument1, options, command]
-    // When argument is not provided, it's undefined
-    const filePath =
-      typeof args[0] === 'string' && args[0] ? args[0] : undefined;
-    // Options is always at index 1 (after the optional argument)
-    const options = args[1] as { all?: boolean } | undefined;
-    const showAll = options?.all ?? false;
-    return searchCommits(filePath, showAll);
+  // Wrap searchCommits to match expected signature
+  const action = async (): Promise<void | CommandResult> => {
+    return searchCommits();
   };
 
-  // Wrap action for Commander.js compatibility (strip CommandResult)
-  const wrappedAction = async (...args: unknown[]): Promise<void> => {
-    await commitsCommand(...args);
-  };
-
-  const cmd = new Command('commits')
-    .description('Interactive commit selection with fuzzy search')
-    .argument('[file]', 'Show commits that modified this file')
-    .option('-a, --all', 'Show commits from all branches')
-    .action(wrappedAction);
-
-  program.addCommand(cmd);
-
-  return {
+  return createCommand(program, {
     name: 'commits',
     description: 'Interactive commit selection with fuzzy search',
-    action: commitsCommand,
-    argument: {
-      name: '[file]',
-      description: 'Show commits that modified this file',
-    },
-  };
+    action,
+    globalActions: getCommitGlobalActions(),
+  });
 }
