@@ -307,6 +307,9 @@ export class Pager {
       stdin.setRawMode(false);
     }
 
+    // Pause stdin to allow the process to exit
+    stdin.pause();
+
     // Clear the prompt line
     console.log('');
   }

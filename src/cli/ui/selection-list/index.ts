@@ -245,6 +245,8 @@ export function selectionList<T>(
       if (typeof process.stdin.setRawMode === 'function') {
         process.stdin.setRawMode(false);
       }
+      // Pause stdin to allow the process to exit
+      process.stdin.pause();
     };
 
     // Handle Enter - execute action and resolve
