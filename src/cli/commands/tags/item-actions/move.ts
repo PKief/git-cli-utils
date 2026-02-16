@@ -9,6 +9,7 @@ import {
   actionFailure,
   actionSuccess,
 } from '../../../utils/action-helpers.js';
+import { createSpinner } from '../../../utils/spinner.js';
 import { writeLine } from '../../../utils/terminal.js';
 
 /**
@@ -96,17 +97,19 @@ export async function changeTagCommit(
         } else {
           // Push to all remotes (force push since we're moving the tag)
           for (const remote of remotes) {
+            const spinner = createSpinner();
+            spinner.start(`Pushing tag '${tag.name}' to remote '${remote}'...`);
             try {
               await executor.executeCommand(
                 `git push "${remote}" "${tag.name}" --force`
               );
-              writeLine(
-                green(`✓ Updated tag '${tag.name}' on remote '${remote}'`)
+              spinner.stop(
+                green(`Updated tag '${tag.name}' on remote '${remote}'`)
               );
             } catch (error) {
-              writeLine(
+              spinner.fail(
                 red(
-                  `✗ Could not update tag '${tag.name}' on remote '${remote}': ${error instanceof Error ? error.message : String(error)}`
+                  `Could not update tag '${tag.name}' on remote '${remote}': ${error instanceof Error ? error.message : String(error)}`
                 )
               );
             }

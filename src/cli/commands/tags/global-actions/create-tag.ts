@@ -5,6 +5,7 @@
 import * as p from '@clack/prompts';
 import { GitExecutor } from '../../../../core/git/executor.js';
 import { green, red, yellow } from '../../../ui/ansi.js';
+import { createSpinner } from '../../../utils/spinner.js';
 import { writeLine } from '../../../utils/terminal.js';
 
 /**
@@ -175,13 +176,15 @@ export async function createTag(args: CreateTagArgs): Promise<boolean> {
     });
 
     if (typeof pushToRemote !== 'symbol' && pushToRemote) {
+      const spinner = createSpinner();
+      spinner.start(`Pushing tag '${tagName}' to origin...`);
       try {
         await executor.executeCommand(`git push origin "${tagName}"`);
-        writeLine(green(`✓ Pushed tag '${tagName}' to origin`));
+        spinner.stop(green(`Pushed tag '${tagName}' to origin`));
       } catch (error) {
-        writeLine(
+        spinner.fail(
           red(
-            `✗ Failed to push tag: ${error instanceof Error ? error.message : String(error)}`
+            `Failed to push tag: ${error instanceof Error ? error.message : String(error)}`
           )
         );
       }

@@ -7,6 +7,7 @@ import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { AppError } from '../../utils/exit.js';
 import { writeLine } from '../../utils/terminal.js';
+import { getAliasActions } from './actions/index.js';
 
 const listAliases = async (): Promise<void | CommandResult> => {
   try {
@@ -23,7 +24,6 @@ const listAliases = async (): Promise<void | CommandResult> => {
     writeLine();
 
     // Use action-based selection list so user can choose execute / copy / new
-    const { getAliasActions } = await import('./actions/index.js');
     const actions = getAliasActions();
 
     const result = await selectionList<GitAlias>({

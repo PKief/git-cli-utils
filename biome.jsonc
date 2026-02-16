@@ -1,6 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
-  "plugins": ["./biome/no-process-exit.grit"],
+  "plugins": ["./biome/no-process-exit.grit", "./biome/no-dynamic-import.grit"],
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,

@@ -7,6 +7,7 @@ import {
   actionFailure,
   actionSuccess,
 } from '../../../utils/action-helpers.js';
+import { createSpinner } from '../../../utils/spinner.js';
 import { writeLine } from '../../../utils/terminal.js';
 
 /**
@@ -55,17 +56,21 @@ export async function deleteTag(tag: GitTag): Promise<ActionResult<GitTag>> {
         } else {
           // Delete from all remotes
           for (const remote of remotes) {
+            const spinner = createSpinner();
+            spinner.start(
+              `Deleting tag '${tag.name}' from remote '${remote}'...`
+            );
             try {
               await executor.executeCommand(
                 `git push "${remote}" --delete "${tag.name}"`
               );
-              writeLine(
-                green(`✓ Deleted tag '${tag.name}' from remote '${remote}'`)
+              spinner.stop(
+                green(`Deleted tag '${tag.name}' from remote '${remote}'`)
               );
             } catch (error) {
-              writeLine(
+              spinner.fail(
                 yellow(
-                  `⚠ Could not delete tag '${tag.name}' from remote '${remote}': ${error instanceof Error ? error.message : String(error)}`
+                  `Could not delete tag '${tag.name}' from remote '${remote}': ${error instanceof Error ? error.message : String(error)}`
                 )
               );
             }

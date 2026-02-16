@@ -12,6 +12,7 @@ import {
 import { configCommand } from '../commands/config/index.js';
 import { green, yellow } from '../ui/ansi.js';
 import { openInConfiguredEditor } from './editor.js';
+import { createSpinner } from './spinner.js';
 import { writeErrorLine, writeLine } from './terminal.js';
 
 /**
@@ -58,8 +59,6 @@ export async function checkoutBranchInWorktree(
   branch: GitBranch
 ): Promise<boolean> {
   try {
-    writeLine(`Creating worktree for branch '${branch.name}'...`);
-
     // Check if worktree already exists for this branch
     const existingWorktrees = await getGitWorktrees();
     const existingWorktree = existingWorktrees.find(
@@ -79,9 +78,12 @@ export async function checkoutBranchInWorktree(
     }
 
     // Auto-generate path based on branch name
+    const spinner = createSpinner();
+    spinner.start(`Creating worktree for branch '${branch.name}'...`);
+
     const createdPath = await createWorktree(branch.name);
 
-    writeLine(green(`✓ Worktree created: ${createdPath}`));
+    spinner.stop(green(`Worktree created: ${createdPath}`));
     writeLine(`  Branch: ${branch.name}`);
 
     // Automatically open in configured editor
@@ -103,14 +105,15 @@ export async function checkoutCommitInWorktree(
   commit: GitCommit
 ): Promise<boolean> {
   try {
-    writeLine(
+    const spinner = createSpinner();
+    spinner.start(
       `Creating worktree for commit '${commit.hash.substring(0, 8)}'...`
     );
 
     // Auto-generate path based on commit hash
     const createdPath = await createWorktreeFromCommit(commit.hash);
 
-    writeLine(green(`✓ Worktree created: ${createdPath}`));
+    spinner.stop(green(`Worktree created: ${createdPath}`));
     writeLine(`  Commit: ${commit.hash.substring(0, 8)}`);
 
     // Automatically open in configured editor
@@ -134,9 +137,6 @@ export async function checkoutRemoteBranchInWorktree(
   try {
     const branchName = remoteBranch.name;
     const remoteName = remoteBranch.fullName.split('/')[0]; // Extract remote name from fullName
-    writeLine(
-      `Creating worktree for remote branch '${remoteName}/${branchName}'...`
-    );
 
     // Check if worktree already exists for this branch
     const existingWorktrees = await getGitWorktrees();
@@ -157,9 +157,14 @@ export async function checkoutRemoteBranchInWorktree(
     }
 
     // Auto-generate path based on remote branch name
+    const spinner = createSpinner();
+    spinner.start(
+      `Creating worktree for remote branch '${remoteName}/${branchName}'...`
+    );
+
     const createdPath = await createWorktree(remoteBranch.fullName);
 
-    writeLine(green(`✓ Worktree created: ${createdPath}`));
+    spinner.stop(green(`Worktree created: ${createdPath}`));
     writeLine(`  Remote branch: ${remoteName}/${branchName}`);
 
     // Automatically open in configured editor

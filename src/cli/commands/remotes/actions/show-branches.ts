@@ -7,6 +7,7 @@ import { yellow } from '../../../ui/ansi.js';
 import { selectionList } from '../../../ui/selection-list/index.js';
 import { createItemActions } from '../../../utils/action-helpers.js';
 import { compareBranches } from '../../../utils/compare-branches.js';
+import { withSpinner } from '../../../utils/spinner.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 import { checkoutRemoteBranchInWorktree } from '../../../utils/worktree-actions.js';
 import { checkoutRemoteBranch } from './checkout-branch.js';
@@ -64,9 +65,11 @@ function createBranchActions() {
  */
 export async function showRemoteBranches(remote: GitRemote): Promise<boolean> {
   try {
-    writeLine(`Fetching branches from remote '${remote.name}'...`);
-
-    const branches = await getRemoteBranches(remote.name);
+    const branches = await withSpinner({
+      start: `Fetching branches from remote '${remote.name}'...`,
+      success: `Fetched branches from '${remote.name}'`,
+      task: () => getRemoteBranches(remote.name),
+    });
 
     if (branches.length === 0) {
       writeLine(yellow(`No branches found on remote '${remote.name}'!`));

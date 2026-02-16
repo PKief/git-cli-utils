@@ -2,6 +2,7 @@ import * as p from '@clack/prompts';
 import { gitExecutor } from '../../../../core/git/executor.js';
 import { GitRemoteBranch } from '../../../../core/git/remotes.js';
 import { green, red, yellow } from '../../../ui/ansi.js';
+import { createSpinner } from '../../../utils/spinner.js';
 import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
 
 /**
@@ -30,19 +31,22 @@ export async function deleteRemoteBranch(
     }
 
     const deleteLocal = deleteOption === 'both';
+    const spinner = createSpinner();
 
     // Delete the remote branch
-    writeLine(`Deleting branch '${branch.name}' on remote '${remoteName}'...`);
+    spinner.start(
+      `Deleting branch '${branch.name}' on remote '${remoteName}'...`
+    );
     try {
       await gitExecutor.executeCommand(
         `git push ${remoteName} --delete ${branch.name}`
       );
-      writeLine(
-        green(`✓ Deleted remote branch '${branch.name}' on '${remoteName}'`)
+      spinner.stop(
+        green(`Deleted remote branch '${branch.name}' on '${remoteName}'`)
       );
     } catch (error) {
       // Remote branch might already be deleted, continue anyway
-      writeLine(
+      spinner.fail(
         yellow(
           `Remote branch may not exist: ${error instanceof Error ? error.message : String(error)}`
         )
@@ -61,15 +65,17 @@ export async function deleteRemoteBranch(
     }
 
     // Sync with remote (prune deleted remote-tracking references)
-    writeLine(`Syncing with remote '${remoteName}'...`);
+    const syncSpinner = createSpinner();
+    syncSpinner.start(`Syncing with remote '${remoteName}'...`);
     try {
       await gitExecutor.executeCommand(`git fetch ${remoteName} --prune`);
-      writeLine(
+      syncSpinner.stop(
         green(
-          `✓ Synced with remote '${remoteName}' (remote-tracking references pruned)`
+          `Synced with remote '${remoteName}' (remote-tracking references pruned)`
         )
       );
     } catch (error) {
+      syncSpinner.fail(`Failed to sync with remote '${remoteName}'`);
       writeErrorLine(
         red(
           `Failed to sync: ${error instanceof Error ? error.message : String(error)}`

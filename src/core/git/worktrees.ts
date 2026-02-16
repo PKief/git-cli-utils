@@ -1,3 +1,4 @@
+import { access } from 'node:fs/promises';
 import path from 'node:path';
 import { GitExecutor } from './executor.js';
 
@@ -210,8 +211,7 @@ export async function validateWorktreePath(
 ): Promise<boolean> {
   try {
     // Check if path already exists using Node.js fs
-    const fs = await import('node:fs/promises');
-    await fs.access(targetPath);
+    await access(targetPath);
     return false; // Path exists
   } catch {
     return true; // Path doesn't exist, so it's valid

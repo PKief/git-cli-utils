@@ -11,6 +11,7 @@ import { selectionList } from '../../ui/selection-list/index.js';
 import type { CommandModule } from '../../utils/command-registration.js';
 import { createCommand } from '../../utils/command-registration.js';
 import { AppError } from '../../utils/exit.js';
+import { withSpinner } from '../../utils/spinner.js';
 import { writeLine } from '../../utils/terminal.js';
 import { syncFromRemoteBranch } from './actions/sync.js';
 
@@ -50,8 +51,12 @@ const syncCommand = async (): Promise<void | CommandResult> => {
 
   const selectedRemote = remoteResult.item;
 
-  // Step 3: Fetch branches from the selected remote
-  const remoteBranches = await getRemoteBranches(selectedRemote.name);
+  // Step 3: Fetch branches from the selected remote (with spinner since it does git fetch)
+  const remoteBranches = await withSpinner({
+    start: `Fetching branches from '${selectedRemote.name}'...`,
+    success: `Fetched branches from '${selectedRemote.name}'`,
+    task: () => getRemoteBranches(selectedRemote.name),
+  });
 
   if (remoteBranches.length === 0) {
     writeLine(yellow(`No branches found on remote '${selectedRemote.name}'!`));

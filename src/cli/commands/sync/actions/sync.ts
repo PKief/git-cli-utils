@@ -1,5 +1,6 @@
 import { gitExecutor } from '../../../../core/git/executor.js';
-import { green, yellow } from '../../../ui/ansi.js';
+import { green } from '../../../ui/ansi.js';
+import { createSpinner } from '../../../utils/spinner.js';
 import { writeLine } from '../../../utils/terminal.js';
 
 /**
@@ -9,9 +10,9 @@ export async function syncFromRemoteBranch(
   remoteName: string,
   branchName: string
 ): Promise<void> {
-  try {
-    writeLine(yellow(`Syncing from ${remoteName}/${branchName}...`));
+  const spinner = createSpinner();
 
+  try {
     // Get current branch name first
     const currentBranchResult = await gitExecutor.executeCommand(
       'git branch --show-current'
@@ -22,15 +23,20 @@ export async function syncFromRemoteBranch(
       throw new Error('Could not determine current branch');
     }
 
-    writeLine(`Current branch: ${currentBranch}`);
-    writeLine(`Pulling from: ${remoteName}/${branchName}`);
+    // Perform the pull operation with spinner
+    spinner.start(`Pulling from ${remoteName}/${branchName}...`);
 
-    // Perform the pull operation
     const pullResult = await gitExecutor.executeCommand(
       `git pull ${remoteName} ${branchName}`
     );
 
-    // Display the result
+    spinner.stop(
+      green(
+        `Successfully pulled changes from ${remoteName}/${branchName} into ${currentBranch}`
+      )
+    );
+
+    // Display the result details after spinner stops
     if (pullResult.stdout) {
       writeLine(pullResult.stdout);
     }
@@ -38,13 +44,8 @@ export async function syncFromRemoteBranch(
     if (pullResult.stderr) {
       writeLine(pullResult.stderr);
     }
-
-    writeLine(
-      green(
-        `Successfully pulled changes from ${remoteName}/${branchName} into ${currentBranch}`
-      )
-    );
   } catch (error) {
+    spinner.fail(`Failed to sync from ${remoteName}/${branchName}`);
     throw new Error(
       `Failed to sync from ${remoteName}/${branchName}: ${error instanceof Error ? error.message : String(error)}`
     );
