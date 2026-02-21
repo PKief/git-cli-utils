@@ -36,6 +36,7 @@ jobs:
 
       - name: 📜 Generate changelog and release notes
         run: |
+          git pull --rebase origin main
           bunx changelogen --hideAuthorEmail --release --push
           bunx changelogen github release --token ${{ secrets.GITHUB_TOKEN }}
 
