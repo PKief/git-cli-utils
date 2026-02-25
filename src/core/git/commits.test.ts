@@ -167,6 +167,95 @@ describe('Git Commits', () => {
         tags: [],
       });
     });
+
+    it('should return commits from a specific branch', async () => {
+      // Arrange
+      const mockOutput = [
+        'abc123|2023-09-15|feature/my-feature|Add feature',
+        'def456|2023-09-14|feature/my-feature|Initial feature work',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits(
+        undefined,
+        false,
+        'feature/my-feature'
+      );
+
+      // Assert
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        'feature/my-feature',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%D|%s',
+      ]);
+      expect(commits).toHaveLength(2);
+      expect(commits[0]).toEqual({
+        hash: 'abc123',
+        date: '2023-09-15',
+        branch: 'feature/my-feature',
+        subject: 'Add feature',
+        tags: [],
+      });
+    });
+
+    it('should ignore branch parameter when showAllBranches is true', async () => {
+      // Arrange
+      const mockOutput = ['abc123|2023-09-15|main|Update main branch'];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits(
+        undefined,
+        true,
+        'feature/my-feature'
+      );
+
+      // Assert - branch should be ignored when showAll is true
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        '--all',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%D|%s',
+      ]);
+      expect(commits).toHaveLength(1);
+    });
+
+    it('should support both branch and filePath parameters', async () => {
+      // Arrange
+      const mockOutput = [
+        'abc123|2023-09-15|feature/my-feature|Update file.ts',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits(
+        'src/file.ts',
+        false,
+        'feature/my-feature'
+      );
+
+      // Assert
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        'feature/my-feature',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%D|%s',
+        '--',
+        'src/file.ts',
+      ]);
+      expect(commits).toHaveLength(1);
+    });
   });
 
   describe('getReflogCommits', () => {

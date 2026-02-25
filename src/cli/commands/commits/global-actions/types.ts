@@ -9,6 +9,7 @@ export interface CommitSearchOptions {
   showAll?: boolean;
   filePath?: string;
   reflog?: boolean;
+  branch?: string;
 }
 
 /**

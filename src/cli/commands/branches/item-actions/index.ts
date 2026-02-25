@@ -10,6 +10,7 @@ import { checkoutBranch } from './checkout.js';
 import { copyBranchName } from './copy.js';
 import { createBranchFrom } from './create-from.js';
 import { deleteBranch } from './delete.js';
+import { searchBranchCommits } from './search-commits.js';
 
 /**
  * Get all item actions for the branches command
@@ -34,6 +35,13 @@ export function getBranchItemActions() {
       label: 'Compare with current',
       description: 'Compare selected branch with currently checked out branch',
       handler: compareBranches,
+    },
+    {
+      key: 'commits',
+      label: 'Search commits',
+      description: 'Search commits on this branch',
+      handler: searchBranchCommits,
+      exitAfterExecution: true,
     },
     {
       key: 'create',

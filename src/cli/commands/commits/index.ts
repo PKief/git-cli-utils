@@ -63,12 +63,12 @@ function createCommitActions() {
 export const searchCommits = async (
   options: CommitSearchOptions = {}
 ): Promise<void | CommandResult> => {
-  const { filePath, showAll = false, reflog = false } = options;
+  const { filePath, showAll = false, reflog = false, branch } = options;
 
   try {
     const commits = reflog
       ? await getReflogCommits()
-      : await getGitCommits(filePath, showAll);
+      : await getGitCommits(filePath, showAll, branch);
 
     if (commits.length === 0) {
       const message = reflog
@@ -86,7 +86,9 @@ export const searchCommits = async (
         ? yellow(`Select a commit that modified: ${filePath}`)
         : showAll
           ? yellow('Select a commit from all branches:')
-          : yellow('Select a commit from current branch:');
+          : branch
+            ? yellow(`Select a commit from branch '${branch}':`)
+            : yellow('Select a commit from current branch:');
 
     const result = await selectionList<GitCommit>({
       items: commits,
