@@ -13,6 +13,7 @@ import { checkoutRemoteBranchInWorktree } from '../../../utils/worktree-actions.
 import { checkoutRemoteBranch } from './checkout-branch.js';
 import { deleteRemoteBranch } from './delete-branch.js';
 import { resetToRemoteBranch } from './reset-to-remote.js';
+import { searchRemoteBranchCommits } from './search-commits.js';
 import { setAsUpstream } from './set-as-upstream.js';
 
 /**
@@ -31,6 +32,13 @@ function createBranchActions() {
       label: 'Compare with current',
       description: 'Compare selected branch with currently checked out branch',
       handler: compareBranches,
+    },
+    {
+      key: 'commits',
+      label: 'Search commits',
+      description: 'Search commits on this branch',
+      handler: searchRemoteBranchCommits,
+      exitAfterExecution: true,
     },
     {
       key: 'worktree',
