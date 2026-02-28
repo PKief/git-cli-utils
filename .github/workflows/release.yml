@@ -34,21 +34,35 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git config --global push.followTags true
 
-      - name: 📜 Generate changelog and release notes
+      - name: 📜 Generate changelog and bump version
         run: |
           git pull --rebase origin main
-          bunx changelogen --hideAuthorEmail --release --push
-          bunx changelogen github release --token ${{ secrets.GITHUB_TOKEN }}
+          # Bump version and generate changelog without committing
+          bunx changelogen --hideAuthorEmail --bump --output CHANGELOG.md
 
-      - name: 📝 Get metadata
+      - name: 🔄 Sync package-lock.json
+        run: |
+          # Update package-lock.json to match new version in package.json
+          npm install --package-lock-only
+
+      - name: 📝 Get new version
+        id: version
         run: |
           VERSION=$(jq -r '.version' package.json)
-          NAME=$(jq -r '.name' package.json)
-          DISPLAY_NAME=$(jq -r '.displayName' package.json)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $VERSION"
 
-          echo "VERSION=$VERSION"             >> $GITHUB_ENV
-          echo "NAME=$NAME"                   >> $GITHUB_ENV
-          echo "DISPLAY_NAME=$DISPLAY_NAME"   >> $GITHUB_ENV
+      - name: 📤 Commit, tag and push release
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          git add package.json package-lock.json CHANGELOG.md
+          git commit -m "chore(release): v${VERSION}"
+          git tag -am "v${VERSION}" "v${VERSION}"
+          git push --follow-tags
+
+      - name: 🐙 Create GitHub release
+        run: |
+          bunx changelogen github release --token ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⚒️ Build
         run: bun run build
