@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils.js';
 import { gitExecutor } from './executor.js';
 
 /**
@@ -51,9 +52,7 @@ export async function getGitRemotes(): Promise<GitRemote[]> {
 
     return Array.from(remotesMap.values());
   } catch (error) {
-    throw new Error(
-      `Failed to fetch git remotes: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Failed to fetch git remotes: ${getErrorMessage(error)}`);
   }
 }
 
@@ -103,7 +102,7 @@ export async function getRemoteBranches(
     return branches;
   } catch (error) {
     throw new Error(
-      `Failed to fetch branches from remote '${remoteName}': ${error instanceof Error ? error.message : String(error)}`
+      `Failed to fetch branches from remote '${remoteName}': ${getErrorMessage(error)}`
     );
   }
 }

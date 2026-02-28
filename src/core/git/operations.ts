@@ -1,4 +1,5 @@
 import clipboardy from 'clipboardy';
+import { getErrorMessage } from '../utils.js';
 import { gitExecutor } from './executor.js';
 
 /**
@@ -20,7 +21,7 @@ export class GitOperations {
       return result;
     } catch (error) {
       throw new Error(
-        `Failed to checkout branch '${branchName}': ${error instanceof Error ? error.message : String(error)}`
+        `Failed to checkout branch '${branchName}': ${getErrorMessage(error)}`
       );
     }
   }
@@ -33,9 +34,7 @@ export class GitOperations {
       await clipboardy.write(text);
       return { message: `Copied to clipboard: ${text}` };
     } catch (error) {
-      throw new Error(
-        `Failed to copy to clipboard: ${error instanceof Error ? error.message : String(error)}`
-      );
+      throw new Error(`Failed to copy to clipboard: ${getErrorMessage(error)}`);
     }
   }
 }

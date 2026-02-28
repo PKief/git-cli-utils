@@ -1,3 +1,4 @@
+import { getErrorMessage, simpleFilter } from '../utils.js';
 import { gitExecutor } from './executor.js';
 
 export interface GitBranch {
@@ -39,9 +40,7 @@ export async function getGitBranches(): Promise<GitBranch[]> {
 
     return branches;
   } catch (error) {
-    throw new Error(
-      `Error executing git command: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Error executing git command: ${getErrorMessage(error)}`);
   }
 }
 
@@ -49,8 +48,5 @@ export function filterBranches(
   branches: GitBranch[],
   searchTerm: string
 ): GitBranch[] {
-  const normalizedSearchTerm = searchTerm.toLowerCase();
-  return branches.filter((branch) =>
-    branch.name.toLowerCase().includes(normalizedSearchTerm)
-  );
+  return simpleFilter(branches, searchTerm, (branch) => branch.name);
 }

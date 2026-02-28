@@ -1,28 +1,10 @@
-import { GitOperations } from '../../../../core/git/operations.js';
-import { GitStash } from '../../../../core/git/stashes.js';
-import { green, red } from '../../../ui/ansi.js';
-import {
-  ActionResult,
-  actionFailure,
-  actionSuccess,
-} from '../../../utils/action-helpers.js';
-import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
+import type { GitStash } from '../../../../core/git/stashes.js';
+import { createCopyAction } from '../../../utils/action-helpers.js';
 
 /**
  * Copy stash reference to clipboard action
  */
-export async function copyStashReference(
-  stash: GitStash
-): Promise<ActionResult<GitStash>> {
-  try {
-    const result = await GitOperations.copyToClipboard(
-      `stash@{${stash.index}}`
-    );
-    writeLine(green(`✓ ${result.message}`));
-    return actionSuccess(`Reference copied`);
-  } catch (error) {
-    const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;
-    writeErrorLine(red(`✗ ${errorMessage}`));
-    return actionFailure(errorMessage);
-  }
-}
+export const copyStashReference = createCopyAction<GitStash>({
+  getText: (stash) => `stash@{${stash.index}}`,
+  successMessage: 'Reference copied',
+});

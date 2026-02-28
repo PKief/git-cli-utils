@@ -1,3 +1,4 @@
+import { getErrorMessage, simpleFilter } from '../utils.js';
 import { gitExecutor } from './executor.js';
 
 export interface GitStash {
@@ -55,9 +56,7 @@ export const getGitStashes = async (): Promise<GitStash[]> => {
 
     return stashes;
   } catch (error) {
-    throw new Error(
-      `Failed to get git stashes: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Failed to get git stashes: ${getErrorMessage(error)}`);
   }
 };
 
@@ -68,17 +67,9 @@ export const filterStashes = (
   stashes: GitStash[],
   searchTerm: string
 ): GitStash[] => {
-  if (!searchTerm) {
-    return stashes;
-  }
-
-  const lowerSearchTerm = searchTerm.toLowerCase();
-
-  return stashes.filter((stash) => {
-    return (
-      stash.message.toLowerCase().includes(lowerSearchTerm) ||
-      stash.branch.toLowerCase().includes(lowerSearchTerm) ||
-      stash.hash.toLowerCase().includes(lowerSearchTerm)
-    );
-  });
+  return simpleFilter(
+    stashes,
+    searchTerm,
+    (stash) => `${stash.message} ${stash.branch} ${stash.hash}`
+  );
 };

@@ -1,23 +1,10 @@
-import { GitAlias } from '../../../../core/git/aliases.js';
-import { GitOperations } from '../../../../core/git/operations.js';
-import { green, red } from '../../../ui/ansi.js';
-import {
-  ActionResult,
-  actionFailure,
-  actionSuccess,
-} from '../../../utils/action-helpers.js';
-import { writeErrorLine, writeLine } from '../../../utils/terminal.js';
+import type { GitAlias } from '../../../../core/git/aliases.js';
+import { createCopyAction } from '../../../utils/action-helpers.js';
 
-export async function copyAliasCommand(
-  alias: GitAlias
-): Promise<ActionResult<GitAlias>> {
-  try {
-    const result = await GitOperations.copyToClipboard(alias.command);
-    writeLine(green(`✓ ${result.message}`));
-    return actionSuccess('Alias copied');
-  } catch (error) {
-    const errorMessage = `Copy failed: ${error instanceof Error ? error.message : String(error)}`;
-    writeErrorLine(red(`✗ ${errorMessage}`));
-    return actionFailure(errorMessage);
-  }
-}
+/**
+ * Copy alias command to clipboard action
+ */
+export const copyAliasCommand = createCopyAction<GitAlias>({
+  getText: (alias) => alias.command,
+  successMessage: 'Alias copied',
+});

@@ -1,9 +1,13 @@
+import { GitOperations } from '../../core/git/operations.js';
+import { getErrorMessage } from '../../core/utils.js';
+import { green, red } from '../ui/ansi.js';
 import type {
   Action,
   GlobalAction,
   ItemAction,
 } from '../ui/selection-list/index.js';
 import { AppError } from './exit.js';
+import { writeErrorLine, writeLine } from './terminal.js';
 
 /**
  * Result of an action execution with optional follow-up
@@ -126,6 +130,8 @@ export function actionCancelled<T>(message?: string): ActionResult<T> {
 // Re-export types for convenience
 export type { Action, GlobalAction, ItemAction };
 
+// Re-export getErrorMessage for convenience
+export { getErrorMessage } from '../../core/utils.js';
 // Re-export global action utilities for convenience
 export {
   createGlobalAction,
@@ -133,3 +139,42 @@ export {
   type GlobalActionConfig,
   type GlobalActionWithCLI,
 } from './global-action.js';
+
+/**
+ * Configuration for creating a copy-to-clipboard action
+ */
+export interface CopyActionConfig<T> {
+  /** Function to extract the text to copy from the item */
+  getText: (item: T) => string;
+  /** Success message to display (e.g., "Branch name copied") */
+  successMessage: string;
+}
+
+/**
+ * Creates a copy-to-clipboard action handler.
+ * This factory eliminates the duplicated copy action pattern across commands.
+ *
+ * @example
+ * ```ts
+ * const copyBranchName = createCopyAction<GitBranch>({
+ *   getText: (branch) => branch.name,
+ *   successMessage: 'Branch name copied',
+ * });
+ * ```
+ */
+export function createCopyAction<T>(
+  config: CopyActionConfig<T>
+): (item: T) => Promise<ActionResult<T>> {
+  return async (item: T): Promise<ActionResult<T>> => {
+    try {
+      const textToCopy = config.getText(item);
+      const result = await GitOperations.copyToClipboard(textToCopy);
+      writeLine(green(`✓ ${result.message}`));
+      return actionSuccess(config.successMessage);
+    } catch (error) {
+      const errorMessage = `Copy failed: ${getErrorMessage(error)}`;
+      writeErrorLine(red(`✗ ${errorMessage}`));
+      return actionFailure(errorMessage);
+    }
+  };
+}
