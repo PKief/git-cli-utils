@@ -190,35 +190,6 @@ export function createGlobalAction<TArgs>(
 }
 
 /**
- * Combine multiple global actions into an array.
- * Use createGlobalAction() to create each action with full type safety.
- *
- * @example
- * ```typescript
- * const actions = createGlobalActions([
- *   createGlobalAction({
- *     key: 'all',
- *     label: 'All branches',
- *     cli: { option: '-a, --all' },
- *     handler: async () => { ... },
- *   }),
- *   createGlobalAction({
- *     key: 'new',
- *     label: 'New branch',
- *     cli: { option: '--new [name]' },
- *     handler: createBranch,
- *     promptForArgs: promptForBranchName,
- *   }),
- * ]);
- * ```
- */
-export function createGlobalActions(
-  actions: GlobalActionWithCLI[]
-): GlobalActionWithCLI[] {
-  return actions;
-}
-
-/**
  * Convert global actions to interactive UI format (GlobalAction array)
  */
 export function toInteractiveActions(

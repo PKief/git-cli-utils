@@ -1,6 +1,7 @@
 import { access } from 'node:fs/promises';
 import path from 'node:path';
-import { GitExecutor } from './executor.js';
+import { getErrorMessage } from '../utils.js';
+import { gitExecutor } from './executor.js';
 
 export interface GitWorktree {
   path: string;
@@ -13,10 +14,8 @@ export interface GitWorktree {
  * Get list of existing git worktrees (excluding the main repository)
  */
 export async function getGitWorktrees(): Promise<GitWorktree[]> {
-  const executor = GitExecutor.getInstance();
-
   try {
-    const result = await executor.executeCommand(
+    const result = await gitExecutor.executeCommand(
       'git worktree list --porcelain'
     );
     const allWorktrees = parseWorktreeList(result.stdout);
@@ -30,9 +29,7 @@ export async function getGitWorktrees(): Promise<GitWorktree[]> {
     ) {
       throw new Error('Not in a git repository');
     }
-    throw new Error(
-      `Failed to list worktrees: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Failed to list worktrees: ${getErrorMessage(error)}`);
   }
 }
 
@@ -96,8 +93,6 @@ export async function createWorktree(
   branch: string,
   targetPath?: string
 ): Promise<string> {
-  const executor = GitExecutor.getInstance();
-
   // Generate a path if not provided
   if (!targetPath) {
     const repoRoot = await getRepositoryRoot();
@@ -123,7 +118,7 @@ export async function createWorktree(
     }
 
     // Create the worktree
-    await executor.executeCommand(
+    await gitExecutor.executeCommand(
       `git worktree add "${targetPath}" "${branch}"`
     );
 
@@ -137,9 +132,7 @@ export async function createWorktree(
         throw new Error(`Branch '${branch}' does not exist`);
       }
     }
-    throw new Error(
-      `Failed to create worktree: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Failed to create worktree: ${getErrorMessage(error)}`);
   }
 }
 
@@ -150,8 +143,6 @@ export async function createWorktreeFromCommit(
   commitHash: string,
   targetPath?: string
 ): Promise<string> {
-  const executor = GitExecutor.getInstance();
-
   // Generate a path if not provided
   if (!targetPath) {
     const repoRoot = await getRepositoryRoot();
@@ -165,7 +156,7 @@ export async function createWorktreeFromCommit(
 
   try {
     // Create the worktree with detached HEAD
-    await executor.executeCommand(
+    await gitExecutor.executeCommand(
       `git worktree add --detach "${targetPath}" "${commitHash}"`
     );
 
@@ -179,9 +170,7 @@ export async function createWorktreeFromCommit(
         throw new Error(`Commit '${commitHash}' does not exist`);
       }
     }
-    throw new Error(
-      `Failed to create worktree: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Failed to create worktree: ${getErrorMessage(error)}`);
   }
 }
 
@@ -189,17 +178,13 @@ export async function createWorktreeFromCommit(
  * Get the root directory of the current git repository
  */
 export async function getRepositoryRoot(): Promise<string> {
-  const executor = GitExecutor.getInstance();
-
   try {
-    const result = await executor.executeCommand(
+    const result = await gitExecutor.executeCommand(
       'git rev-parse --show-toplevel'
     );
     return result.stdout.trim();
   } catch (error) {
-    throw new Error(
-      `Failed to get repository root: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw new Error(`Failed to get repository root: ${getErrorMessage(error)}`);
   }
 }
 

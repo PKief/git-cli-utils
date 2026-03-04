@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { existsSync, lstatSync, statSync } from 'node:fs';
+import { existsSync, lstatSync } from 'node:fs';
 import { normalize, resolve } from 'node:path';
 import {
   type EditorConfig,
@@ -17,7 +17,7 @@ export function configureEditor(path: string, args?: string[]): EditorConfig {
   const abs = resolve(normalizedPath);
 
   try {
-    const st = statSync(abs);
+    const st = lstatSync(abs);
     if (!st.isFile() && !st.isSymbolicLink()) {
       writeErrorLine(`Editor path is not a file: ${abs}`);
     }

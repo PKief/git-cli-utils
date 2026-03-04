@@ -3,10 +3,7 @@
  * These actions don't require selecting a specific tag first
  */
 
-import {
-  createGlobalAction,
-  createGlobalActions,
-} from '../../../utils/action-helpers.js';
+import { createGlobalAction } from '../../../utils/action-helpers.js';
 import {
   type CreateTagArgs,
   createTag,
@@ -18,7 +15,7 @@ import {
  * Uses unified action pattern - automatically generates CLI options
  */
 export function getTagGlobalActions() {
-  return createGlobalActions([
+  return [
     createGlobalAction<CreateTagArgs>({
       key: 'new',
       label: 'New tag',
@@ -29,7 +26,7 @@ export function getTagGlobalActions() {
       handler: createTag,
       promptForArgs: promptForTagName,
     }),
-  ]);
+  ];
 }
 
 // Re-export individual actions for direct use if needed

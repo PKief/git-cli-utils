@@ -1,4 +1,4 @@
-import { GitOperations } from '../../../../core/git/operations.js';
+import { checkoutBranch } from '../../../../core/git/operations.js';
 import { GitRemoteBranch } from '../../../../core/git/remotes.js';
 import { green } from '../../../ui/ansi.js';
 import { writeLine } from '../../../utils/terminal.js';
@@ -11,7 +11,7 @@ export async function checkoutRemoteBranch(
 ): Promise<boolean> {
   try {
     // Checkout the branch
-    const result = await GitOperations.checkoutBranch(branch.name);
+    const result = await checkoutBranch(branch.name);
     // Output the git command result
     const output = result.stdout?.trim() || result.stderr?.trim() || '';
     if (output) {

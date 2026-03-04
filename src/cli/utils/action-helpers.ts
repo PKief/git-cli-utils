@@ -1,4 +1,4 @@
-import { GitOperations } from '../../core/git/operations.js';
+import { copyToClipboard } from '../../core/git/operations.js';
 import { getErrorMessage } from '../../core/utils.js';
 import { green, red } from '../ui/ansi.js';
 import type {
@@ -130,12 +130,9 @@ export function actionCancelled<T>(message?: string): ActionResult<T> {
 // Re-export types for convenience
 export type { Action, GlobalAction, ItemAction };
 
-// Re-export getErrorMessage for convenience
-export { getErrorMessage } from '../../core/utils.js';
 // Re-export global action utilities for convenience
 export {
   createGlobalAction,
-  createGlobalActions,
   type GlobalActionConfig,
   type GlobalActionWithCLI,
 } from './global-action.js';
@@ -168,7 +165,7 @@ export function createCopyAction<T>(
   return async (item: T): Promise<ActionResult<T>> => {
     try {
       const textToCopy = config.getText(item);
-      const result = await GitOperations.copyToClipboard(textToCopy);
+      const result = await copyToClipboard(textToCopy);
       writeLine(green(`✓ ${result.message}`));
       return actionSuccess(config.successMessage);
     } catch (error) {

@@ -256,6 +256,62 @@ describe('Git Commits', () => {
       ]);
       expect(commits).toHaveLength(1);
     });
+
+    it('should exclude commits from a specific branch using excludeBranch', async () => {
+      // Arrange
+      const mockOutput = [
+        'abc123|2023-09-15|feature/my-feature|Feature commit',
+      ];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits(
+        undefined,
+        false,
+        undefined,
+        'origin/main'
+      );
+
+      // Assert
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        'HEAD',
+        '--not',
+        'origin/main',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%D|%s',
+      ]);
+      expect(commits).toHaveLength(1);
+    });
+
+    it('should ignore excludeBranch when showAllBranches is true', async () => {
+      // Arrange
+      const mockOutput = ['abc123|2023-09-15|main|Update main branch'];
+
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: mockOutput,
+      });
+
+      // Act
+      const commits = await getGitCommits(
+        undefined,
+        true,
+        undefined,
+        'origin/main'
+      );
+
+      // Assert - excludeBranch should be ignored when showAll is true
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        '--all',
+        '--date=relative',
+        '--pretty=format:%h|%cd|%D|%s',
+      ]);
+      expect(commits).toHaveLength(1);
+    });
   });
 
   describe('getReflogCommits', () => {

@@ -31,14 +31,21 @@ export const getLastAuthor = async (
   filePath: string
 ): Promise<LastAuthor | null> => {
   try {
-    const command = `git log -1 --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M" -- "${filePath}"`;
-    const result = await gitExecutor.executeCommand(command);
+    const args = [
+      'log',
+      '-1',
+      '--pretty=format:%an|%ae|%h|%cd',
+      '--date=format:%d.%m.%Y %H:%M',
+      '--',
+      filePath,
+    ];
+    const result = await gitExecutor.executeStreamingCommand(args);
 
-    if (!result.stdout.trim()) {
+    if (result.data.length === 0) {
       return null;
     }
 
-    const [name, email, commitHash, date] = result.stdout.split('|');
+    const [name, email, commitHash, date] = result.data[0].split('|');
     return {
       name,
       email,
@@ -60,15 +67,17 @@ export const getFileAuthors = async (
   try {
     // Use a single git command to get all commit data with author info, hash, and date
     // Format: "author_name|author_email|commit_hash|commit_date"
-    let command =
-      'git log --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M"';
+    const args = [
+      'log',
+      '--pretty=format:%an|%ae|%h|%cd',
+      '--date=format:%d.%m.%Y %H:%M',
+    ];
 
     if (filePath) {
-      command += ` -- "${filePath}"`;
+      args.push('--', filePath);
     }
 
-    const result = await gitExecutor.executeCommand(command);
-    const lines = result.stdout.split('\n').filter((line) => line.trim());
+    const result = await gitExecutor.executeStreamingCommand(args);
 
     // Track authors and their commit info
     const authorData: Map<
@@ -81,7 +90,7 @@ export const getFileAuthors = async (
     > = new Map();
 
     // Process all commits in a single pass
-    lines.forEach((line: string) => {
+    result.data.forEach((line: string) => {
       if (!line.trim()) return;
 
       const parts = line.split('|');
@@ -122,7 +131,9 @@ export const getFileAuthors = async (
     authors.sort((a, b) => b.commitCount - a.commitCount);
     return authors;
   } catch (error) {
-    throw error;
+    throw new Error(
+      `Failed to get file authors: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 };
 
@@ -134,15 +145,22 @@ const getRepositoryTimeline = async (
 ): Promise<{ firstYear: number; lastYear: number }> => {
   try {
     // Get the very first commit year in the repository (or file)
-    let firstCommitCommand =
-      'git log --reverse --pretty=format:"%cd" --date=format:"%Y" | head -1';
+    const args = [
+      'log',
+      '--reverse',
+      '--pretty=format:%cd',
+      '--date=format:%Y',
+    ];
+
     if (filePath) {
-      firstCommitCommand = `git log --reverse --pretty=format:"%cd" --date=format:"%Y" -- "${filePath}" | head -1`;
+      args.push('--', filePath);
     }
 
-    const firstResult = await gitExecutor.executeCommand(firstCommitCommand);
+    const result = await gitExecutor.executeStreamingCommand(args);
     const firstYear =
-      Number.parseInt(firstResult.stdout.trim()) || new Date().getFullYear();
+      result.data.length > 0
+        ? Number.parseInt(result.data[0].trim()) || new Date().getFullYear()
+        : new Date().getFullYear();
 
     // Last year is always current year (today)
     const currentYear = new Date().getFullYear();
@@ -172,15 +190,19 @@ export const getAuthorTimeline = async (
     const repoTimeline = await getRepositoryTimeline(filePath);
 
     // Get all commits by this author with just the year
-    let command = `git log --pretty=format:"%cd" --date=format:"%Y" --author="${authorEmail}"`;
+    const args = [
+      'log',
+      '--pretty=format:%cd',
+      '--date=format:%Y',
+      `--author=${authorEmail}`,
+    ];
 
     if (filePath) {
-      command += ` -- "${filePath}"`;
+      args.push('--', filePath);
     }
 
-    const result = await gitExecutor.executeCommand(command);
-    const years = result.stdout
-      .split('\n')
+    const result = await gitExecutor.executeStreamingCommand(args);
+    const years = result.data
       .filter((line) => line.trim())
       .map((year) => Number.parseInt(year.trim()))
       .filter((year) => !Number.isNaN(year));

@@ -12,7 +12,8 @@ export interface GitCommit {
 export const getGitCommits = async (
   filePath?: string,
   showAllBranches = false,
-  branch?: string
+  branch?: string,
+  excludeBranch?: string
 ): Promise<GitCommit[]> => {
   try {
     const args = ['log'];
@@ -25,6 +26,11 @@ export const getGitCommits = async (
     // Add branch filter if specified (only when not showing all branches)
     if (branch && !showAllBranches) {
       args.push(branch);
+    }
+
+    // Add exclusion for commits reachable from another branch
+    if (excludeBranch && !showAllBranches) {
+      args.push('HEAD', '--not', excludeBranch);
     }
 
     args.push('--date=relative', '--pretty=format:%h|%cd|%D|%s');

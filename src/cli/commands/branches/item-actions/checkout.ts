@@ -1,5 +1,5 @@
 import { GitBranch } from '../../../../core/git/branches.js';
-import { GitOperations } from '../../../../core/git/operations.js';
+import { checkoutBranch as gitCheckoutBranch } from '../../../../core/git/operations.js';
 import { green, red } from '../../../ui/ansi.js';
 import {
   ActionResult,
@@ -15,7 +15,7 @@ export async function checkoutBranch(
   branch: GitBranch
 ): Promise<ActionResult<GitBranch>> {
   try {
-    const result = await GitOperations.checkoutBranch(branch.name);
+    const result = await gitCheckoutBranch(branch.name);
     // Output the git command result
     const output = result.stdout?.trim() || result.stderr?.trim() || '';
     if (output) {

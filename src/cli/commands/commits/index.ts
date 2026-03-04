@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { getDefaultBranch } from '../../../core/git/branches.js';
 import {
   GitCommit,
   getGitCommits,
@@ -63,19 +64,44 @@ function createCommitActions() {
 export const searchCommits = async (
   options: CommitSearchOptions = {}
 ): Promise<void | CommandResult> => {
-  const { filePath, showAll = false, reflog = false, branch } = options;
+  const {
+    filePath,
+    showAll = false,
+    reflog = false,
+    branch,
+    branchOnly = false,
+  } = options;
 
   try {
+    let excludeBranch: string | undefined;
+    let defaultBranchName: string | undefined;
+
+    // Get the default branch to exclude when branchOnly is true
+    if (branchOnly) {
+      try {
+        defaultBranchName = await getDefaultBranch();
+        excludeBranch = defaultBranchName;
+      } catch {
+        writeLine(
+          yellow(
+            'Could not determine default branch. Showing all commits on current branch.'
+          )
+        );
+      }
+    }
+
     const commits = reflog
       ? await getReflogCommits()
-      : await getGitCommits(filePath, showAll, branch);
+      : await getGitCommits(filePath, showAll, branch, excludeBranch);
 
     if (commits.length === 0) {
       const message = reflog
         ? 'No reflog entries found!'
         : filePath
           ? `No commits found for file: ${filePath}`
-          : 'No commits found!';
+          : branchOnly && defaultBranchName
+            ? `No commits found that are not in '${defaultBranchName}'`
+            : 'No commits found!';
       writeLine(yellow(message));
       return;
     }
@@ -88,7 +114,9 @@ export const searchCommits = async (
           ? yellow('Select a commit from all branches:')
           : branch
             ? yellow(`Select a commit from branch '${branch}':`)
-            : yellow('Select a commit from current branch:');
+            : branchOnly && defaultBranchName
+              ? yellow(`Select a commit not in '${defaultBranchName}':`)
+              : yellow('Select a commit from current branch:');
 
     const result = await selectionList<GitCommit>({
       items: commits,

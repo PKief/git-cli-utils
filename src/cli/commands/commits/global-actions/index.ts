@@ -3,7 +3,7 @@
  * These actions modify how commits are searched/displayed
  */
 
-import { createGlobalActions } from '../../../utils/action-helpers.js';
+import { createBranchOnlyAction } from './branch-only.js';
 import { createCrossBranchAction } from './cross-branch.js';
 import {
   createFileHistoryAction,
@@ -35,11 +35,12 @@ function getSearchCallback(): SearchCallback {
  */
 export function getCommitGlobalActions() {
   const callback: SearchCallback = (options) => getSearchCallback()(options);
-  return createGlobalActions([
+  return [
+    createBranchOnlyAction(callback),
     createCrossBranchAction(callback),
     createFileHistoryAction(callback),
     createReflogAction(callback),
-  ]);
+  ];
 }
 
 // Re-export types for direct use

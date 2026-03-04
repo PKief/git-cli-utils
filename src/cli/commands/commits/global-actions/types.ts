@@ -10,6 +10,7 @@ export interface CommitSearchOptions {
   filePath?: string;
   reflog?: boolean;
   branch?: string;
+  branchOnly?: boolean;
 }
 
 /**

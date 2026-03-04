@@ -1,4 +1,3 @@
-import { Command } from 'commander';
 import { AppError } from '../utils/exit.js';
 import { writeLine } from '../utils/terminal.js';
 import { yellow } from './ansi.js';
@@ -33,23 +32,20 @@ export interface GitUtilsCommand {
     name: string;
     description: string;
   };
-  /** Optional function to register subcommands after main command registration */
-  registerSubcommands?: (program: Command, command: Command) => void;
   /** Optional command-level actions (e.g., "new" to create a new branch/tag/etc.) */
   commandActions?: CommandAction[];
 }
 
-// Store the last command result for back navigation detection
-let lastCommandResult: CommandResult | undefined = undefined;
-
 /**
  * Creates actions for a command in the command selector
- * Includes a default "open" action plus any command-specific actions
+ * Uses the provided callback to communicate back-navigation intent.
  *
  * @param cmd - The command to create actions for
+ * @param onBack - Called when the command signals back-navigation
  */
 function createCommandActions(
-  cmd: GitUtilsCommand | null
+  cmd: GitUtilsCommand | null,
+  onBack: () => void
 ): Action<GitUtilsCommand>[] {
   if (!cmd) {
     return [];
@@ -63,7 +59,9 @@ function createCommandActions(
     description: `Open ${cmd.name}`,
     handler: async () => {
       const result = await cmd.action();
-      lastCommandResult = result ?? undefined;
+      if (result && (result as CommandResult).back) {
+        onBack();
+      }
       return true;
     },
   };
@@ -83,8 +81,10 @@ export async function showCommandSelector(
   commands: GitUtilsCommand[]
 ): Promise<void> {
   while (true) {
-    // Reset last command result
-    lastCommandResult = undefined;
+    let shouldGoBack = false;
+    const onBack = () => {
+      shouldGoBack = true;
+    };
 
     writeLine('Select a command to run:');
     writeLine();
@@ -93,7 +93,7 @@ export async function showCommandSelector(
       items: commands,
       renderItem: (cmd) => `${cmd.name.padEnd(12)} ${cmd.description}`,
       getSearchText: (cmd) => `${cmd.name} ${cmd.description}`,
-      actions: createCommandActions,
+      actions: (cmd) => createCommandActions(cmd, onBack),
       defaultActionKey: 'open',
     });
 
@@ -103,8 +103,7 @@ export async function showCommandSelector(
     }
 
     // Check if the command requested to go back
-    if (lastCommandResult && (lastCommandResult as CommandResult).back) {
-      // Continue the loop to show command selector again
+    if (shouldGoBack) {
       continue;
     }
 

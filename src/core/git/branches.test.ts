@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-import { filterBranches, type GitBranch, getGitBranches } from './branches';
+import {
+  filterBranches,
+  type GitBranch,
+  getDefaultBranch,
+  getGitBranches,
+} from './branches';
 
 // Mock the GitExecutor
 const mockExecuteCommand = mock();
@@ -243,6 +248,88 @@ describe('Git Branches', () => {
       // Assert
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('feature/user-profile');
+    });
+  });
+
+  describe('getDefaultBranch', () => {
+    it('should return default branch from symbolic-ref', async () => {
+      // Arrange
+      mockExecuteCommand.mockResolvedValueOnce({
+        stdout: 'refs/remotes/origin/main',
+        stderr: '',
+      });
+
+      // Act
+      const result = await getDefaultBranch();
+
+      // Assert
+      expect(result).toBe('origin/main');
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        'git symbolic-ref refs/remotes/origin/HEAD'
+      );
+    });
+
+    it('should fall back to origin/main when symbolic-ref fails', async () => {
+      // Arrange
+      mockExecuteCommand
+        .mockRejectedValueOnce(new Error('fatal: ref not symbolic'))
+        .mockResolvedValueOnce({ stdout: '', stderr: '' });
+
+      // Act
+      const result = await getDefaultBranch();
+
+      // Assert
+      expect(result).toBe('origin/main');
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        'git rev-parse --verify origin/main'
+      );
+    });
+
+    it('should fall back to origin/master when main does not exist', async () => {
+      // Arrange
+      mockExecuteCommand
+        .mockRejectedValueOnce(new Error('fatal: ref not symbolic'))
+        .mockRejectedValueOnce(new Error('fatal: origin/main not found'))
+        .mockResolvedValueOnce({ stdout: '', stderr: '' });
+
+      // Act
+      const result = await getDefaultBranch();
+
+      // Assert
+      expect(result).toBe('origin/master');
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        'git rev-parse --verify origin/master'
+      );
+    });
+
+    it('should throw error when no default branch found', async () => {
+      // Arrange
+      mockExecuteCommand
+        .mockRejectedValueOnce(new Error('fatal: ref not symbolic'))
+        .mockRejectedValueOnce(new Error('fatal: origin/main not found'))
+        .mockRejectedValueOnce(new Error('fatal: origin/master not found'));
+
+      // Act & Assert
+      await expect(getDefaultBranch()).rejects.toThrow(
+        "Could not determine default branch for remote 'origin'"
+      );
+    });
+
+    it('should use custom remote name', async () => {
+      // Arrange
+      mockExecuteCommand.mockResolvedValueOnce({
+        stdout: 'refs/remotes/upstream/main',
+        stderr: '',
+      });
+
+      // Act
+      const result = await getDefaultBranch('upstream');
+
+      // Assert
+      expect(result).toBe('upstream/main');
+      expect(mockExecuteCommand).toHaveBeenCalledWith(
+        'git symbolic-ref refs/remotes/upstream/HEAD'
+      );
     });
   });
 });

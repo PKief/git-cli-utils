@@ -221,10 +221,6 @@ export class GitExecutor {
   ): Promise<T> {
     const result = await this.executeCommand(command, options);
 
-    if (!result.success) {
-      throw new GitError('Git command failed', command, result.stderr);
-    }
-
     try {
       return parser(result.stdout);
     } catch (error) {
@@ -234,63 +230,6 @@ export class GitExecutor {
         result.stderr
       );
     }
-  }
-
-  /**
-   * Validate that a command starts with 'git'
-   */
-  private validateGitCommand(command: string): void {
-    if (!command.trim().startsWith('git ')) {
-      throw new GitError('Invalid command: must start with "git "', command);
-    }
-  }
-
-  /**
-   * Execute a Git command with automatic validation
-   */
-  async executeSafeCommand(
-    command: string,
-    options: GitExecutorOptions = {}
-  ): Promise<GitResult> {
-    this.validateGitCommand(command);
-    return this.executeCommand(command, options);
-  }
-
-  /**
-   * Execute a streaming Git command with automatic validation
-   */
-  async executeSafeStreamingCommand(
-    command: string,
-    options: GitExecutorOptions = {}
-  ): Promise<GitStreamResult> {
-    this.validateGitCommand(command);
-    return this.executeStreamingCommand(command, options);
-  }
-
-  /**
-   * Check if git is available in the system
-   */
-  async checkGitAvailability(): Promise<boolean> {
-    try {
-      await this.executeCommand('git --version');
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Get current working directory for git operations
-   */
-  getCurrentWorkingDirectory(): string {
-    return this.defaultOptions.cwd || process.cwd();
-  }
-
-  /**
-   * Update default options
-   */
-  updateDefaultOptions(options: Partial<GitExecutorOptions>): void {
-    this.defaultOptions = { ...this.defaultOptions, ...options };
   }
 }
 

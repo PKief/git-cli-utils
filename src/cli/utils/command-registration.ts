@@ -39,7 +39,7 @@ export interface CommandConfig {
   };
   /**
    * Global actions - automatically generates both CLI options and interactive actions.
-   * Use createGlobalActions() to create these.
+   * Use createGlobalAction() to create these.
    */
   globalActions?: GlobalActionWithCLI[];
 }
@@ -66,7 +66,7 @@ export interface CommandConfig {
  *     name: 'branches',
  *     description: 'Interactive branch selection with fuzzy search',
  *     action: searchBranches,
- *     globalActions: createGlobalActions([
+ *     globalActions: [
  *       {
  *         key: 'new',
  *         label: 'New branch',
@@ -75,8 +75,7 @@ export interface CommandConfig {
  *         handler: createBranch,
  *         promptForArgs: promptForBranchName,
  *       },
- *     ]),
- *   });
+ *     ],
  * }
  * ```
  */

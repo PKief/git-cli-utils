@@ -3,10 +3,7 @@
  * These actions don't require selecting a specific stash first
  */
 
-import {
-  createGlobalAction,
-  createGlobalActions,
-} from '../../../utils/action-helpers.js';
+import { createGlobalAction } from '../../../utils/action-helpers.js';
 import {
   type CreateStashArgs,
   createStash,
@@ -18,7 +15,7 @@ import {
  * Uses unified action pattern - automatically generates CLI options
  */
 export function getStashGlobalActions() {
-  return createGlobalActions([
+  return [
     createGlobalAction<CreateStashArgs>({
       key: 'new',
       label: 'New stash',
@@ -29,7 +26,7 @@ export function getStashGlobalActions() {
       handler: createStash,
       promptForArgs: promptForStashOptions,
     }),
-  ]);
+  ];
 }
 
 // Re-export individual actions for direct use if needed

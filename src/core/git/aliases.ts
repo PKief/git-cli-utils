@@ -6,6 +6,17 @@ export interface GitAlias {
 }
 
 /**
+ * Validate that a git alias name contains only safe characters
+ */
+function validateAliasName(name: string): void {
+  if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+    throw new Error(
+      `Invalid alias name '${name}': only letters, numbers, hyphens, and underscores are allowed`
+    );
+  }
+}
+
+/**
  * Get all git aliases from global configuration
  */
 export const getGitAliases = async (): Promise<GitAlias[]> => {
@@ -47,6 +58,7 @@ export const setGitAlias = async (
   name: string,
   command: string
 ): Promise<void> => {
+  validateAliasName(name);
   // Escape double-quotes so the shell command is valid
   const escaped = command.replace(/"/g, '\\"');
   await gitExecutor.executeCommand(
@@ -58,6 +70,7 @@ export const setGitAlias = async (
  * Delete a git alias from the global config
  */
 export const deleteGitAlias = async (name: string): Promise<void> => {
+  validateAliasName(name);
   await gitExecutor.executeCommand(`git config --global --unset alias.${name}`);
 };
 

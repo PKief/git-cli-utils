@@ -98,7 +98,9 @@ export function calculateRelevanceScore(
 
   // 4. No match found
   return Infinity;
-} /**
+}
+
+/**
  * Filter and rank items based on search term with simple scoring
  * Exact matches always rank higher than fuzzy matches
  */

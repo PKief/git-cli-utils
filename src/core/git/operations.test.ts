@@ -8,7 +8,7 @@ import {
   spyOn,
 } from 'bun:test';
 import clipboardy from 'clipboardy';
-import { GitOperations } from './operations';
+import { checkoutBranch, copyToClipboard } from './operations';
 
 // Mock the GitExecutor
 const mockExecuteCommand = mock();
@@ -36,7 +36,7 @@ afterEach(() => {
   mockClipboardy.mockRestore();
 });
 
-describe('GitOperations', () => {
+describe('Git operations', () => {
   describe('checkoutBranch', () => {
     it('should successfully checkout a branch', async () => {
       // Arrange
@@ -48,7 +48,7 @@ describe('GitOperations', () => {
       });
 
       // Act
-      const result = await GitOperations.checkoutBranch(branchName);
+      const result = await checkoutBranch(branchName);
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith(
@@ -69,7 +69,7 @@ describe('GitOperations', () => {
       });
 
       // Act
-      const result = await GitOperations.checkoutBranch(branchName);
+      const result = await checkoutBranch(branchName);
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith('git checkout "main"');
@@ -88,7 +88,7 @@ describe('GitOperations', () => {
       mockExecuteCommand.mockRejectedValue(mockError);
 
       // Act & Assert
-      await expect(GitOperations.checkoutBranch(branchName)).rejects.toThrow(
+      await expect(checkoutBranch(branchName)).rejects.toThrow(
         "Failed to checkout branch 'nonexistent': pathspec 'nonexistent' did not match any file(s) known to git"
       );
     });
@@ -102,7 +102,7 @@ describe('GitOperations', () => {
       });
 
       // Act
-      const result = await GitOperations.checkoutBranch(branchName);
+      const result = await checkoutBranch(branchName);
 
       // Assert - Should return the result including stderr
       expect(result).toEqual({
@@ -120,7 +120,7 @@ describe('GitOperations', () => {
       });
 
       // Act
-      const result = await GitOperations.checkoutBranch(branchName);
+      const result = await checkoutBranch(branchName);
 
       // Assert
       expect(mockExecuteCommand).toHaveBeenCalledWith(
@@ -140,7 +140,7 @@ describe('GitOperations', () => {
       mockClipboardy.mockResolvedValue(undefined);
 
       // Act
-      const result = await GitOperations.copyToClipboard(text);
+      const result = await copyToClipboard(text);
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);
@@ -156,7 +156,7 @@ describe('GitOperations', () => {
       mockClipboardy.mockRejectedValue(clipboardError);
 
       // Act & Assert
-      await expect(GitOperations.copyToClipboard(text)).rejects.toThrow(
+      await expect(copyToClipboard(text)).rejects.toThrow(
         'Failed to copy to clipboard: Clipboard access denied'
       );
     });
@@ -167,7 +167,7 @@ describe('GitOperations', () => {
       mockClipboardy.mockRejectedValue('String error');
 
       // Act & Assert
-      await expect(GitOperations.copyToClipboard(text)).rejects.toThrow(
+      await expect(copyToClipboard(text)).rejects.toThrow(
         'Failed to copy to clipboard: String error'
       );
     });
@@ -178,7 +178,7 @@ describe('GitOperations', () => {
       mockClipboardy.mockResolvedValue(undefined);
 
       // Act
-      const result = await GitOperations.copyToClipboard(text);
+      const result = await copyToClipboard(text);
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith('');
@@ -193,7 +193,7 @@ describe('GitOperations', () => {
       mockClipboardy.mockResolvedValue(undefined);
 
       // Act
-      const result = await GitOperations.copyToClipboard(text);
+      const result = await copyToClipboard(text);
 
       // Assert
       expect(mockClipboardy).toHaveBeenCalledWith(text);

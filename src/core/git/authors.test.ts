@@ -2,39 +2,42 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { getAuthorTimeline, getFileAuthors, getLastAuthor } from './authors';
 
 // Mock the GitExecutor
-const mockExecuteCommand = mock();
+const mockExecuteStreamingCommand = mock();
 
 mock.module('./executor.js', () => ({
   gitExecutor: {
-    executeCommand: mockExecuteCommand,
+    executeStreamingCommand: mockExecuteStreamingCommand,
   },
 }));
 
 describe('authors', () => {
   beforeEach(() => {
-    mockExecuteCommand.mockClear();
+    mockExecuteStreamingCommand.mockClear();
   });
 
   afterEach(() => {
-    mockExecuteCommand.mockReset();
+    mockExecuteStreamingCommand.mockReset();
   });
 
   describe('getLastAuthor', () => {
     test('should return last author for a file', async () => {
       const filePath = 'src/test.ts';
-      const mockOutput =
-        'John Doe|john.doe@example.com|abc123|25.09.2025 14:30';
 
-      mockExecuteCommand.mockResolvedValue({
-        stdout: mockOutput,
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: ['John Doe|john.doe@example.com|abc123|25.09.2025 14:30'],
+        success: true,
       });
 
       const result = await getLastAuthor(filePath);
 
-      expect(mockExecuteCommand).toHaveBeenCalledWith(
-        `git log -1 --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M" -- "${filePath}"`
-      );
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        '-1',
+        '--pretty=format:%an|%ae|%h|%cd',
+        '--date=format:%d.%m.%Y %H:%M',
+        '--',
+        filePath,
+      ]);
 
       expect(result).toEqual({
         name: 'John Doe',
@@ -47,9 +50,9 @@ describe('authors', () => {
     test('should return null when no commit history exists', async () => {
       const filePath = 'src/new-file.ts';
 
-      mockExecuteCommand.mockResolvedValue({
-        stdout: '',
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [],
+        success: true,
       });
 
       const result = await getLastAuthor(filePath);
@@ -61,7 +64,7 @@ describe('authors', () => {
       const filePath = 'src/test.ts';
       const mockError = new Error('Git command failed');
 
-      mockExecuteCommand.mockRejectedValue(mockError);
+      mockExecuteStreamingCommand.mockRejectedValue(mockError);
 
       const result = await getLastAuthor(filePath);
       expect(result).toBeNull();
@@ -69,12 +72,10 @@ describe('authors', () => {
 
     test('should handle multi-line output correctly', async () => {
       const filePath = 'src/test.ts';
-      const mockOutput =
-        'Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15';
 
-      mockExecuteCommand.mockResolvedValue({
-        stdout: mockOutput,
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: ['Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15'],
+        success: true,
       });
 
       const result = await getLastAuthor(filePath);
@@ -90,21 +91,19 @@ describe('authors', () => {
 
   describe('getFileAuthors', () => {
     test('should return authors sorted by commit count for repository', async () => {
-      // Mock the optimized git log output with all data in one call
-      // Format: "author_name|author_email|commit_hash|commit_date"
-      const mockGitLogOutput = `John Doe|john.doe@example.com|abc123|25.09.2025 14:30
-John Doe|john.doe@example.com|abc124|24.09.2025 13:20
-John Doe|john.doe@example.com|abc125|23.09.2025 12:10
-John Doe|john.doe@example.com|abc126|22.09.2025 11:00
-John Doe|john.doe@example.com|abc127|21.09.2025 10:30
-Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15
-Jane Smith|jane.smith@example.com|def457|23.09.2025 08:30
-Jane Smith|jane.smith@example.com|def458|22.09.2025 07:45
-Bob Wilson|bob.wilson@example.com|ghi789|23.09.2025 16:45`;
-
-      mockExecuteCommand.mockResolvedValue({
-        stdout: mockGitLogOutput,
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [
+          'John Doe|john.doe@example.com|abc123|25.09.2025 14:30',
+          'John Doe|john.doe@example.com|abc124|24.09.2025 13:20',
+          'John Doe|john.doe@example.com|abc125|23.09.2025 12:10',
+          'John Doe|john.doe@example.com|abc126|22.09.2025 11:00',
+          'John Doe|john.doe@example.com|abc127|21.09.2025 10:30',
+          'Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15',
+          'Jane Smith|jane.smith@example.com|def457|23.09.2025 08:30',
+          'Jane Smith|jane.smith@example.com|def458|22.09.2025 07:45',
+          'Bob Wilson|bob.wilson@example.com|ghi789|23.09.2025 16:45',
+        ],
+        success: true,
       });
 
       const result = await getFileAuthors();
@@ -128,22 +127,24 @@ Bob Wilson|bob.wilson@example.com|ghi789|23.09.2025 16:45`;
       expect(result[2].lastCommitDate).toBe('23.09.2025 16:45');
 
       // Verify only one git command was called (optimized!)
-      expect(mockExecuteCommand).toHaveBeenCalledTimes(1);
-      expect(mockExecuteCommand).toHaveBeenCalledWith(
-        'git log --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M"'
-      );
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledTimes(1);
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        '--pretty=format:%an|%ae|%h|%cd',
+        '--date=format:%d.%m.%Y %H:%M',
+      ]);
     });
 
     test('should return authors for specific file', async () => {
       const filePath = 'src/test.ts';
-      // Mock the optimized git log output for a specific file
-      const mockGitLogOutput = `John Doe|john.doe@example.com|abc123|25.09.2025 14:30
-John Doe|john.doe@example.com|abc124|24.09.2025 13:20
-Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15`;
 
-      mockExecuteCommand.mockResolvedValue({
-        stdout: mockGitLogOutput,
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [
+          'John Doe|john.doe@example.com|abc123|25.09.2025 14:30',
+          'John Doe|john.doe@example.com|abc124|24.09.2025 13:20',
+          'Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15',
+        ],
+        success: true,
       });
 
       const result = await getFileAuthors(filePath);
@@ -157,15 +158,19 @@ Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15`;
       expect(result[1].lastCommitHash).toBe('def456');
 
       // Verify the correct command was called with file path
-      expect(mockExecuteCommand).toHaveBeenCalledWith(
-        `git log --pretty=format:"%an|%ae|%h|%cd" --date=format:"%d.%m.%Y %H:%M" -- "${filePath}"`
-      );
+      expect(mockExecuteStreamingCommand).toHaveBeenCalledWith([
+        'log',
+        '--pretty=format:%an|%ae|%h|%cd',
+        '--date=format:%d.%m.%Y %H:%M',
+        '--',
+        filePath,
+      ]);
     });
 
     test('should return empty array when no authors found', async () => {
-      mockExecuteCommand.mockResolvedValue({
-        stdout: '',
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [],
+        success: true,
       });
 
       const result = await getFileAuthors();
@@ -176,26 +181,25 @@ Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15`;
     test('should handle git log errors', async () => {
       const mockError = new Error('Git log failed');
 
-      mockExecuteCommand.mockRejectedValue(mockError);
+      mockExecuteStreamingCommand.mockRejectedValue(mockError);
 
       await expect(getFileAuthors()).rejects.toThrow('Git log failed');
     });
 
     test('should handle malformed log output gracefully', async () => {
-      // Mock git log output with some malformed lines (missing parts)
-      const mockGitLogOutput = `invalid line without proper format
-John Doe|john.doe@example.com|abc123|25.09.2025 14:30
-John Doe|john.doe@example.com|abc124|24.09.2025 13:20
-John Doe|john.doe@example.com|abc125|23.09.2025 12:10
-John Doe|john.doe@example.com|abc126|22.09.2025 11:00
-John Doe|john.doe@example.com|abc127|21.09.2025 10:30
-another invalid line with|only|two parts
-Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15
-Jane Smith|jane.smith@example.com|def457|23.09.2025 08:30`;
-
-      mockExecuteCommand.mockResolvedValue({
-        stdout: mockGitLogOutput,
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [
+          'invalid line without proper format',
+          'John Doe|john.doe@example.com|abc123|25.09.2025 14:30',
+          'John Doe|john.doe@example.com|abc124|24.09.2025 13:20',
+          'John Doe|john.doe@example.com|abc125|23.09.2025 12:10',
+          'John Doe|john.doe@example.com|abc126|22.09.2025 11:00',
+          'John Doe|john.doe@example.com|abc127|21.09.2025 10:30',
+          'another invalid line with|only|two parts',
+          'Jane Smith|jane.smith@example.com|def456|24.09.2025 09:15',
+          'Jane Smith|jane.smith@example.com|def457|23.09.2025 08:30',
+        ],
+        success: true,
       });
 
       const result = await getFileAuthors();
@@ -209,14 +213,13 @@ Jane Smith|jane.smith@example.com|def457|23.09.2025 08:30`;
     });
 
     test('should handle empty commit info gracefully', async () => {
-      // Mock git log output where some commits have missing hash or date info
-      const mockGitLogOutput = `John Doe|john.doe@example.com|abc123|25.09.2025 14:30
-John Doe|john.doe@example.com||
-John Doe|john.doe@example.com|abc125|`;
-
-      mockExecuteCommand.mockResolvedValue({
-        stdout: mockGitLogOutput,
-        stderr: '',
+      mockExecuteStreamingCommand.mockResolvedValue({
+        data: [
+          'John Doe|john.doe@example.com|abc123|25.09.2025 14:30',
+          'John Doe|john.doe@example.com||',
+          'John Doe|john.doe@example.com|abc125|',
+        ],
+        success: true,
       });
 
       const result = await getFileAuthors();
@@ -236,23 +239,17 @@ John Doe|john.doe@example.com|abc125|`;
   describe('getAuthorTimeline', () => {
     test('should return timeline data for an author', async () => {
       const authorEmail = 'john.doe@example.com';
-      const mockGitLogOutput = `2023
-2023
-2023
-2022
-2022
-2021`;
-      const mockRepoFirstCommit = '2020';
 
-      mockExecuteCommand
-        .mockResolvedValueOnce({
-          stdout: mockRepoFirstCommit,
-          stderr: '',
-        })
-        .mockResolvedValueOnce({
-          stdout: mockGitLogOutput,
-          stderr: '',
-        });
+      // First call: getRepositoryTimeline
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: ['2020', '2021', '2022', '2023'],
+        success: true,
+      });
+      // Second call: getAuthorTimeline years
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: ['2023', '2023', '2023', '2022', '2022', '2021'],
+        success: true,
+      });
 
       const result = await getAuthorTimeline(authorEmail);
 
@@ -262,32 +259,22 @@ John Doe|john.doe@example.com|abc125|`;
       expect(result.lastCommitYear).toBe(2023);
       expect(result.repositoryFirstYear).toBe(2020);
       expect(result.repositoryLastYear).toBe(new Date().getFullYear());
-
-      expect(mockExecuteCommand).toHaveBeenCalledWith(
-        'git log --reverse --pretty=format:"%cd" --date=format:"%Y" | head -1'
-      );
-      expect(mockExecuteCommand).toHaveBeenCalledWith(
-        `git log --pretty=format:"%cd" --date=format:"%Y" --author="${authorEmail}"`
-      );
     });
 
     test('should return timeline data for an author on specific file', async () => {
       const authorEmail = 'jane.smith@example.com';
       const filePath = 'src/test.ts';
-      const mockGitLogOutput = `2024
-2024
-2023`;
-      const mockRepoFirstCommit = '2020';
 
-      mockExecuteCommand
-        .mockResolvedValueOnce({
-          stdout: mockRepoFirstCommit,
-          stderr: '',
-        })
-        .mockResolvedValueOnce({
-          stdout: mockGitLogOutput,
-          stderr: '',
-        });
+      // First call: getRepositoryTimeline
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: ['2020', '2021', '2022', '2023', '2024'],
+        success: true,
+      });
+      // Second call: getAuthorTimeline years
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: ['2024', '2024', '2023'],
+        success: true,
+      });
 
       const result = await getAuthorTimeline(authorEmail, filePath);
 
@@ -297,28 +284,21 @@ John Doe|john.doe@example.com|abc125|`;
       expect(result.lastCommitYear).toBe(2024);
       expect(result.repositoryFirstYear).toBe(2020);
       expect(result.repositoryLastYear).toBe(new Date().getFullYear());
-
-      expect(mockExecuteCommand).toHaveBeenCalledWith(
-        `git log --reverse --pretty=format:"%cd" --date=format:"%Y" -- "${filePath}" | head -1`
-      );
-      expect(mockExecuteCommand).toHaveBeenCalledWith(
-        `git log --pretty=format:"%cd" --date=format:"%Y" --author="${authorEmail}" -- "${filePath}"`
-      );
     });
 
     test('should return empty timeline when no commits found', async () => {
       const authorEmail = 'unknown@example.com';
-      const mockRepoFirstCommit = '2020';
 
-      mockExecuteCommand
-        .mockResolvedValueOnce({
-          stdout: mockRepoFirstCommit,
-          stderr: '',
-        })
-        .mockResolvedValueOnce({
-          stdout: '',
-          stderr: '',
-        });
+      // First call: getRepositoryTimeline
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: ['2020', '2021', '2022'],
+        success: true,
+      });
+      // Second call: getAuthorTimeline years (empty)
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: [],
+        success: true,
+      });
 
       const result = await getAuthorTimeline(authorEmail);
 
@@ -333,7 +313,9 @@ John Doe|john.doe@example.com|abc125|`;
     test('should handle git errors gracefully', async () => {
       const authorEmail = 'error@example.com';
 
-      mockExecuteCommand.mockRejectedValue(new Error('Git command failed'));
+      mockExecuteStreamingCommand.mockRejectedValue(
+        new Error('Git command failed')
+      );
 
       const result = await getAuthorTimeline(authorEmail);
 
@@ -347,23 +329,17 @@ John Doe|john.doe@example.com|abc125|`;
 
     test('should handle malformed year data', async () => {
       const authorEmail = 'john.doe@example.com';
-      const mockGitLogOutput = `2023
-invalid
-2022
 
-2021
-not-a-year`;
-      const mockRepoFirstCommit = '2019';
-
-      mockExecuteCommand
-        .mockResolvedValueOnce({
-          stdout: mockRepoFirstCommit,
-          stderr: '',
-        })
-        .mockResolvedValueOnce({
-          stdout: mockGitLogOutput,
-          stderr: '',
-        });
+      // First call: getRepositoryTimeline
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: ['2019', '2020', '2021', '2022', '2023'],
+        success: true,
+      });
+      // Second call: getAuthorTimeline years (with some invalid)
+      mockExecuteStreamingCommand.mockResolvedValueOnce({
+        data: ['2023', 'invalid', '2022', '2021', 'not-a-year'],
+        success: true,
+      });
 
       const result = await getAuthorTimeline(authorEmail);
 

@@ -3,10 +3,7 @@
  * These actions don't require selecting a specific remote first
  */
 
-import {
-  createGlobalAction,
-  createGlobalActions,
-} from '../../../utils/action-helpers.js';
+import { createGlobalAction } from '../../../utils/action-helpers.js';
 import {
   type AddRemoteArgs,
   addRemote,
@@ -18,7 +15,7 @@ import {
  * Uses unified action pattern - automatically generates CLI options
  */
 export function getRemoteGlobalActions() {
-  return createGlobalActions([
+  return [
     createGlobalAction<AddRemoteArgs>({
       key: 'add',
       label: 'Add remote',
@@ -29,7 +26,7 @@ export function getRemoteGlobalActions() {
       handler: addRemote,
       promptForArgs: promptForRemoteDetails,
     }),
-  ]);
+  ];
 }
 
 // Re-export individual actions for direct use if needed
