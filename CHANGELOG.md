@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v1.26.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.25.0...v1.26.0)
+
+### 🚀 Enhancements
+
+- Refactor git command execution to use streaming and improve error handling ([66fa33a](https://github.com/PKief/git-cli-utils/commit/66fa33a))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.25.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.19.0...v1.25.0)
