@@ -183,9 +183,9 @@ export function renderListItem<T>(
 ): string {
   const itemText = renderItem(item);
   const searchableText = getSearchText(item);
-  const pinPrefix = isPinned ? yellow('★ ') : '';
 
   if (isSelected) {
+    const pinPrefix = isPinned ? highlightSelected('★ ') : '';
     const highlightedText = applyTextHighlighting(
       itemText,
       searchableText,
@@ -194,6 +194,7 @@ export function renderListItem<T>(
     );
     return highlightSelected(`> `) + pinPrefix + highlightedText;
   } else {
+    const pinPrefix = isPinned ? yellow('★ ') : '';
     const highlightedText = applyTextHighlighting(
       itemText,
       searchableText,

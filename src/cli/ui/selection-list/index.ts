@@ -362,8 +362,41 @@ export async function selectionList<T>(
       process.stdin.pause();
     };
 
+    /**
+     * Handles the internally managed bookmark toggle action.
+     * Executes the toggle, refreshes pinned state, and re-renders
+     * without leaving the interactive list.
+     */
+    const handleBookmarkToggle = () => {
+      const selectedItem =
+        state.filteredItems.length > 0 && state.currentIndex >= 0
+          ? state.filteredItems[state.currentIndex]
+          : null;
+
+      if (!selectedItem) return;
+
+      const bookmarkAction = state.currentActions.find(
+        (a) => a.key === 'bookmark'
+      );
+      if (!bookmarkAction || bookmarkAction.type !== 'item') return;
+
+      bookmarkAction.handler(selectedItem);
+
+      // Re-filter and re-render to reflect new pin state
+      filterItems();
+      render();
+    };
+
     // Handle Enter - execute action and resolve
     const handleEnter = async () => {
+      const selectedAction = state.currentActions[state.selectedActionIndex];
+
+      // If the bookmark action is selected, handle it inline (stay in list)
+      if (selectedAction?.key === 'bookmark') {
+        handleBookmarkToggle();
+        return;
+      }
+
       cleanup();
 
       const selectedItem =
@@ -380,8 +413,6 @@ export async function selectionList<T>(
         });
         return;
       }
-
-      const selectedAction = state.currentActions[state.selectedActionIndex];
 
       // For item actions, we need a selected item
       if (selectedAction.type === 'item' && selectedItem === null) {
