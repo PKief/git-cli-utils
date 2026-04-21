@@ -28,6 +28,7 @@ const searchTags = async (): Promise<void | CommandResult> => {
       },
       getSearchText: (tag) => `${tag.name} ${tag.subject} ${tag.tagger}`,
       actions: getTagItemActions(),
+      bookmark: { type: 'tags', getId: (tag) => tag.name },
       allowBack: true,
     });
 

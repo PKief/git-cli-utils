@@ -23,14 +23,12 @@ const listAliases = async (): Promise<void | CommandResult> => {
     writeLine('Select an alias to execute:');
     writeLine();
 
-    // Use action-based selection list so user can choose execute / copy / new
-    const actions = getAliasActions();
-
     const result = await selectionList<GitAlias>({
       items: aliases,
       renderItem: (alias) => `git ${alias.name.padEnd(12)} → ${alias.command}`,
       getSearchText: (alias) => `${alias.name} ${alias.command}`,
-      actions,
+      actions: getAliasActions(),
+      bookmark: { type: 'aliases', getId: (alias) => alias.name },
       allowBack: true,
     });
 

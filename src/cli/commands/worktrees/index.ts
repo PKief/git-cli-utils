@@ -78,6 +78,7 @@ const manageWorktrees = async (): Promise<void | CommandResult> => {
       getSearchText: (worktree) => `${worktree.branch} ${worktree.path}`,
       header: yellow('Select a worktree:'),
       actions: createWorktreeActions(),
+      bookmark: { type: 'worktrees', getId: (worktree) => worktree.path },
       allowBack: true,
     });
 

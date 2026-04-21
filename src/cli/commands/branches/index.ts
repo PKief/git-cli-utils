@@ -25,6 +25,7 @@ export const searchBranches = async (): Promise<void | CommandResult> => {
         `${branch.date} - ${branch.name}${branch.current ? ' (current)' : ''}`,
       getSearchText: (branch) => branch.name,
       actions: getBranchItemActions(),
+      bookmark: { type: 'branches', getId: (branch) => branch.name },
       allowBack: true,
     });
 

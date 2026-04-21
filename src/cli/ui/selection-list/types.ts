@@ -2,6 +2,8 @@
  * Type definitions for the SelectionList component
  */
 
+import type { BookmarkType } from '../../../core/bookmarks.js';
+
 /**
  * Base action interface - common properties for all action types
  */
@@ -47,6 +49,19 @@ export type Action<T> = ItemAction<T> | GlobalAction;
 export type ActionProvider<T> = Action<T>[] | ((item: T | null) => Action<T>[]);
 
 /**
+ * Bookmark configuration for the SelectionList.
+ * When provided, the list automatically handles bookmark storage,
+ * pins bookmarked items to the top, and adds a Bookmark/Unbookmark action.
+ */
+export interface BookmarkConfig<T> {
+  /** The bookmark category (e.g., 'branches', 'commits') */
+  type: BookmarkType;
+
+  /** Function to extract a stable unique ID from an item */
+  getId: (item: T) => string;
+}
+
+/**
  * Configuration for the SelectionList component
  */
 export interface SelectionListConfig<T> {
@@ -70,6 +85,13 @@ export interface SelectionListConfig<T> {
 
   /** Allow navigating back with ESC when search is empty (default: false) */
   allowBack?: boolean;
+
+  /**
+   * Enable bookmarking for items in this list.
+   * When provided, bookmarked items are pinned to the top and a
+   * Bookmark/Unbookmark toggle action is added to the action bar.
+   */
+  bookmark?: BookmarkConfig<T>;
 }
 
 /**
@@ -144,4 +166,10 @@ export interface ListRenderConfig<T> {
 
   /** Optional header text */
   header?: string;
+
+  /** Set of IDs for pinned items (for visual indicator) */
+  pinnedIds?: Set<string>;
+
+  /** Function to extract a unique ID from an item */
+  getId?: (item: T) => string;
 }

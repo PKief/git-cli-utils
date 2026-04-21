@@ -76,6 +76,7 @@ const searchRemotes = async (): Promise<void | CommandResult> => {
       renderItem: (remote) => `${remote.name} - ${remote.url}`,
       getSearchText: (remote) => remote.name,
       actions: createRemoteActions(),
+      bookmark: { type: 'remotes', getId: (remote) => remote.name },
       allowBack: true,
     });
 

@@ -25,6 +25,7 @@ const searchStashes = async (): Promise<void | CommandResult> => {
         `stash@{${stash.index}} on ${stash.branch}: ${stash.message}`,
       getSearchText: (stash) => stash.message,
       actions: getStashItemActions(),
+      bookmark: { type: 'stashes', getId: (stash) => stash.hash },
       allowBack: true,
     });
 

@@ -129,6 +129,7 @@ export const searchCommits = async (
         `${commit.subject} ${commit.hash} ${commit.tags.join(' ')}`,
       header,
       actions: createCommitActions(),
+      bookmark: { type: 'commits', getId: (commit) => commit.hash },
       allowBack: true,
     });
 

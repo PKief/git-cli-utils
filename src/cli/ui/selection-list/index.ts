@@ -6,9 +6,18 @@
  * - Static or dynamic actions per item
  * - Item-bound actions (require selected item) and global actions (no item required)
  * - Keyboard navigation (up/down for items, left/right for actions)
+ * - Built-in bookmarking: pinned items at top + Bookmark/Unbookmark toggle action
  */
 
 import * as readline from 'readline';
+import {
+  type BookmarkStore,
+  getBookmarkIds,
+  getRepoRoot,
+  isBookmarked,
+  loadBookmarks,
+  toggleBookmark,
+} from '../../../core/bookmarks.js';
 import { AppError } from '../../utils/exit.js';
 import { clearScreen, write, writeLine } from '../../utils/terminal.js';
 import { blue, yellow } from '../ansi.js';
@@ -26,13 +35,20 @@ import { filterAndRankItems } from './search.js';
 import type {
   Action,
   ActionProvider,
+  BookmarkConfig,
+  ItemAction,
   SelectionListConfig,
   SelectionListState,
   SelectionResult,
 } from './types.js';
 
 // Re-export types for external use
-export type { Action, GlobalAction, ItemAction } from './types.js';
+export type {
+  Action,
+  BookmarkConfig,
+  GlobalAction,
+  ItemAction,
+} from './types.js';
 export type { ActionProvider, SelectionListConfig, SelectionResult };
 
 /**
@@ -116,43 +132,128 @@ function renderNonInteractive<T>(
 }
 
 /**
+ * Initializes bookmark state for the selection list.
+ * Returns null if bookmarking is not configured.
+ */
+async function initBookmarkState<T>(
+  bookmarkConfig: BookmarkConfig<T> | undefined
+): Promise<{
+  repoPath: string;
+  store: BookmarkStore;
+  pinnedIds: Set<string>;
+} | null> {
+  if (!bookmarkConfig) return null;
+
+  try {
+    const repoPath = await getRepoRoot();
+    const store = loadBookmarks(repoPath);
+    const pinnedIds = getBookmarkIds(store, bookmarkConfig.type);
+    return { repoPath, store, pinnedIds };
+  } catch {
+    // If we can't resolve repo root (e.g., not in a git repo), skip bookmarks
+    return null;
+  }
+}
+
+/**
  * Main SelectionList component
  *
  * @param config - Configuration for the selection list
  * @returns Promise resolving to the selection result
  */
-export function selectionList<T>(
+export async function selectionList<T>(
   config: SelectionListConfig<T>
 ): Promise<SelectionResult<T>> {
+  const {
+    items,
+    renderItem,
+    getSearchText = renderItem,
+    header,
+    actions: actionProvider,
+    defaultActionKey,
+    allowBack = false,
+    bookmark: bookmarkConfig,
+  } = config;
+
+  // Handle empty items
+  if (items.length === 0) {
+    return { item: null, action: null, success: false };
+  }
+
+  // Handle non-interactive mode
+  if (!isInteractiveTerminal()) {
+    return renderNonInteractive(config);
+  }
+
+  // Initialize bookmark state (async, done once before entering interactive mode)
+  const bookmarkState = await initBookmarkState(bookmarkConfig);
+
+  // Mutable bookmark store reference (updated on toggle)
+  let currentBookmarkStore = bookmarkState?.store ?? null;
+  let currentPinnedIds = bookmarkState?.pinnedIds ?? new Set<string>();
+  const repoPath = bookmarkState?.repoPath ?? '';
+  const getId = bookmarkConfig?.getId;
+
   return new Promise((resolve, reject) => {
-    const {
-      items,
-      renderItem,
-      getSearchText = renderItem,
-      header,
-      actions: actionProvider,
-      defaultActionKey,
-      allowBack = false,
-    } = config;
+    /**
+     * Reorders items so that pinned items appear first, preserving
+     * relative order within pinned and non-pinned groups.
+     */
+    const reorderWithPins = (itemList: T[]): T[] => {
+      if (!getId || currentPinnedIds.size === 0) return itemList;
+      const pinned: T[] = [];
+      const rest: T[] = [];
+      for (const item of itemList) {
+        if (currentPinnedIds.has(getId(item))) {
+          pinned.push(item);
+        } else {
+          rest.push(item);
+        }
+      }
+      return [...pinned, ...rest];
+    };
 
-    // Handle empty items
-    if (items.length === 0) {
-      resolve({ item: null, action: null, success: false });
-      return;
-    }
+    /**
+     * Creates the bookmark toggle action for a given item.
+     */
+    const createBookmarkAction = (item: T): ItemAction<T> | null => {
+      if (!bookmarkConfig || !currentBookmarkStore || !getId) return null;
 
-    // Handle non-interactive mode
-    if (!isInteractiveTerminal()) {
-      resolve(renderNonInteractive(config));
-      return;
-    }
+      const id = getId(item);
+      const bookmarked = isBookmarked(
+        currentBookmarkStore,
+        bookmarkConfig.type,
+        id
+      );
+
+      return {
+        type: 'item',
+        key: 'bookmark',
+        label: bookmarked ? 'Unbookmark' : 'Bookmark',
+        description: bookmarked
+          ? 'Remove from bookmarks'
+          : 'Pin to top of list',
+        handler: (selectedItem: T) => {
+          if (!currentBookmarkStore) return true;
+          const result = toggleBookmark(
+            repoPath,
+            currentBookmarkStore,
+            bookmarkConfig.type,
+            getId(selectedItem)
+          );
+          currentBookmarkStore = result.store;
+          currentPinnedIds = getBookmarkIds(result.store, bookmarkConfig.type);
+          return true;
+        },
+      };
+    };
 
     // Initialize state
     const state: SelectionListState<T> = {
       searchTerm: '',
       currentIndex: 0,
       selectedActionIndex: 0,
-      filteredItems: items,
+      filteredItems: reorderWithPins(items),
       currentActions: [],
     };
 
@@ -163,7 +264,19 @@ export function selectionList<T>(
           ? state.filteredItems[state.currentIndex]
           : null;
 
-      state.currentActions = resolveActions(actionProvider, currentItem);
+      const baseActions = resolveActions(actionProvider, currentItem);
+
+      // Append bookmark action if configured and an item is selected
+      if (currentItem) {
+        const bookmarkAction = createBookmarkAction(currentItem);
+        if (bookmarkAction) {
+          state.currentActions = [...baseActions, bookmarkAction];
+        } else {
+          state.currentActions = baseActions;
+        }
+      } else {
+        state.currentActions = baseActions;
+      }
 
       // Set default action index
       if (defaultActionKey && state.currentActions.length > 0) {
@@ -179,12 +292,10 @@ export function selectionList<T>(
     // Filter items based on search
     const filterItems = () => {
       if (!state.searchTerm) {
-        state.filteredItems = items;
+        state.filteredItems = reorderWithPins(items);
       } else {
-        state.filteredItems = filterAndRankItems(
-          items,
-          state.searchTerm,
-          getSearchText
+        state.filteredItems = reorderWithPins(
+          filterAndRankItems(items, state.searchTerm, getSearchText)
         );
       }
       state.currentIndex = state.filteredItems.length > 0 ? 0 : -1;
@@ -224,6 +335,8 @@ export function selectionList<T>(
         getSearchText,
         maxDisplayItems: MAX_DISPLAY_ITEMS,
         header,
+        pinnedIds: currentPinnedIds.size > 0 ? currentPinnedIds : undefined,
+        getId,
       });
 
       listLines.forEach((line) => writeLine(line));

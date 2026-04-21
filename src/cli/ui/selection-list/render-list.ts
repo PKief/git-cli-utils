@@ -2,7 +2,12 @@
  * List rendering and text highlighting for SelectionList
  */
 
-import { highlightExact, highlightFuzzy, highlightSelected } from '../ansi.js';
+import {
+  highlightExact,
+  highlightFuzzy,
+  highlightSelected,
+  yellow,
+} from '../ansi.js';
 import type { ListRenderConfig } from './types.js';
 
 /**
@@ -165,6 +170,7 @@ function applyFuzzyHighlighting(
  * @param searchTerm - Current search term
  * @param renderItem - Function to render item text
  * @param getSearchText - Function to get searchable text
+ * @param isPinned - Whether this item is pinned/bookmarked
  * @returns Formatted line string
  */
 export function renderListItem<T>(
@@ -172,10 +178,12 @@ export function renderListItem<T>(
   isSelected: boolean,
   searchTerm: string,
   renderItem: (item: T) => string,
-  getSearchText: (item: T) => string
+  getSearchText: (item: T) => string,
+  isPinned = false
 ): string {
   const itemText = renderItem(item);
   const searchableText = getSearchText(item);
+  const pinPrefix = isPinned ? yellow('★ ') : '';
 
   if (isSelected) {
     const highlightedText = applyTextHighlighting(
@@ -184,14 +192,14 @@ export function renderListItem<T>(
       searchTerm,
       true
     );
-    return highlightSelected(`> `) + highlightedText;
+    return highlightSelected(`> `) + pinPrefix + highlightedText;
   } else {
     const highlightedText = applyTextHighlighting(
       itemText,
       searchableText,
       searchTerm
     );
-    return `  ${highlightedText}`;
+    return `  ${pinPrefix}${highlightedText}`;
   }
 }
 
@@ -231,6 +239,8 @@ export function renderListItems<T>(config: ListRenderConfig<T>): string[] {
     renderItem,
     getSearchText,
     maxDisplayItems,
+    pinnedIds,
+    getId,
   } = config;
 
   const lines: string[] = [];
@@ -248,12 +258,14 @@ export function renderListItems<T>(config: ListRenderConfig<T>): string[] {
   for (let i = startIndex; i < endIndex; i++) {
     const item = items[i];
     const isSelected = i === selectedIndex;
+    const isPinned = pinnedIds && getId ? pinnedIds.has(getId(item)) : false;
     const line = renderListItem(
       item,
       isSelected,
       searchTerm,
       renderItem,
-      getSearchText
+      getSearchText,
+      isPinned
     );
     lines.push(line);
   }
