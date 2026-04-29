@@ -1,6 +1,24 @@
 # Changelog
 
 
+## v1.27.0
+
+[compare changes](https://github.com/PKief/git-cli-utils/compare/v1.26.0...v1.27.0)
+
+### 🚀 Enhancements
+
+- **bookmarks:** Implement bookmarking functionality for branches, commits, stashes, tags, remotes, worktrees, and aliases ([d2e7eb2](https://github.com/PKief/git-cli-utils/commit/d2e7eb2))
+- **selection-list:** Add inline bookmark toggle action and update rendering for pinned items ([ffe9cff](https://github.com/PKief/git-cli-utils/commit/ffe9cff))
+
+### 🏡 Chore
+
+- **deps-dev:** Bump defu from 6.1.4 to 6.1.6 in the npm_and_yarn group across 1 directory ([#37](https://github.com/PKief/git-cli-utils/pull/37))
+- **deps-dev:** Bump @types/bun from 1.3.5 to 1.3.9 ([#34](https://github.com/PKief/git-cli-utils/pull/34))
+
+### ❤️ Contributors
+
+- Philipp Kief ([@PKief](https://github.com/PKief))
+
 ## v1.26.0
 
 [compare changes](https://github.com/PKief/git-cli-utils/compare/v1.25.0...v1.26.0)
